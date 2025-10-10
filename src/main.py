@@ -12,8 +12,8 @@ import zipfile
 from datetime import datetime
 import secrets
 
-# Configurar caminhos - templates e static estão um nível acima de src/
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# Configurar caminhos - templates e static estão no mesmo diretório que main.py
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TEMPLATE_DIR = os.path.join(BASE_DIR, 'templates')
 STATIC_DIR = os.path.join(BASE_DIR, 'static')
 
