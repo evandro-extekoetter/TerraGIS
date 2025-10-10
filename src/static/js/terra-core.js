@@ -151,7 +151,8 @@ class TerraLayer {
             const marker = L.marker(latlng, {
                 icon: this.createVertexIcon(),
                 draggable: this.editable,
-                autoPan: true
+                autoPan: true,
+                zIndexOffset: 1000  // Garantir que fica acima de tudo
             });
             
             // Armazenar referências
@@ -161,7 +162,14 @@ class TerraLayer {
             
             // Eventos de arraste
             if (this.editable) {
+                marker.on('dragstart', (e) => {
+                    L.DomEvent.stopPropagation(e);
+                });
+                marker.on('drag', (e) => {
+                    L.DomEvent.stopPropagation(e);
+                });
                 marker.on('dragend', (e) => {
+                    L.DomEvent.stopPropagation(e);
                     this.onVertexDragEnd(e, index);
                 });
             }
@@ -201,6 +209,8 @@ class TerraLayer {
                 border: 2px solid #ffffff;
                 border-radius: 50%;
                 cursor: ${this.editable ? 'move' : 'pointer'};
+                position: relative;
+                z-index: 1000;
             "></div>`,
             iconSize: [12, 12],
             iconAnchor: [6, 6]
@@ -230,9 +240,9 @@ class TerraLayer {
         const newLatLng = marker.getLatLng();
         const newUTM = latLngToUTM(newLatLng.lat, newLatLng.lng, this.fuso);
         
-        this.moveVertex(index, newUTM[0], newUTM[1]);
+        this.moveVertex(index, newUTM.e, newUTM.n);
         
-        showMessage(`Vértice ${this.vertices[index].id} movido para E: ${newUTM[0].toFixed(3)}, N: ${newUTM[1].toFixed(3)}`, 'success');
+        showMessage(`Vértice ${this.vertices[index].id} movido para E: ${newUTM.e.toFixed(3)}, N: ${newUTM.n.toFixed(3)}`, 'success');
     }
     
     // Habilitar edição
@@ -381,4 +391,3 @@ class TerraManager {
 // Instância global do gerenciador
 const terraManager = new TerraManager();
 
-// Update Fri Oct 10 14:25:52 EDT 2025
