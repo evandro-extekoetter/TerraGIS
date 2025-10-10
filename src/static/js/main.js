@@ -1406,6 +1406,8 @@ function ativarMoverVerticesMapa() {
     
     // === NOVA ARQUITETURA: Usar TerraManager ===
     terraManager.setAllEditable(true);
+    
+    console.log('Edição ativada. Camadas:', Object.keys(terraManager.layers));
 }
 
 function desativarMoverVerticesMapa() {
@@ -1692,8 +1694,8 @@ function ativarRemoverVerticesMapa() {
                     L.DomEvent.stopPropagation(e); // Evitar propagação para o mapa
                     
                     const vertexIndex = marker._vertexIndex;
-                    const vertexId = marker._vertexId;
                     const terraLayer = marker._terraLayer;
+                    const vertexId = terraLayer.vertices[vertexIndex].id;
                     
                     // *** CORREÇÃO: Validar mínimo de 3 vértices ***
                     if (terraLayer.vertices.length <= 3) {
@@ -1771,8 +1773,8 @@ function ativarRenomearVerticeMapa() {
                     L.DomEvent.stopPropagation(e); // Evitar propagação para o mapa
                     
                     const vertexIndex = marker._vertexIndex;
-                    const vertexId = marker._vertexId;
                     const terraLayer = marker._terraLayer;
+                    const vertexId = terraLayer.vertices[vertexIndex].id;
                     
                     // *** CORREÇÃO: Mostrar prompt para novo nome ***
                     const novoNome = prompt(`Renomear vértice '${vertexId}'\n\nNovo nome:`, vertexId);
