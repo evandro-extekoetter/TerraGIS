@@ -2200,6 +2200,7 @@ function ativarMoverGeometriaMapa() {
     // Adicionar eventos de clique nos polígonos
     Object.values(terraManager.layers).forEach(terraLayer => {
         if (terraLayer.geometryLayer) {
+            terraLayer.geometryLayer.unbindPopup();
             terraLayer.geometryLayer.on('mousedown', onPolygonClickMoverGeometria);
         }
     });
@@ -2226,6 +2227,7 @@ function desativarMoverGeometriaMapa() {
     Object.values(terraManager.layers).forEach(terraLayer => {
         if (terraLayer.geometryLayer) {
             terraLayer.geometryLayer.off('mousedown', onPolygonClickMoverGeometria);
+            // Popup será recriado automaticamente pelo syncGeometry
         }
     });
     
