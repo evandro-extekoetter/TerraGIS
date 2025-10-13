@@ -64,12 +64,22 @@ class TerraLayer {
     
     // Adicionar vértice
     addVertex(id, e, n, index = -1) {
+        // Registrar vértice globalmente
+        const globalVertex = terraManager.getOrCreateVertex(id, e, n, this.fuso);
+        
+        // Criar vértice local que referencia o global
         const vertex = new TerraVertex(id, e, n, this);
+        
         if (index === -1) {
             this.vertices.push(vertex);
         } else {
             this.vertices.splice(index, 0, vertex);
         }
+        
+        // Registrar que esta layer usa este vértice
+        const layerKey = `${this.name}_${this.type === 'polygon' ? 'Poligono' : 'Polilinha'}`;
+        terraManager.registerVertexUsage(id, layerKey);
+        
         this.syncGeometry();
         return vertex;
     }
@@ -82,8 +92,19 @@ class TerraLayer {
         if (this.vertices.length <= 2 && this.type !== 'polygon') {
             throw new Error('Linha precisa de pelo menos 2 vértices');
         }
+        
+        const vertex = this.vertices[index];
+        const vertexId = vertex.id;
+        
+        // Remover vértice
         this.vertices.splice(index, 1);
+        
+        // Desregistrar uso do vértice global
+        const layerKey = `${this.name}_${this.type === 'polygon' ? 'Poligono' : 'Polilinha'}`;
+        terraManager.unregisterVertexUsage(vertexId, layerKey);
+        
         this.syncGeometry();
+        this.updateVerticesLayer();
     }
     
     // Renomear vértice
@@ -95,14 +116,40 @@ class TerraLayer {
     // Mover vértice
     moveVertex(index, newE, newN) {
         const vertex = this.vertices[index];
+        const vertexId = vertex.id;
         const oldE = vertex.e;
         const oldN = vertex.n;
         
+        // Atualizar vértice local
         vertex.e = newE;
         vertex.n = newN;
         
-        // Sincronizar TODAS as geometrias que compartilham este vértice
-        terraManager.syncAllGeometries(oldE, oldN, newE, newN);
+        // Atualizar vértice global
+        if (terraManager.globalVertices[vertexId]) {
+            terraManager.globalVertices[vertexId].e = newE;
+            terraManager.globalVertices[vertexId].n = newN;
+            
+            // Atualizar TODAS as layers que usam este vértice
+            const affectedLayers = terraManager.globalVertices[vertexId].layers;
+            affectedLayers.forEach(layerName => {
+                const layer = terraManager.getLayer(layerName);
+                if (layer && layer !== this) {
+                    // Encontrar vértice nesta layer e atualizar
+                    layer.vertices.forEach(v => {
+                        if (v.id === vertexId) {
+                            v.e = newE;
+                            v.n = newN;
+                        }
+                    });
+                    layer.syncGeometry();
+                    layer.updateVerticesLayer();
+                }
+            });
+        }
+        
+        // Atualizar esta layer
+        this.syncGeometry();
+        this.updateVerticesLayer();
     }
     
     // Sincronizar geometria com vértices
@@ -279,7 +326,59 @@ class TerraLayer {
 // ===== CLASSE TERRAMANAGER =====
 class TerraManager {
     constructor() {
-        this.layers = {};  // {layerName: TerraLayer}
+        this.layers = {};           // {layerName: TerraLayer}
+        this.globalVertices = {};   // {vertexId: {e, n, fuso, layers: [layerNames]}}
+    }
+    
+    // Obter ou criar vértice global
+    getOrCreateVertex(id, e, n, fuso) {
+        // Verificar se vértice com mesmo ID já existe
+        if (this.globalVertices[id]) {
+            const existing = this.globalVertices[id];
+            // Verificar se está na mesma posição (tolerância 1mm)
+            const distance = Math.sqrt(
+                Math.pow(existing.e - e, 2) + 
+                Math.pow(existing.n - n, 2)
+            );
+            
+            if (distance <= 0.001) {
+                return existing;  // Mesmo vértice
+            }
+        }
+        
+        // Criar novo vértice global
+        this.globalVertices[id] = {
+            e: e,
+            n: n,
+            fuso: fuso,
+            layers: []  // Lista de layers que usam este vértice
+        };
+        
+        return this.globalVertices[id];
+    }
+    
+    // Registrar que uma layer usa um vértice
+    registerVertexUsage(vertexId, layerName) {
+        if (this.globalVertices[vertexId]) {
+            if (!this.globalVertices[vertexId].layers.includes(layerName)) {
+                this.globalVertices[vertexId].layers.push(layerName);
+            }
+        }
+    }
+    
+    // Remover registro de uso de vértice
+    unregisterVertexUsage(vertexId, layerName) {
+        if (this.globalVertices[vertexId]) {
+            const index = this.globalVertices[vertexId].layers.indexOf(layerName);
+            if (index !== -1) {
+                this.globalVertices[vertexId].layers.splice(index, 1);
+            }
+            
+            // Se nenhuma layer usa mais, remover vértice global
+            if (this.globalVertices[vertexId].layers.length === 0) {
+                delete this.globalVertices[vertexId];
+            }
+        }
     }
     
     // Adicionar camada
