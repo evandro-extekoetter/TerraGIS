@@ -2239,11 +2239,11 @@ function onPolygonClickMoverGeometria(e) {
     
     if (!geometriaSelecionada) {
         // Primeiro clique - selecionar geometria
-        const clickedGeometry = e.target;
+        const clickedPolygon = e.target;
         
         // Encontrar TerraLayer correspondente
         for (const [layerName, terraLayer] of Object.entries(terraManager.layers)) {
-            if (terraLayer.geometryLayer === clickedGeometry) {
+            if (terraLayer.polygon === clickedPolygon) {
                 geometriaSelecionada = terraLayer;
                 pontoInicial = e.latlng;
                 
