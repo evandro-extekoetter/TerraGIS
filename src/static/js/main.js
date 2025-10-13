@@ -2391,3 +2391,23 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
+
+
+// Fix: Adicionar event listener ao botão Mover (Mapa) pois onclick não está funcionando
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+        const buttons = document.querySelectorAll('button.tool-btn');
+        buttons.forEach(btn => {
+            const text = btn.textContent.trim();
+            if (text === 'Mover (Mapa)' && btn.onclick && btn.onclick.toString().includes('ativarMoverGeometriaMapa')) {
+                btn.addEventListener('mousedown', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('[FIX] Botão Mover (Mapa) clicado');
+                    ativarMoverGeometriaMapa();
+                }, true);
+                console.log('[FIX] Event listener adicionado');
+            }
+        });
+    }, 1000);
+});
