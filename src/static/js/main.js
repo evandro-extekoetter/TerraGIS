@@ -2199,8 +2199,8 @@ function ativarMoverGeometriaMapa() {
     
     // Adicionar eventos de clique nos polígonos
     Object.values(terraManager.layers).forEach(terraLayer => {
-        if (terraLayer.polygon) {
-            terraLayer.polygon.on('click', onPolygonClickMoverGeometria);
+        if (terraLayer.geometryLayer) {
+            terraLayer.geometryLayer.on('mousedown', onPolygonClickMoverGeometria);
         }
     });
 }
@@ -2224,8 +2224,8 @@ function desativarMoverGeometriaMapa() {
     map.off('mousemove', onMapMouseMoveMoverGeometria);
     
     Object.values(terraManager.layers).forEach(terraLayer => {
-        if (terraLayer.polygon) {
-            terraLayer.polygon.off('click', onPolygonClickMoverGeometria);
+        if (terraLayer.geometryLayer) {
+            terraLayer.geometryLayer.off('mousedown', onPolygonClickMoverGeometria);
         }
     });
     
