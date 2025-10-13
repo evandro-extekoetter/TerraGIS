@@ -1572,15 +1572,108 @@ function ativarAdicionarVerticesMapa() {
     
     adicionarVerticesMapaAtivo = true;
     
-    showMessage('Clique próximo a uma aresta para adicionar vértice. Pressione ESC para cancelar.', 'info');
+    showMessage('Clique em uma aresta do polígono para adicionar vértice. ESC para cancelar.', 'info');
     
-    // Implementar lógica de adicionar vértice clicando na aresta
-    // (Requer implementação mais complexa com detecção de aresta)
+    // Adicionar evento de clique nos polígonos
+    Object.values(terraManager.layers).forEach(terraLayer => {
+        if (terraLayer.polygon) {
+            terraLayer.polygon.on('click', function(e) {
+                if (!adicionarVerticesMapaAtivo) return;
+                
+                L.DomEvent.stopPropagation(e);
+                
+                const clickLatLng = e.latlng;
+                
+                // Converter clique para UTM
+                const clickUTM = latLngToUTM(clickLatLng.lat, clickLatLng.lng, terraLayer.fuso);
+                
+                // Encontrar aresta mais próxima
+                let minDist = Infinity;
+                let insertIndex = -1;
+                
+                for (let i = 0; i < terraLayer.vertices.length; i++) {
+                    const v1 = terraLayer.vertices[i];
+                    const v2 = terraLayer.vertices[(i + 1) % terraLayer.vertices.length];
+                    
+                    // Distância do ponto clicado até a aresta
+                    const dist = distanceToSegment(
+                        clickUTM.e, clickUTM.n,
+                        v1.e, v1.n,
+                        v2.e, v2.n
+                    );
+                    
+                    if (dist < minDist) {
+                        minDist = dist;
+                        insertIndex = i + 1; // Inserir após v1
+                    }
+                }
+                
+                if (insertIndex === -1) return;
+                
+                // Gerar ID automático
+                const newId = prompt('Digite o ID do novo vértice:', `P-${terraLayer.vertices.length + 1}`);
+                if (!newId) return;
+                
+                // Adicionar vértice
+                try {
+                    terraLayer.addVertex(newId, clickUTM.e, clickUTM.n, insertIndex);
+                    showMessage(`Vértice '${newId}' adicionado com sucesso!`, 'success');
+                    
+                    // Desativar ferramenta
+                    desativarAdicionarVerticesMapa();
+                } catch (error) {
+                    showMessage(`Erro: ${error.message}`, 'error');
+                }
+            });
+        }
+    });
 }
 
 function desativarAdicionarVerticesMapa() {
     adicionarVerticesMapaAtivo = false;
+    
+    // Remover eventos de clique dos polígonos
+    Object.values(terraManager.layers).forEach(terraLayer => {
+        if (terraLayer.polygon) {
+            terraLayer.polygon.off('click');
+        }
+    });
+    
     showMessage('Ferramenta Adicionar Vértices desativada.', 'info');
+}
+
+// Função auxiliar: distância de ponto até segmento
+function distanceToSegment(px, py, x1, y1, x2, y2) {
+    const A = px - x1;
+    const B = py - y1;
+    const C = x2 - x1;
+    const D = y2 - y1;
+    
+    const dot = A * C + B * D;
+    const lenSq = C * C + D * D;
+    let param = -1;
+    
+    if (lenSq !== 0) {
+        param = dot / lenSq;
+    }
+    
+    let xx, yy;
+    
+    if (param < 0) {
+        xx = x1;
+        yy = y1;
+    } else if (param > 1) {
+        xx = x2;
+        yy = y2;
+    } else {
+        xx = x1 + param * C;
+        yy = y1 + param * D;
+    }
+    
+    const dx = px - xx;
+    const dy = py - yy;
+    
+    return Math.sqrt(dx * dx + dy * dy);
 }
 
 // ===== ADICIONAR VÉRTICES (COORDENADAS) =====
