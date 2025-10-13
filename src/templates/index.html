@@ -182,10 +182,20 @@
                                 <img src="{{ url_for('static', filename='icons/move_geometry_icon.png') }}" class="icon" alt=""> Geometria <span class="arrow">▼</span>
                             </button>
                             <div id="geometria-menu" class="submenu submenu-level-2">
-                                <!-- Mover -->
-                                <button class="tool-btn submenu-item" onclick="openMoverGeometriaDialog()">
-                                    <img src="{{ url_for('static', filename='icons/move_geometry_icon.png') }}" class="icon" alt=""> Mover
-                                </button>
+                                <!-- Mover (Submenu) -->
+                                <div class="submenu-container">
+                                    <button class="tool-btn submenu-toggle submenu-item" onclick="toggleSubmenu('mover-geometria-submenu')">
+                                        <img src="{{ url_for('static', filename='icons/move_geometry_icon.png') }}" class="icon" alt=""> Mover <span class="arrow">▼</span>
+                                    </button>
+                                    <div id="mover-geometria-submenu" class="submenu submenu-level-3">
+                                        <button class="tool-btn submenu-item" onclick="ativarMoverGeometriaMapa()">
+                                            <img src="{{ url_for('static', filename='icons/move_geometry_icon.png') }}" class="icon" alt=""> Mover (Mapa)
+                                        </button>
+                                        <button class="tool-btn submenu-item" onclick="openMoverGeometriaDialog()">
+                                            <img src="{{ url_for('static', filename='icons/coordinates_icon.png') }}" class="icon" alt=""> Mover (Digitando)
+                                        </button>
+                                    </div>
+                                </div>
                                 
                                 <!-- Copiar -->
                                 <button class="tool-btn submenu-item" onclick="ativarCopiarGeometriaMapa()">

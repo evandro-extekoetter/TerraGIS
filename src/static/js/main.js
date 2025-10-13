@@ -2172,6 +2172,158 @@ function aplicarMoverGeometria() {
     }
 }
 
+// ===== MOVER GEOMETRIA (MAPA) =====
+let moverGeometriaMapaAtivo = false;
+let geometriaSelecionada = null;
+let geometriaOriginal = null;
+let pontoInicial = null;
+let previewLayer = null;
+
+function ativarMoverGeometriaMapa() {
+    if (moverGeometriaMapaAtivo) {
+        desativarMoverGeometriaMapa();
+        return;
+    }
+    
+    // Desativar outras ferramentas
+    desativarTodasFerramentasEdicao();
+    
+    moverGeometriaMapaAtivo = true;
+    geometriaSelecionada = null;
+    
+    showMessage('Clique em uma geometria para selecioná-la. Clique novamente para fixar na nova posição. ESC para cancelar.', 'info');
+    
+    // Adicionar evento de clique no mapa
+    map.on('click', onMapClickMoverGeometria);
+    map.on('mousemove', onMapMouseMoveMoverGeometria);
+    
+    // Adicionar eventos de clique nos polígonos
+    Object.values(terraManager.layers).forEach(terraLayer => {
+        if (terraLayer.polygon) {
+            terraLayer.polygon.on('click', onPolygonClickMoverGeometria);
+        }
+    });
+}
+
+function desativarMoverGeometriaMapa() {
+    if (!moverGeometriaMapaAtivo) return;
+    
+    moverGeometriaMapaAtivo = false;
+    geometriaSelecionada = null;
+    geometriaOriginal = null;
+    pontoInicial = null;
+    
+    // Remover preview
+    if (previewLayer) {
+        map.removeLayer(previewLayer);
+        previewLayer = null;
+    }
+    
+    // Remover eventos
+    map.off('click', onMapClickMoverGeometria);
+    map.off('mousemove', onMapMouseMoveMoverGeometria);
+    
+    Object.values(terraManager.layers).forEach(terraLayer => {
+        if (terraLayer.polygon) {
+            terraLayer.polygon.off('click', onPolygonClickMoverGeometria);
+        }
+    });
+    
+    showMessage('Ferramenta Mover Geometria (Mapa) desativada.', 'info');
+}
+
+function onPolygonClickMoverGeometria(e) {
+    L.DomEvent.stopPropagation(e);
+    
+    if (!moverGeometriaMapaAtivo) return;
+    
+    if (!geometriaSelecionada) {
+        // Primeiro clique - selecionar geometria
+        const clickedPolygon = e.target;
+        
+        // Encontrar TerraLayer correspondente
+        for (const [layerName, terraLayer] of Object.entries(terraManager.layers)) {
+            if (terraLayer.polygon === clickedPolygon) {
+                geometriaSelecionada = terraLayer;
+                pontoInicial = e.latlng;
+                
+                // Salvar coordenadas originais
+                geometriaOriginal = terraLayer.vertices.map(v => ({e: v.e, n: v.n}));
+                
+                // Criar preview
+                const coords = terraLayer.vertices.map(v => {
+                    const utm = {e: v.e, n: v.n};
+                    return utmToLatLng(utm.e, utm.n, terraLayer.fuso);
+                });
+                
+                previewLayer = L.polygon(coords, {
+                    color: 'red',
+                    weight: 2,
+                    fillOpacity: 0.2,
+                    dashArray: '5, 5'
+                }).addTo(map);
+                
+                showMessage(`Geometria ${layerName} selecionada. Mova o mouse e clique para fixar.`, 'info');
+                break;
+            }
+        }
+    } else {
+        // Segundo clique - fixar posição
+        fixarGeometriaNovaPosicao(e.latlng);
+    }
+}
+
+function onMapClickMoverGeometria(e) {
+    if (!moverGeometriaMapaAtivo) return;
+    
+    if (geometriaSelecionada) {
+        // Segundo clique no mapa - fixar posição
+        fixarGeometriaNovaPosicao(e.latlng);
+    }
+}
+
+function onMapMouseMoveMoverGeometria(e) {
+    if (!moverGeometriaMapaAtivo || !geometriaSelecionada || !previewLayer) return;
+    
+    // Atualizar preview conforme movimento do mouse
+    const pontoAtual = e.latlng;
+    
+    // Calcular deslocamento em LatLng
+    const dLat = pontoAtual.lat - pontoInicial.lat;
+    const dLng = pontoAtual.lng - pontoInicial.lng;
+    
+    // Atualizar preview
+    const novasCoords = geometriaOriginal.map(v => {
+        const latlng = utmToLatLng(v.e, v.n, geometriaSelecionada.fuso);
+        return [latlng.lat + dLat, latlng.lng + dLng];
+    });
+    
+    previewLayer.setLatLngs(novasCoords);
+}
+
+function fixarGeometriaNovaPosicao(pontoFinal) {
+    if (!geometriaSelecionada) return;
+    
+    // Converter pontos para UTM para calcular dx, dy preciso
+    const inicialUTM = latLngToUTM(pontoInicial.lat, pontoInicial.lng, geometriaSelecionada.fuso);
+    const finalUTM = latLngToUTM(pontoFinal.lat, pontoFinal.lng, geometriaSelecionada.fuso);
+    
+    const dx = finalUTM.e - inicialUTM.e;
+    const dy = finalUTM.n - inicialUTM.n;
+    
+    // Mover todos os vértices
+    geometriaSelecionada.vertices.forEach((vertex, index) => {
+        const novoE = geometriaOriginal[index].e + dx;
+        const novoN = geometriaOriginal[index].n + dy;
+        geometriaSelecionada.moveVertex(index, novoE, novoN);
+    });
+    
+    showMessage(`Geometria movida com sucesso! (dx=${dx.toFixed(3)}m, dy=${dy.toFixed(3)}m)`, 'success');
+    
+    // Desativar ferramenta
+    desativarMoverGeometriaMapa();
+}
+
 // ===== COPIAR GEOMETRIA (MAPA) =====
 function ativarCopiarGeometriaMapa() {
     if (copiarGeometriaMapaAtivo) {
