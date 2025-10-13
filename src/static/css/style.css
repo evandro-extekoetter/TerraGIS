@@ -81,32 +81,32 @@ body {
 }
 
 .tool-section h3 {
-    font-size: 14px;
+    font-size: 11px;  /* Reduzido 20%: 14→11 */
     font-weight: 600;
     color: #F4A460;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 12px;
-    padding-bottom: 8px;
+    letter-spacing: 0.4px;  /* Reduzido 20%: 0.5→0.4 */
+    margin-bottom: 10px;  /* Reduzido 20%: 12→10 */
+    padding-bottom: 6px;  /* Reduzido 20%: 8→6 */
     border-bottom: 1px solid #404040;
 }
 
 .tool-btn {
     width: 100%;
-    padding: 12px 16px;
-    margin-bottom: 8px;
+    padding: 10px 13px;  /* Reduzido 20%: 12→10, 16→13 */
+    margin-bottom: 6px;  /* Reduzido 20%: 8→6 */
     background: linear-gradient(135deg, #2A4A62 0%, #1A3A52 100%);
     color: #FFFFFF;
     border: 1px solid #3A5A72;
-    border-radius: 6px;
+    border-radius: 5px;  /* Reduzido 20%: 6→5 */
     cursor: pointer;
-    font-size: 14px;
+    font-size: 11px;  /* Reduzido 20%: 14→11 */
     font-weight: 500;
     text-align: left;
     transition: all 0.3s ease;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;  /* Reduzido 20%: 10→8 */
 }
 
 .tool-btn:hover {
@@ -122,7 +122,10 @@ body {
 }
 
 .tool-btn .icon {
-    font-size: 18px;
+    font-size: 14px;  /* Reduzido 20%: 18→14 */
+    width: 16px;  /* Tamanho fixo para ícones PNG */
+    height: 16px;
+    object-fit: contain;
 }
 
 /* Layers List */
