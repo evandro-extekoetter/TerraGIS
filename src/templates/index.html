@@ -176,29 +176,37 @@
                             </div>
                         </div>
                         
-                        <!-- Mover Geometria -->
-                        <button class="tool-btn submenu-item" onclick="openMoverGeometriaDialog()">
-                            <img src="{{ url_for('static', filename='icons/move_geometry_icon.png') }}" class="icon" alt=""> Mover Geometria
-                        </button>
-                        
-                        <!-- Copiar Geometria -->
-                        <button class="tool-btn submenu-item" onclick="ativarCopiarGeometriaMapa()">
-                            <img src="{{ url_for('static', filename='icons/copy_icon.png') }}" class="icon" alt=""> Copiar Geometria
-                        </button>
-                        
-                        <!-- Rotacionar Geometria -->
-                        <button class="tool-btn submenu-item" onclick="openRotacionarGeometriaDialog()">
-                            <img src="{{ url_for('static', filename='icons/rotate_icon.png') }}" class="icon" alt=""> Rotacionar Geometria
-                        </button>
+                        <!-- Geometria (Menu Principal) -->
+                        <div class="submenu-container">
+                            <button class="tool-btn submenu-toggle submenu-item" onclick="toggleSubmenu('geometria-menu')">
+                                <img src="{{ url_for('static', filename='icons/move_geometry_icon.png') }}" class="icon" alt=""> Geometria <span class="arrow">▼</span>
+                            </button>
+                            <div id="geometria-menu" class="submenu submenu-level-2">
+                                <!-- Mover -->
+                                <button class="tool-btn submenu-item" onclick="openMoverGeometriaDialog()">
+                                    <img src="{{ url_for('static', filename='icons/move_geometry_icon.png') }}" class="icon" alt=""> Mover
+                                </button>
+                                
+                                <!-- Copiar -->
+                                <button class="tool-btn submenu-item" onclick="ativarCopiarGeometriaMapa()">
+                                    <img src="{{ url_for('static', filename='icons/copy_icon.png') }}" class="icon" alt=""> Copiar
+                                </button>
+                                
+                                <!-- Rotacionar -->
+                                <button class="tool-btn submenu-item" onclick="openRotacionarGeometriaDialog()">
+                                    <img src="{{ url_for('static', filename='icons/rotate_icon.png') }}" class="icon" alt=""> Rotacionar
+                                </button>
+                                
+                                <!-- Deletar -->
+                                <button class="tool-btn submenu-item" id="delete-mode" onclick="activateTool('delete')">
+                                    <img src="{{ url_for('static', filename='icons/remove_icon.png') }}" class="icon" alt=""> Deletar
+                                </button>
+                            </div>
+                        </div>
                         
                         <!-- Fechar Polígono -->
                         <button class="tool-btn submenu-item" onclick="ativarFecharPoligono()">
                             <img src="{{ url_for('static', filename='icons/close_polygon_icon.png') }}" class="icon" alt=""> Fechar Polígono
-                        </button>
-                        
-                        <!-- Deletar Geometria -->
-                        <button class="tool-btn submenu-item" id="delete-mode" onclick="activateTool('delete')">
-                            <img src="{{ url_for('static', filename='icons/remove_icon.png') }}" class="icon" alt=""> Deletar Geometria
                         </button>
                     </div>
                 </div>

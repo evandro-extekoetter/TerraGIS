@@ -2115,16 +2115,20 @@ function desativarRenomearVerticeMapa() {
 
 // ===== MOVER GEOMETRIA =====
 function openMoverGeometriaDialog() {
-    // Carregar camadas no select
+    // Carregar camadas TerraLayer no select
     const select = document.getElementById('mover-geometria-camada');
     select.innerHTML = '<option value="">Selecione uma camada</option>';
     
-    Object.keys(layers).forEach(layerName => {
+    Object.keys(terraManager.layers).forEach(layerName => {
         const option = document.createElement('option');
         option.value = layerName;
         option.textContent = layerName;
         select.appendChild(option);
     });
+    
+    // Limpar campos
+    document.getElementById('mover-geometria-dx').value = '';
+    document.getElementById('mover-geometria-dy').value = '';
     
     openModal('modal-mover-geometria');
 }
@@ -2134,34 +2138,38 @@ function aplicarMoverGeometria() {
     const dx = parseFloat_BR(document.getElementById('mover-geometria-dx').value);
     const dy = parseFloat_BR(document.getElementById('mover-geometria-dy').value);
     
-    if (!layerName || isNaN(dx) || isNaN(dy)) {
-        showMessage('Preencha todos os campos corretamente', 'error');
+    if (!layerName) {
+        showMessage('Selecione uma camada', 'error');
         return;
     }
     
-    const layer = layers[layerName];
-    if (!layer || !layer.coords) {
+    if (isNaN(dx) || isNaN(dy)) {
+        showMessage('Informe valores válidos para dx e dy', 'error');
+        return;
+    }
+    
+    const terraLayer = terraManager.layers[layerName];
+    if (!terraLayer) {
         showMessage('Camada não encontrada', 'error');
         return;
     }
     
-    // Aplicar deslocamento a todos os vértices
-    layer.coords = layer.coords.map(([e, n]) => [e + dx, n + dy]);
-    
-    // Atualizar polígono
-    const fuso = layer.fuso || '21S';
-    const latlngs = layer.coords.map(([e, n]) => utmToLatLng(e, n, fuso));
-    layer.polygon.setLatLngs(latlngs);
-    
-    // Atualizar vértices
-    if (layer.vertices) {
-        map.removeLayer(layer.vertices);
+    try {
+        // Mover TODOS os vértices da geometria
+        terraLayer.vertices.forEach((vertex, index) => {
+            const novoE = vertex.e + dx;
+            const novoN = vertex.n + dy;
+            
+            // Usar moveVertex que já sincroniza vértices globais
+            terraLayer.moveVertex(index, novoE, novoN);
+        });
+        
+        showMessage(`Geometria ${layerName} movida com sucesso! (dx=${dx.toFixed(3)}m, dy=${dy.toFixed(3)}m)`, 'success');
+        closeModal('modal-mover-geometria');
+        
+    } catch (error) {
+        showMessage(`Erro ao mover geometria: ${error.message}`, 'error');
     }
-    layer.vertices = createVerticesLayer(layer.coords, layer.ids, layerName, fuso, layer.polygon.options.color);
-    map.addLayer(layer.vertices);
-    
-    showMessage(`Geometria movida com sucesso (dx=${dx}m, dy=${dy}m)`, 'success');
-    closeModal('modal-mover-geometria');
 }
 
 // ===== COPIAR GEOMETRIA (MAPA) =====
