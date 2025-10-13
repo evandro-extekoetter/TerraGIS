@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TerraGIS - Análise e Edição GIS</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- Leaflet Draw CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <img src="{{ url_for('static', filename='icons/icone.png') }}" alt="TerraGIS" class="logo-img">
+                <div class="logo-text">
+                    <h1>TerraGIS</h1>
+                    <p>Análise e Edição GIS</p>
+                </div>
+            </div>
+            <div class="project-info">
+                <span id="project-name">Sem projeto</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="main-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <!-- Projeto -->
+            <div class="tool-section">
+                <h3>PROJETO</h3>
+                <button class="tool-btn" onclick="newProject()">
+                    <span class="icon">📁</span> Novo Projeto
+                </button>
+                <button class="tool-btn" onclick="saveProject()">
+                    <span class="icon">💾</span> Salvar Projeto
+                </button>
+                <button class="tool-btn" onclick="openProject()">
+                    <span class="icon">📂</span> Abrir Projeto
+                </button>
+            </div>
+
+            <!-- Ferramentas de Desenho -->
+            <div class="tool-section">
+                <h3>🖊️ DESENHO</h3>
+                <button class="tool-btn" id="draw-polygon" onclick="activateTool('polygon')">
+                    <span class="icon">⬟</span> Desenhar Polígono
+                </button>
+                <button class="tool-btn" id="draw-line" onclick="activateTool('line')">
+                    <span class="icon">⟍</span> Desenhar Linha
+                </button>
+                <button class="tool-btn" id="draw-point" onclick="activateTool('point')">
+                    <span class="icon">●</span> Desenhar Ponto
+                </button>
+                <button class="tool-btn" id="draw-freehand" onclick="activateTool('freehand')">
+                    <span class="icon">✍️</span> Desenho Livre
+                </button>
+            </div>
+
+            <!-- Construção de Polígonos -->
+            <div class="tool-section">
+                <h3>📐 CONSTRUÇÃO</h3>
+                <button class="tool-btn" onclick="openCoordListDialog()">
+                    <span class="icon">📝</span> Lista Coordenadas UTM
+                </button>
+                <button class="tool-btn" onclick="openCoordTableDialog()">
+                    <span class="icon">📋</span> Tabela Coordenadas UTM
+                </button>
+                <button class="tool-btn" onclick="openAzimuthDialog()">
+                    <span class="icon">🧭</span> Azimute + Distância
+                </button>
+                <button class="tool-btn" onclick="openBearingDialog()">
+                    <span class="icon">↗️</span> Rumo + Distância
+                </button>
+            </div>
+
+            <!-- Ferramentas de Edição -->
+            <div class="tool-section">
+                <h3>✏️ EDIÇÃO</h3>
+                <button class="tool-btn" id="edit-mode" onclick="activateTool('edit')">
+                    <span class="icon">✏️</span> Editar Geometria
+                </button>
+                <button class="tool-btn" id="delete-mode" onclick="activateTool('delete')">
+                    <span class="icon">🗑️</span> Deletar Geometria
+                </button>
+            </div>
+
+            <!-- Ferramentas de Análise -->
+            <div class="tool-section">
+                <h3>📊 ANÁLISE</h3>
+                <button class="tool-btn" id="measure-area" onclick="activateTool('measure-area')">
+                    <span class="icon">📐</span> Medir Área
+                </button>
+                <button class="tool-btn" id="measure-distance" onclick="activateTool('measure-distance')">
+                    <span class="icon">📏</span> Medir Distância
+                </button>
+                <button class="tool-btn" onclick="showCoordinates()">
+                    <span class="icon">📍</span> Coordenadas
+                </button>
+            </div>
+
+            <!-- Camadas -->
+            <div class="tool-section">
+                <h3>📁 CAMADAS</h3>
+                <button class="tool-btn" onclick="addLayer()">
+                    <span class="icon">➕</span> Nova Camada
+                </button>
+                <div id="layers-list" class="layers-list">
+                    <p class="no-layers">Nenhuma camada criada</p>
+                </div>
+            </div>
+
+            <!-- Exportar -->
+            <div class="tool-section">
+                <h3>💾 EXPORTAR</h3>
+                <button class="tool-btn" onclick="exportGeoJSON()">
+                    <span class="icon">📄</span> Exportar GeoJSON
+                </button>
+            </div>
+        </aside>
+
+        <!-- Map Container -->
+        <main class="map-container">
+            <div id="map"></div>
+            
+            <!-- Info Panel -->
+            <div class="info-panel">
+                <div class="info-item">
+                    <span class="info-label">Coordenadas:</span>
+                    <span id="cursor-coords">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Área:</span>
+                    <span id="current-area">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Perímetro:</span>
+                    <span id="current-perimeter">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Ferramenta:</span>
+                    <span id="current-tool">Nenhuma</span>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Novo Projeto -->
+    <div id="modal-new-project" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Criar Novo Projeto</h2>
+                <button class="close-btn" onclick="closeModal('modal-new-project')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="project-name-input">Nome do Projeto:</label>
+                    <input type="text" id="project-name-input" placeholder="Ex: Análise Fazenda Santa Maria">
+                </div>
+                <div class="form-group">
+                    <label for="fuso-utm-select">Fuso UTM:</label>
+                    <select id="fuso-utm-select">
+                        <option value="">Selecione o fuso</option>
+                        <option value="18S">18S</option>
+                        <option value="19S">19S</option>
+                        <option value="20S">20S</option>
+                        <option value="21S">21S</option>
+                        <option value="22S">22S</option>
+                        <option value="23S">23S</option>
+                        <option value="24S">24S</option>
+                        <option value="25S">25S</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal('modal-new-project')">Cancelar</button>
+                <button class="btn-primary" onclick="createProject()">Criar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Nova Camada -->
+    <div id="modal-new-layer" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Nova Camada</h2>
+                <button class="close-btn" onclick="closeModal('modal-new-layer')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="layer-name-input">Nome da Camada:</label>
+                    <input type="text" id="layer-name-input" placeholder="Ex: Polígonos de Análise">
+                </div>
+                <div class="form-group">
+                    <label for="layer-type-select">Tipo:</label>
+                    <select id="layer-type-select">
+                        <option value="polygon">Polígono</option>
+                        <option value="line">Linha</option>
+                        <option value="point">Ponto</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="layer-color-input">Cor:</label>
+                    <input type="color" id="layer-color-input" value="#3388ff">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal('modal-new-layer')">Cancelar</button>
+                <button class="btn-primary" onclick="createLayer()">Criar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Lista Coordenadas UTM -->
+    <div id="modal-coord-list" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>📝 Construir Polígono - Lista de Coordenadas UTM</h2>
+                <button class="close-btn" onclick="closeModal('modal-coord-list')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="coord-list-name">Nome do Polígono:</label>
+                    <input type="text" id="coord-list-name" placeholder="Ex: Lote 01">
+                </div>
+                <div class="form-group">
+                    <label for="coord-list-input">Coordenadas (E, N):</label>
+                    <textarea id="coord-list-input" rows="10" placeholder="Digite as coordenadas, uma por linha:&#10;&#10;Exemplo:&#10;500000, 7000000&#10;500100, 7000000&#10;500100, 7000100&#10;500000, 7000100&#10;&#10;Ou com ponto e vírgula:&#10;500000; 7000000&#10;500100; 7000000"></textarea>
+                    <small>Formato: Este, Norte (separado por vírgula ou ponto e vírgula)</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal('modal-coord-list')">Cancelar</button>
+                <button class="btn-primary" onclick="createPolygonFromCoordList()">Criar Polígono</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Tabela Coordenadas UTM -->
+    <div id="modal-coord-table" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>📋 Construir Polígono - Tabela de Coordenadas UTM</h2>
+                <button class="close-btn" onclick="closeModal('modal-coord-table')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="coord-table-name">Nome do Polígono:</label>
+                    <input type="text" id="coord-table-name" placeholder="Ex: Área Rural">
+                </div>
+                <div class="form-group">
+                    <label for="coord-table-input">Cole a Tabela (Excel/CSV):</label>
+                    <textarea id="coord-table-input" rows="10" placeholder="Cole aqui a tabela copiada do Excel ou CSV&#10;&#10;Exemplo:&#10;E	N&#10;500000	7000000&#10;500100	7000000&#10;500100	7000100&#10;500000	7000100&#10;&#10;Ou com vírgula:&#10;E,N&#10;500000,7000000&#10;500100,7000000"></textarea>
+                    <small>Cole diretamente do Excel (Ctrl+C / Ctrl+V) ou CSV</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal('modal-coord-table')">Cancelar</button>
+                <button class="btn-primary" onclick="createPolygonFromCoordTable()">Criar Polígono</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Azimute + Distância -->
+    <div id="modal-azimuth" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>🧭 Construir Polígono - Azimute + Distância</h2>
+                <button class="close-btn" onclick="closeModal('modal-azimuth')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="azimuth-name">Nome do Polígono:</label>
+                    <input type="text" id="azimuth-name" placeholder="Ex: Perímetro Urbano">
+                </div>
+                <div class="form-group">
+                    <label for="azimuth-start-e">Ponto Inicial - Este (E):</label>
+                    <input type="number" id="azimuth-start-e" placeholder="Ex: 500000" step="0.001">
+                </div>
+                <div class="form-group">
+                    <label for="azimuth-start-n">Ponto Inicial - Norte (N):</label>
+                    <input type="number" id="azimuth-start-n" placeholder="Ex: 7000000" step="0.001">
+                </div>
+                <div class="form-group">
+                    <label for="azimuth-data">Azimute e Distância:</label>
+                    <textarea id="azimuth-data" rows="8" placeholder="Digite azimute (graus) e distância (metros), uma por linha:&#10;&#10;Exemplo:&#10;45.5, 100.50&#10;135.25, 150.75&#10;225, 100&#10;315.5, 150&#10;&#10;Azimute: 0° = Norte, sentido horário"></textarea>
+                    <small>Formato: Azimute (graus), Distância (metros)</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal('modal-azimuth')">Cancelar</button>
+                <button class="btn-primary" onclick="createPolygonFromAzimuth()">Criar Polígono</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Rumo + Distância -->
+    <div id="modal-bearing" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>↗️ Construir Polígono - Rumo + Distância</h2>
+                <button class="close-btn" onclick="closeModal('modal-bearing')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="bearing-name">Nome do Polígono:</label>
+                    <input type="text" id="bearing-name" placeholder="Ex: Gleba A">
+                </div>
+                <div class="form-group">
+                    <label for="bearing-start-e">Ponto Inicial - Este (E):</label>
+                    <input type="number" id="bearing-start-e" placeholder="Ex: 500000" step="0.001">
+                </div>
+                <div class="form-group">
+                    <label for="bearing-start-n">Ponto Inicial - Norte (N):</label>
+                    <input type="number" id="bearing-start-n" placeholder="Ex: 7000000" step="0.001">
+                </div>
+                <div class="form-group">
+                    <label for="bearing-data">Rumo e Distância:</label>
+                    <textarea id="bearing-data" rows="8" placeholder="Digite rumo (topográfico) e distância (metros), uma por linha:&#10;&#10;Exemplo:&#10;NE 45°30'15&quot;, 100.50&#10;SE 44°15'30&quot;, 150.75&#10;SW 45°00'00&quot;, 100&#10;NW 44°45'45&quot;, 150&#10;&#10;Ou em graus decimais:&#10;NE 45.5042, 100.50&#10;SE 44.2583, 150.75"></textarea>
+                    <small>Formato: Rumo (NE/SE/SW/NW + ângulo), Distância (metros)</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal('modal-bearing')">Cancelar</button>
+                <button class="btn-primary" onclick="createPolygonFromBearing()">Criar Polígono</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- Leaflet Draw JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+    
+    <!-- Turf.js for geospatial analysis -->
+    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
