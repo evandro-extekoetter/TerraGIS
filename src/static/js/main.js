@@ -1576,11 +1576,16 @@ function ativarAdicionarVerticesMapa() {
     
     // Adicionar evento de clique nos polígonos
     Object.values(terraManager.layers).forEach(terraLayer => {
-        if (terraLayer.polygon) {
-            terraLayer.polygon.on('click', function(e) {
+        if (terraLayer.geometryLayer) {
+            // Desabilitar popup temporariamente
+            terraLayer.geometryLayer.unbindPopup();
+            
+            // Usar mousedown para capturar antes de outros eventos
+            terraLayer.geometryLayer.on('mousedown', function(e) {
                 if (!adicionarVerticesMapaAtivo) return;
                 
                 L.DomEvent.stopPropagation(e);
+                L.DomEvent.preventDefault(e);
                 
                 const clickLatLng = e.latlng;
                 
@@ -1632,10 +1637,15 @@ function ativarAdicionarVerticesMapa() {
 function desativarAdicionarVerticesMapa() {
     adicionarVerticesMapaAtivo = false;
     
-    // Remover eventos de clique dos polígonos
+    // Remover eventos e restaurar popups
     Object.values(terraManager.layers).forEach(terraLayer => {
-        if (terraLayer.polygon) {
-            terraLayer.polygon.off('click');
+        if (terraLayer.geometryLayer) {
+            terraLayer.geometryLayer.off('mousedown');
+            
+            // Restaurar popup
+            const layerName = terraLayer.type === 'polygon' ? 
+                `${terraLayer.name}_Poligono` : `${terraLayer.name}_Polilinha`;
+            terraLayer.geometryLayer.bindPopup(`<b>${layerName}</b>`);
         }
     });
     
