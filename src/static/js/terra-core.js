@@ -206,6 +206,15 @@ class TerraLayer {
             marker._terraVertex = vertex;
             marker._terraLayer = this;
             marker._vertexIndex = index;
+            marker._vertexId = vertex.id;  // *** CORREÇÃO: Adicionar ID ***
+            
+            // *** CORREÇÃO: Adicionar stopPropagation em TODOS os eventos de clique ***
+            marker.on('click', (e) => {
+                L.DomEvent.stopPropagation(e);
+            });
+            marker.on('mousedown', (e) => {
+                L.DomEvent.stopPropagation(e);
+            });
             
             // Eventos de arraste
             if (this.editable) {
