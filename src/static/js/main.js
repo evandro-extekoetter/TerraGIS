@@ -1766,8 +1766,198 @@ function aplicarAdicionarVertice() {
 
 // ===== ADICIONAR VÉRTICE (AZIMUTE/RUMO) =====
 function openAdicionarVerticeAzimuteRumoDialog() {
-    showMessage('Função Adicionar Vértice por Azimute/Rumo em desenvolvimento', 'info');
-    // TODO: Implementar modal e lógica
+    // Carregar camadas disponíveis
+    const select = document.getElementById('azimute-camada');
+    select.innerHTML = '<option value="">Selecione uma camada</option>';
+    
+    Object.keys(terraManager.layers).forEach(layerName => {
+        const option = document.createElement('option');
+        option.value = layerName;
+        option.textContent = layerName;
+        select.appendChild(option);
+    });
+    
+    // Limpar campos
+    document.getElementById('azimute-vertice-partida').innerHTML = '<option value="">Selecione um vértice</option>';
+    document.getElementById('azimute-novo-id').value = '';
+    document.getElementById('azimute-valor').value = '';
+    document.getElementById('azimute-distancia').value = '';
+    document.getElementById('azimute-quadrante').value = '';
+    document.getElementById('azimute-metodo').value = 'azimute';
+    toggleQuadranteField();
+    
+    openModal('modal-adicionar-vertice-azimute');
+}
+
+function loadVerticesForAzimute() {
+    const layerName = document.getElementById('azimute-camada').value;
+    const select = document.getElementById('azimute-vertice-partida');
+    
+    select.innerHTML = '<option value="">Selecione um vértice</option>';
+    
+    if (!layerName) return;
+    
+    const terraLayer = terraManager.layers[layerName];
+    if (!terraLayer) return;
+    
+    // Carregar vértices
+    terraLayer.vertices.forEach((vertex, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        option.textContent = vertex.id;
+        select.appendChild(option);
+    });
+}
+
+function toggleQuadranteField() {
+    const metodo = document.getElementById('azimute-metodo').value;
+    const quadranteGroup = document.getElementById('azimute-quadrante-group');
+    const valorLabel = document.getElementById('azimute-valor-label');
+    
+    if (metodo === 'rumo') {
+        quadranteGroup.style.display = 'block';
+        valorLabel.textContent = 'Rumo:';
+    } else {
+        quadranteGroup.style.display = 'none';
+        valorLabel.textContent = 'Azimute (°):';
+    }
+}
+
+function aplicarAdicionarVerticeAzimute() {
+    const layerName = document.getElementById('azimute-camada').value;
+    const verticePartidaIndex = parseInt(document.getElementById('azimute-vertice-partida').value);
+    const metodo = document.getElementById('azimute-metodo').value;
+    const novoId = document.getElementById('azimute-novo-id').value.trim();
+    const valorStr = document.getElementById('azimute-valor').value.trim();
+    const distanciaStr = document.getElementById('azimute-distancia').value.trim();
+    const quadrante = document.getElementById('azimute-quadrante').value.trim().toUpperCase();
+    
+    // Validações
+    if (!layerName) {
+        showMessage('Selecione uma camada', 'error');
+        return;
+    }
+    
+    if (isNaN(verticePartidaIndex)) {
+        showMessage('Selecione um vértice de partida', 'error');
+        return;
+    }
+    
+    if (!novoId) {
+        showMessage('Informe o ID do novo vértice', 'error');
+        return;
+    }
+    
+    if (!valorStr || !distanciaStr) {
+        showMessage('Preencha azimute/rumo e distância', 'error');
+        return;
+    }
+    
+    if (metodo === 'rumo' && !quadrante) {
+        showMessage('Informe o quadrante para rumo', 'error');
+        return;
+    }
+    
+    const terraLayer = terraManager.layers[layerName];
+    if (!terraLayer) {
+        showMessage('Camada não encontrada', 'error');
+        return;
+    }
+    
+    const verticePartida = terraLayer.vertices[verticePartidaIndex];
+    if (!verticePartida) {
+        showMessage('Vértice de partida não encontrado', 'error');
+        return;
+    }
+    
+    try {
+        // Converter azimute/rumo para decimal
+        let azimute;
+        if (metodo === 'azimute') {
+            azimute = parseAzimute(valorStr);
+        } else {
+            azimute = parseRumoComQuadrante(valorStr, quadrante);
+        }
+        
+        // Converter distância
+        const distancia = parseFloat(distanciaStr.replace(',', '.'));
+        
+        if (isNaN(azimute) || isNaN(distancia)) {
+            showMessage('Valores inválidos para azimute/rumo ou distância', 'error');
+            return;
+        }
+        
+        // Calcular coordenadas do novo vértice
+        const x0 = verticePartida.e;
+        const y0 = verticePartida.n;
+        
+        const azRad = azimute * Math.PI / 180;
+        const novoE = x0 + distancia * Math.sin(azRad);
+        const novoN = y0 + distancia * Math.cos(azRad);
+        
+        // Adicionar vértice após o vértice de partida
+        terraLayer.addVertex(novoId, novoE, novoN, verticePartidaIndex + 1);
+        
+        showMessage(`Vértice ${novoId} adicionado com sucesso!`, 'success');
+        closeModal('modal-adicionar-vertice-azimute');
+        
+    } catch (error) {
+        showMessage(`Erro ao adicionar vértice: ${error.message}`, 'error');
+    }
+}
+
+// Funções auxiliares para parsing
+function parseAzimute(azStr) {
+    // Aceita formato: 45°30'15" ou 45.5042
+    azStr = azStr.trim();
+    
+    // Se já é decimal
+    if (!azStr.includes('°') && !azStr.includes("'")) {
+        return parseFloat(azStr.replace(',', '.'));
+    }
+    
+    // Formato DMS (graus, minutos, segundos)
+    const match = azStr.match(/(\d+)[°º]\s*(\d+)?['′]?\s*(\d+(?:[.,]\d+)?)?["″]?/);
+    if (match) {
+        const graus = parseFloat(match[1]);
+        const minutos = match[2] ? parseFloat(match[2]) : 0;
+        const segundos = match[3] ? parseFloat(match[3].replace(',', '.')) : 0;
+        
+        return graus + minutos / 60 + segundos / 3600;
+    }
+    
+    throw new Error('Formato de azimute inválido');
+}
+
+function parseRumoComQuadrante(rumoStr, quadrante) {
+    // Converte rumo + quadrante para azimute
+    const rumo = parseAzimute(rumoStr); // Reutiliza parser de azimute
+    
+    // Validar quadrante
+    const quadrantesValidos = ['NE', 'SE', 'SW', 'NW', 'NO'];
+    if (!quadrantesValidos.includes(quadrante)) {
+        throw new Error('Quadrante inválido. Use: NE, SE, SW ou NW');
+    }
+    
+    // Converter para azimute
+    let azimute;
+    switch (quadrante) {
+        case 'NE':
+            azimute = rumo;
+            break;
+        case 'SE':
+            azimute = 180 - rumo;
+            break;
+        case 'SW':
+        case 'NO':
+            azimute = 180 + rumo;
+            break;
+        case 'NW':
+            azimute = 360 - rumo;
+            break;
+    }
+    
+    return azimute;
 }
 
 // ===== REMOVER VÉRTICES (MAPA) =====
