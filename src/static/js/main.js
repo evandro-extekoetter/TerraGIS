@@ -1,3 +1,4 @@
+// Version with dropdown for Mover Geometria (Mapa) - Updated 2025-10-14
 // ===== CONFIGURAÇÃO// Global variables
 let map;
 let drawnItems;
