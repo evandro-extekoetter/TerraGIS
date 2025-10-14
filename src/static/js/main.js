@@ -2243,7 +2243,19 @@ function selecionarGeometriaParaMover(layerName) {
     const primeiroVertice = geometriaSelecionada.vertices[0];
     pontoInicial = utmToLatLng(primeiroVertice.e, primeiroVertice.n, geometriaSelecionada.fuso);
     
-    showMessage('Geometria "' + layerName + '" selecionada. Clique no mapa para mover para a nova posição. ESC para cancelar.', 'success');
+    // Criar preview layer
+    const coordsOriginais = geometriaSelecionada.vertices.map(v => 
+        utmToLatLng(v.e, v.n, geometriaSelecionada.fuso)
+    );
+    
+    previewLayer = L.polygon(coordsOriginais, {
+        color: 'red',
+        weight: 2,
+        dashArray: '5, 5',
+        fillOpacity: 0.1
+    }).addTo(map);
+    
+    showMessage('Geometria "' + layerName + '" selecionada. Mova o mouse para posicionar. Clique para fixar. ESC para cancelar.', 'success');
     
     // Adicionar evento de clique no mapa
     map.on('click', onMapClickMoverGeometria);
@@ -2394,10 +2406,7 @@ function desativarCopiarGeometriaMapa() {
 }
 
 // ===== ROTACIONAR GEOMETRIA =====
-function openRotacionarGeometriaDialog() {
-    showMessage('Função Rotacionar Geometria em desenvolvimento', 'info');
-    // TODO: Implementar modal e lógica
-}
+// Função openRotacionarGeometriaDialog() está implementada em rotacionar-geometria.js
 
 // ===== FECHAR POLÍGONO =====
 function ativarFecharPoligono() {
