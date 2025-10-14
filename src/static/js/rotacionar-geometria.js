@@ -1,64 +1,52 @@
 // Ferramenta Rotacionar Geometria - TerraGIS
-// Versão simplificada e funcional
+console.log('🔄 Iniciando carregamento de Rotacionar Geometria...');
 
-(function() {
-    'use strict';
-    console.log('🔄 Carregando Rotacionar Geometria...');
-
-let rotacionarAtivo = false;
-let geometriaParaRotacionar = null;
-let verticeEixo = null;
-let anguloAtual = 0;
-let previewLayer = null;
+// Variáveis globais
+var rotacionarAtivo = false;
+var geometriaParaRotacionar = null;
+var verticeEixo = null;
+var anguloAtual = 0;
+var previewLayerRotacao = null;
 
 // Abrir diálogo de rotação
 function openRotacionarGeometriaDialog() {
+    console.log('📋 Abrindo diálogo de rotação');
+    
     // Criar modal
-    const modal = document.createElement('div');
+    var modal = document.createElement('div');
     modal.id = 'modalRotacionar';
-    modal.innerHTML = `
-        <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; display: flex; align-items: center; justify-content: center;">
-            <div style="background: white; padding: 30px; border-radius: 8px; max-width: 500px; width: 90%;">
-                <h3 style="margin: 0 0 20px 0; color: #333;">🔄 Rotacionar Geometria</h3>
-                
-                <label style="display: block; margin-bottom: 10px; font-weight: bold;">Selecione a geometria:</label>
-                <select id="selectGeometriaRotacionar" style="width: 100%; padding: 10px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 4px;">
-                    <option value="">-- Selecione --</option>
-                </select>
-                
-                <label style="display: block; margin-bottom: 10px; font-weight: bold;">Modo de rotação:</label>
-                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-                    <button id="btnRotacionarMapa" style="flex: 1; padding: 12px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">
-                        🗺️ Mapa (Livre)
-                    </button>
-                    <button id="btnRotacionarAngulo" style="flex: 1; padding: 12px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">
-                        📐 Ângulo Específico
-                    </button>
-                </div>
-                
-                <div style="text-align: right;">
-                    <button id="btnCancelarRotacionar" style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                        Cancelar
-                    </button>
-                </div>
-            </div>
-        </div>
-    `;
+    modal.innerHTML = '<div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; display: flex; align-items: center; justify-content: center;">' +
+        '<div style="background: white; padding: 30px; border-radius: 8px; max-width: 500px; width: 90%;">' +
+        '<h3 style="margin: 0 0 20px 0; color: #333;">🔄 Rotacionar Geometria</h3>' +
+        '<label style="display: block; margin-bottom: 10px; font-weight: bold;">Selecione a geometria:</label>' +
+        '<select id="selectGeometriaRotacionar" style="width: 100%; padding: 10px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 4px;">' +
+        '<option value="">-- Selecione --</option>' +
+        '</select>' +
+        '<label style="display: block; margin-bottom: 10px; font-weight: bold;">Modo de rotação:</label>' +
+        '<div style="display: flex; gap: 10px; margin-bottom: 20px;">' +
+        '<button id="btnRotacionarMapa" style="flex: 1; padding: 12px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">🗺️ Mapa (Livre)</button>' +
+        '<button id="btnRotacionarAngulo" style="flex: 1; padding: 12px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">📐 Ângulo Específico</button>' +
+        '</div>' +
+        '<div style="text-align: right;">' +
+        '<button id="btnCancelarRotacionar" style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">Cancelar</button>' +
+        '</div>' +
+        '</div>' +
+        '</div>';
     
     document.body.appendChild(modal);
     
     // Preencher dropdown com geometrias
-    const select = document.getElementById('selectGeometriaRotacionar');
-    for (let nome in terraManager.layers) {
-        const option = document.createElement('option');
+    var select = document.getElementById('selectGeometriaRotacionar');
+    for (var nome in terraManager.layers) {
+        var option = document.createElement('option');
         option.value = nome;
         option.textContent = nome;
         select.appendChild(option);
     }
     
-    // Event listeners usando onclick diretamente
+    // Event listeners
     document.getElementById('btnRotacionarMapa').onclick = function() {
-        const geometriaSelecionada = document.getElementById('selectGeometriaRotacionar').value;
+        var geometriaSelecionada = document.getElementById('selectGeometriaRotacionar').value;
         if (!geometriaSelecionada) {
             showMessage('Selecione uma geometria primeiro!', 'warning');
             return;
@@ -68,7 +56,7 @@ function openRotacionarGeometriaDialog() {
     };
     
     document.getElementById('btnRotacionarAngulo').onclick = function() {
-        const geometriaSelecionada = document.getElementById('selectGeometriaRotacionar').value;
+        var geometriaSelecionada = document.getElementById('selectGeometriaRotacionar').value;
         if (!geometriaSelecionada) {
             showMessage('Selecione uma geometria primeiro!', 'warning');
             return;
@@ -84,8 +72,8 @@ function openRotacionarGeometriaDialog() {
 
 // Encontrar vértice mais ao norte
 function encontrarVerticeMaisAoNorte(vertices) {
-    let verticeMaisNorte = vertices[0];
-    for (let i = 1; i < vertices.length; i++) {
+    var verticeMaisNorte = vertices[0];
+    for (var i = 1; i < vertices.length; i++) {
         if (vertices[i].n > verticeMaisNorte.n) {
             verticeMaisNorte = vertices[i];
         }
@@ -95,12 +83,12 @@ function encontrarVerticeMaisAoNorte(vertices) {
 
 // Rotacionar ponto em torno de um eixo
 function rotacionarPonto(ponto, eixo, anguloGraus) {
-    const anguloRad = anguloGraus * Math.PI / 180;
-    const cos = Math.cos(anguloRad);
-    const sin = Math.sin(anguloRad);
+    var anguloRad = anguloGraus * Math.PI / 180;
+    var cos = Math.cos(anguloRad);
+    var sin = Math.sin(anguloRad);
     
-    const dx = ponto.e - eixo.e;
-    const dy = ponto.n - eixo.n;
+    var dx = ponto.e - eixo.e;
+    var dy = ponto.n - eixo.n;
     
     return {
         e: eixo.e + (dx * cos - dy * sin),
@@ -121,7 +109,7 @@ function iniciarRotacaoMapa(nomeGeometria) {
     verticeEixo = encontrarVerticeMaisAoNorte(geometriaParaRotacionar.vertices);
     anguloAtual = 0;
     
-    showMessage(`Rotacionando "${nomeGeometria}". Mova o mouse para rotacionar. Clique para confirmar. ESC para cancelar.`, 'info');
+    showMessage('Rotacionando "' + nomeGeometria + '". Mova o mouse para rotacionar. Clique para confirmar. ESC para cancelar.', 'info');
     
     // Adicionar eventos
     map.on('mousemove', onMouseMoveRotacao);
@@ -133,12 +121,12 @@ function iniciarRotacaoMapa(nomeGeometria) {
 function onMouseMoveRotacao(e) {
     if (!rotacionarAtivo || !geometriaParaRotacionar) return;
     
-    const eixoLatLng = utmToLatLng(verticeEixo.e, verticeEixo.n, geometriaParaRotacionar.fuso);
-    const mouseLatLng = e.latlng;
+    var eixoLatLng = utmToLatLng(verticeEixo.e, verticeEixo.n, geometriaParaRotacionar.fuso);
+    var mouseLatLng = e.latlng;
     
     // Calcular ângulo entre eixo e mouse
-    const dx = mouseLatLng.lng - eixoLatLng.lng;
-    const dy = mouseLatLng.lat - eixoLatLng.lat;
+    var dx = mouseLatLng.lng - eixoLatLng.lng;
+    var dy = mouseLatLng.lat - eixoLatLng.lat;
     anguloAtual = Math.atan2(dy, dx) * 180 / Math.PI;
     
     // Atualizar preview
@@ -166,22 +154,22 @@ function onKeyDownRotacao(e) {
 
 // Atualizar preview da rotação
 function atualizarPreviewRotacao() {
-    if (previewLayer) {
-        map.removeLayer(previewLayer);
+    if (previewLayerRotacao) {
+        map.removeLayer(previewLayerRotacao);
     }
     
     // Rotacionar todos os vértices
-    const verticesRotacionados = geometriaParaRotacionar.vertices.map(v => 
-        rotacionarPonto(v, verticeEixo, anguloAtual)
-    );
+    var verticesRotacionados = geometriaParaRotacionar.vertices.map(function(v) {
+        return rotacionarPonto(v, verticeEixo, anguloAtual);
+    });
     
     // Converter para LatLng
-    const latlngs = verticesRotacionados.map(v => 
-        utmToLatLng(v.e, v.n, geometriaParaRotacionar.fuso)
-    );
+    var latlngs = verticesRotacionados.map(function(v) {
+        return utmToLatLng(v.e, v.n, geometriaParaRotacionar.fuso);
+    });
     
     // Criar preview
-    previewLayer = L.polygon(latlngs, {
+    previewLayerRotacao = L.polygon(latlngs, {
         color: 'red',
         weight: 2,
         dashArray: '5, 5',
@@ -192,14 +180,14 @@ function atualizarPreviewRotacao() {
 // Aplicar rotação final
 function aplicarRotacao() {
     // Rotacionar todos os vértices
-    geometriaParaRotacionar.vertices = geometriaParaRotacionar.vertices.map(v => 
-        rotacionarPonto(v, verticeEixo, anguloAtual)
-    );
+    geometriaParaRotacionar.vertices = geometriaParaRotacionar.vertices.map(function(v) {
+        return rotacionarPonto(v, verticeEixo, anguloAtual);
+    });
     
     // Atualizar geometria no mapa
     geometriaParaRotacionar.syncGeometry();
     
-    showMessage(`Geometria rotacionada ${anguloAtual.toFixed(2)}° com sucesso!`, 'success');
+    showMessage('Geometria rotacionada ' + anguloAtual.toFixed(2) + '° com sucesso!', 'success');
 }
 
 // Finalizar rotação
@@ -209,9 +197,9 @@ function finalizarRotacao() {
     verticeEixo = null;
     anguloAtual = 0;
     
-    if (previewLayer) {
-        map.removeLayer(previewLayer);
-        previewLayer = null;
+    if (previewLayerRotacao) {
+        map.removeLayer(previewLayerRotacao);
+        previewLayerRotacao = null;
     }
     
     map.off('mousemove', onMouseMoveRotacao);
@@ -221,39 +209,30 @@ function finalizarRotacao() {
 
 // Abrir diálogo de ângulo específico
 function abrirDialogoAnguloEspecifico(nomeGeometria) {
-    const modal = document.createElement('div');
+    var modal = document.createElement('div');
     modal.id = 'modalAnguloEspecifico';
-    modal.innerHTML = `
-        <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; display: flex; align-items: center; justify-content: center;">
-            <div style="background: white; padding: 30px; border-radius: 8px; max-width: 400px; width: 90%;">
-                <h3 style="margin: 0 0 20px 0; color: #333;">📐 Rotacionar por Ângulo</h3>
-                
-                <label style="display: block; margin-bottom: 10px; font-weight: bold;">Ângulo (GG,MMSS):</label>
-                <input type="text" id="inputAngulo" placeholder="Ex: 45,3015" style="width: 100%; padding: 10px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 4px;">
-                
-                <label style="display: block; margin-bottom: 10px; font-weight: bold;">Sentido:</label>
-                <select id="selectSentido" style="width: 100%; padding: 10px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 4px;">
-                    <option value="horario">Horário</option>
-                    <option value="antihorario">Anti-horário</option>
-                </select>
-                
-                <div style="display: flex; gap: 10px;">
-                    <button id="btnAplicarAngulo" style="flex: 1; padding: 12px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                        Aplicar
-                    </button>
-                    <button id="btnCancelarAngulo" style="flex: 1; padding: 12px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                        Cancelar
-                    </button>
-                </div>
-            </div>
-        </div>
-    `;
+    modal.innerHTML = '<div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; display: flex; align-items: center; justify-content: center;">' +
+        '<div style="background: white; padding: 30px; border-radius: 8px; max-width: 400px; width: 90%;">' +
+        '<h3 style="margin: 0 0 20px 0; color: #333;">📐 Rotacionar por Ângulo</h3>' +
+        '<label style="display: block; margin-bottom: 10px; font-weight: bold;">Ângulo (GG,MMSS):</label>' +
+        '<input type="text" id="inputAngulo" placeholder="Ex: 45,3015" style="width: 100%; padding: 10px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 4px;">' +
+        '<label style="display: block; margin-bottom: 10px; font-weight: bold;">Sentido:</label>' +
+        '<select id="selectSentido" style="width: 100%; padding: 10px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 4px;">' +
+        '<option value="horario">Horário</option>' +
+        '<option value="antihorario">Anti-horário</option>' +
+        '</select>' +
+        '<div style="display: flex; gap: 10px;">' +
+        '<button id="btnAplicarAngulo" style="flex: 1; padding: 12px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer;">Aplicar</button>' +
+        '<button id="btnCancelarAngulo" style="flex: 1; padding: 12px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">Cancelar</button>' +
+        '</div>' +
+        '</div>' +
+        '</div>';
     
     document.body.appendChild(modal);
     
     document.getElementById('btnAplicarAngulo').onclick = function() {
-        const anguloStr = document.getElementById('inputAngulo').value;
-        const sentido = document.getElementById('selectSentido').value;
+        var anguloStr = document.getElementById('inputAngulo').value;
+        var sentido = document.getElementById('selectSentido').value;
         
         if (!anguloStr) {
             showMessage('Digite um ângulo!', 'warning');
@@ -261,36 +240,38 @@ function abrirDialogoAnguloEspecifico(nomeGeometria) {
         }
         
         // Converter GG,MMSS para graus decimais
-        const partes = anguloStr.split(',');
+        var partes = anguloStr.split(',');
         if (partes.length !== 2) {
             showMessage('Formato inválido! Use GG,MMSS (ex: 45,3015)', 'error');
             return;
         }
         
-        const graus = parseFloat(partes[0]);
-        const mmss = parseFloat(partes[1]);
-        const minutos = Math.floor(mmss / 100);
-        const segundos = mmss % 100;
+        var graus = parseFloat(partes[0]);
+        var mmss = parseFloat(partes[1]);
+        var minutos = Math.floor(mmss / 100);
+        var segundos = mmss % 100;
         
-        let anguloDecimal = graus + (minutos / 60) + (segundos / 3600);
+        var anguloDecimal = graus + (minutos / 60) + (segundos / 3600);
         
         if (sentido === 'antihorario') {
             anguloDecimal = -anguloDecimal;
         }
         
         // Aplicar rotação
-        const geometria = terraManager.layers[nomeGeometria];
+        var geometria = terraManager.layers[nomeGeometria];
         if (!geometria) {
             showMessage('Geometria não encontrada.', 'error');
             return;
         }
         
-        const eixo = encontrarVerticeMaisAoNorte(geometria.vertices);
-        geometria.vertices = geometria.vertices.map(v => rotacionarPonto(v, eixo, anguloDecimal));
+        var eixo = encontrarVerticeMaisAoNorte(geometria.vertices);
+        geometria.vertices = geometria.vertices.map(function(v) {
+            return rotacionarPonto(v, eixo, anguloDecimal);
+        });
         geometria.syncGeometry();
         
         document.getElementById('modalAnguloEspecifico').remove();
-        showMessage(`Geometria rotacionada ${anguloDecimal.toFixed(4)}° com sucesso!`, 'success');
+        showMessage('Geometria rotacionada ' + anguloDecimal.toFixed(4) + '° com sucesso!', 'success');
     };
     
     document.getElementById('btnCancelarAngulo').onclick = function() {
@@ -298,10 +279,5 @@ function abrirDialogoAnguloEspecifico(nomeGeometria) {
     };
 }
 
-// Exportar funções para o escopo global
-window.openRotacionarGeometriaDialog = openRotacionarGeometriaDialog;
-window.iniciarRotacaoMapa = iniciarRotacaoMapa;
-window.abrirDialogoAnguloEspecifico = abrirDialogoAnguloEspecifico;
-
 console.log('✅ Ferramenta Rotacionar Geometria carregada!');
-})();
+
