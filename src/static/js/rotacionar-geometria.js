@@ -1,6 +1,10 @@
 // Ferramenta Rotacionar Geometria - TerraGIS
 // Versão simplificada e funcional
 
+(function() {
+    'use strict';
+    console.log('🔄 Carregando Rotacionar Geometria...');
+
 let rotacionarAtivo = false;
 let geometriaParaRotacionar = null;
 let verticeEixo = null;
@@ -294,4 +298,10 @@ function abrirDialogoAnguloEspecifico(nomeGeometria) {
     };
 }
 
+// Exportar funções para o escopo global
+window.openRotacionarGeometriaDialog = openRotacionarGeometriaDialog;
+window.iniciarRotacaoMapa = iniciarRotacaoMapa;
+window.abrirDialogoAnguloEspecifico = abrirDialogoAnguloEspecifico;
+
 console.log('✅ Ferramenta Rotacionar Geometria carregada!');
+})();
