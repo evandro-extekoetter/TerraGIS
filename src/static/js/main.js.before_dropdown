@@ -2185,48 +2185,6 @@ function ativarMoverGeometriaMapa() {
         return;
     }
     
-    // Verificar se há geometrias disponíveis
-    const geometriasDisponiveis = Object.keys(terraManager.layers);
-    if (geometriasDisponiveis.length === 0) {
-        showMessage('Nenhuma geometria disponível para mover.', 'warning');
-        return;
-    }
-    
-    // Criar dropdown para seleção de geometria
-    const dropdown = document.createElement('select');
-    dropdown.id = 'moverGeometriaDropdown';
-    dropdown.style.cssText = 'position: fixed; top: 80px; left: 50%; transform: translateX(-50%); z-index: 10000; padding: 10px; font-size: 16px; background: white; border: 2px solid #007bff; border-radius: 5px;';
-    
-    const optionDefault = document.createElement('option');
-    optionDefault.value = '';
-    optionDefault.textContent = '-- Selecione a geometria para mover --';
-    dropdown.appendChild(optionDefault);
-    
-    geometriasDisponiveis.forEach(layerName => {
-        const option = document.createElement('option');
-        option.value = layerName;
-        option.textContent = layerName;
-        dropdown.appendChild(option);
-    });
-    
-    dropdown.addEventListener('change', function() {
-        if (this.value) {
-            selecionarGeometriaParaMover(this.value);
-            this.remove();
-        }
-    });
-    
-    document.body.appendChild(dropdown);
-    
-    // Desativar outras ferramentas
-    desativarTodasFerramentasEdicao();
-    
-    moverGeometriaMapaAtivo = true;
-    geometriaSelecionada = null;
-    
-    showMessage('Selecione a geometria no menu dropdown acima.', 'info');
-}
-    
     // Desativar outras ferramentas
     desativarTodasFerramentasEdicao();
     
@@ -2247,30 +2205,6 @@ function ativarMoverGeometriaMapa() {
     });
 }
 
-
-
-function selecionarGeometriaParaMover(layerName) {
-    geometriaSelecionada = terraManager.layers[layerName];
-    
-    if (!geometriaSelecionada) {
-        showMessage('Geometria não encontrada.', 'error');
-        desativarMoverGeometriaMapa();
-        return;
-    }
-    
-    // Salvar coordenadas originais
-    const geomLayer = geometriaSelecionada.geometryLayer || geometriaSelecionada.polygon;
-    if (geomLayer) {
-        geometriaOriginal = geomLayer.getLatLngs()[0].map(ll => ({lat: ll.lat, lng: ll.lng}));
-    }
-    
-    showMessage(`Geometria "${layerName}" selecionada. Clique no mapa para mover para a nova posição. ESC para cancelar.`, 'success');
-    
-    // Adicionar evento de clique no mapa
-    map.on('click', onMapClickMoverGeometria);
-    map.on('mousemove', onMapMouseMoveMoverGeometria);
-}
-
 function desativarMoverGeometriaMapa() {
     if (!moverGeometriaMapaAtivo) return;
     
@@ -2278,12 +2212,6 @@ function desativarMoverGeometriaMapa() {
     geometriaSelecionada = null;
     geometriaOriginal = null;
     pontoInicial = null;
-    
-    // Remover dropdown se existir
-    const dropdown = document.getElementById('moverGeometriaDropdown');
-    if (dropdown) {
-        dropdown.remove();
-    }
     
     // Remover preview
     if (previewLayer) {
@@ -2295,49 +2223,54 @@ function desativarMoverGeometriaMapa() {
     map.off('click', onMapClickMoverGeometria);
     map.off('mousemove', onMapMouseMoveMoverGeometria);
     
-
+    Object.values(terraManager.layers).forEach(terraLayer => {
+        if (terraLayer.polygon) {
+            terraLayer.polygon.off('click', onPolygonClickMoverGeometria);
+        }
+    });
+    
     showMessage('Ferramenta Mover Geometria (Mapa) desativada.', 'info');
 }
 
-// function onPolygonClickMoverGeometria(e) {
-//     L.DomEvent.stopPropagation(e);
-//     
-//     if (!moverGeometriaMapaAtivo) return;
-//     
-//     if (!geometriaSelecionada) {
-//         // Primeiro clique - selecionar geometria
-//         const clickedPolygon = e.target;
-//         
-//         // Encontrar TerraLayer correspondente
-//         for (const [layerName, terraLayer] of Object.entries(terraManager.layers)) {
-//             if (terraLayer.polygon === clickedPolygon) {
-//                 geometriaSelecionada = terraLayer;
-//                 pontoInicial = e.latlng;
-//                 
-//                 // Salvar coordenadas originais
-//                 geometriaOriginal = terraLayer.vertices.map(v => ({e: v.e, n: v.n}));
-//                 
-//                 // Criar preview
-//                 const coords = terraLayer.vertices.map(v => {
-//                     const utm = {e: v.e, n: v.n};
-//                     return utmToLatLng(utm.e, utm.n, terraLayer.fuso);
-//                 });
-//                 
-//                 previewLayer = L.polygon(coords, {
-//                     color: 'red',
-//                     weight: 2,
-//                     fillOpacity: 0.2,
-//                     dashArray: '5, 5'
-//                 }).addTo(map);
-//                 
-//                 showMessage(`Geometria ${layerName} selecionada. Mova o mouse e clique para fixar.`, 'info');
-//                 break;
-//             }
-//         }
-//     } else {
-//         // Segundo clique - fixar posição
-//         fixarGeometriaNovaPosicao(e.latlng);
-//     }
+function onPolygonClickMoverGeometria(e) {
+    L.DomEvent.stopPropagation(e);
+    
+    if (!moverGeometriaMapaAtivo) return;
+    
+    if (!geometriaSelecionada) {
+        // Primeiro clique - selecionar geometria
+        const clickedPolygon = e.target;
+        
+        // Encontrar TerraLayer correspondente
+        for (const [layerName, terraLayer] of Object.entries(terraManager.layers)) {
+            if (terraLayer.polygon === clickedPolygon) {
+                geometriaSelecionada = terraLayer;
+                pontoInicial = e.latlng;
+                
+                // Salvar coordenadas originais
+                geometriaOriginal = terraLayer.vertices.map(v => ({e: v.e, n: v.n}));
+                
+                // Criar preview
+                const coords = terraLayer.vertices.map(v => {
+                    const utm = {e: v.e, n: v.n};
+                    return utmToLatLng(utm.e, utm.n, terraLayer.fuso);
+                });
+                
+                previewLayer = L.polygon(coords, {
+                    color: 'red',
+                    weight: 2,
+                    fillOpacity: 0.2,
+                    dashArray: '5, 5'
+                }).addTo(map);
+                
+                showMessage(`Geometria ${layerName} selecionada. Mova o mouse e clique para fixar.`, 'info');
+                break;
+            }
+        }
+    } else {
+        // Segundo clique - fixar posição
+        fixarGeometriaNovaPosicao(e.latlng);
+    }
 }
 
 function onMapClickMoverGeometria(e) {
