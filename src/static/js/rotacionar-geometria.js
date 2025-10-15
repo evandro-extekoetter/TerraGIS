@@ -12,6 +12,11 @@ var previewLayerRotacao = null;
 function openRotacionarGeometriaDialog() {
     console.log('📋 Abrindo diálogo de rotação');
     
+    // Desativar outras ferramentas
+    desativarTodasFerramentasEdicao();
+    
+    rotacionarAtivo = true;
+    
     // Criar modal
     var modal = document.createElement('div');
     modal.id = 'modalRotacionar';
@@ -46,23 +51,23 @@ function openRotacionarGeometriaDialog() {
     
     // Event listeners
     document.getElementById('btnRotacionarMapa').onclick = function() {
-        var geometriaSelecionada = document.getElementById('selectGeometriaRotacionar').value;
-        if (!geometriaSelecionada) {
+        var geometriaNome = document.getElementById('selectGeometriaRotacionar').value;
+        if (!geometriaNome) {
             showMessage('Selecione uma geometria primeiro!', 'warning');
             return;
         }
         document.getElementById('modalRotacionar').remove();
-        iniciarRotacaoMapa(geometriaSelecionada);
+        iniciarRotacaoMapaComClique(geometriaNome);
     };
     
     document.getElementById('btnRotacionarAngulo').onclick = function() {
-        var geometriaSelecionada = document.getElementById('selectGeometriaRotacionar').value;
-        if (!geometriaSelecionada) {
+        var geometriaNome = document.getElementById('selectGeometriaRotacionar').value;
+        if (!geometriaNome) {
             showMessage('Selecione uma geometria primeiro!', 'warning');
             return;
         }
         document.getElementById('modalRotacionar').remove();
-        abrirDialogoAnguloEspecifico(geometriaSelecionada);
+        abrirDialogoAnguloEspecifico(geometriaNome);
     };
     
     document.getElementById('btnCancelarRotacionar').onclick = function() {
@@ -300,3 +305,55 @@ function abrirDialogoAnguloEspecifico(nomeGeometria) {
 
 console.log('✅ Ferramenta Rotacionar Geometria carregada!');
 
+
+// Nova função: iniciar rotação com clique no polígono (igual mover)
+function iniciarRotacaoMapaComClique(nomeGeometria) {
+    console.log('[ROTACIONAR] Aguardando clique no polígono');
+    
+    rotacionarAtivo = true;
+    geometriaParaRotacionar = terraManager.layers[nomeGeometria];
+    
+    if (!geometriaParaRotacionar) {
+        showMessage('Geometria não encontrada.', 'error');
+        return;
+    }
+    
+    showMessage('Clique no polígono para iniciar rotação. ESC para cancelar.', 'info');
+    
+    // Desabilitar popups e adicionar mousedown
+    Object.values(terraManager.layers).forEach(function(tl) {
+        if (tl.geometryLayer) {
+            tl.geometryLayer.unbindPopup();
+            
+            if (tl.name === nomeGeometria) {
+                tl.geometryLayer.on('mousedown', onPolygonMouseDownRotacionar);
+            }
+        }
+    });
+}
+
+function onPolygonMouseDownRotacionar(e) {
+    if (!rotacionarAtivo || !geometriaParaRotacionar) return;
+    
+    L.DomEvent.stopPropagation(e);
+    L.DomEvent.preventDefault(e);
+    
+    console.log('[ROTACIONAR] Polígono clicado, iniciando rotação');
+    
+    // Remover evento mousedown
+    Object.values(terraManager.layers).forEach(function(tl) {
+        if (tl.geometryLayer) {
+            tl.geometryLayer.off('mousedown', onPolygonMouseDownRotacionar);
+        }
+    });
+    
+    // Encontrar vértice eixo (mais ao norte)
+    verticeEixo = encontrarVerticeMaisAoNorte(geometriaParaRotacionar.vertices);
+    anguloAtual = 0;
+    
+    // Adicionar eventos do mapa
+    map.on('mousemove', onMouseMoveRotacao);
+    map.on('click', onClickConfirmarRotacao);
+    
+    showMessage('Mova o mouse para rotacionar. Clique para confirmar. ESC para cancelar.', 'success');
+}
