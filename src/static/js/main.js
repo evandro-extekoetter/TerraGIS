@@ -2349,6 +2349,9 @@ function onPolygonClickMoverGeometria(e) {
 function onMapClickMoverGeometria(e) {
     if (!moverGeometriaMapaAtivo) return;
     
+    L.DomEvent.stopPropagation(e);
+    L.DomEvent.preventDefault(e);
+    
     if (geometriaSelecionada) {
         // Segundo clique no mapa - fixar posição
         fixarGeometriaNovaPosicao(e.latlng);

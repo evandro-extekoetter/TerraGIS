@@ -272,7 +272,7 @@ function abrirDialogoAnguloEspecifico(nomeGeometria) {
         
         var anguloDecimal = graus + (minutos / 60) + (segundos / 3600);
         
-        if (sentido === 'antihorario') {
+        if (sentido === 'horario') {
             anguloDecimal = -anguloDecimal;
         }
         
