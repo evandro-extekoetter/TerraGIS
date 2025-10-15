@@ -1,5 +1,15 @@
-// Correção Mover Geometria (Mapa) - TerraGIS
+// Correção para Mover Geometria (Mapa) - usando eventos DOM
 console.log('✅ Correção Mover Geometria (Mapa) carregada!');
+
+// Variáveis globais
+var moverGeometriaMapaAtivo = false;
+var geometriaSelecionada = null;
+var geometriaOriginal = null;
+var pontoInicial = null;
+var previewLayer = null;
+var mapContainer = null;
+var mouseMoveHandler = null;
+var clickHandler = null;
 
 // Sobrescrever função original
 window.openMoverGeometriaMapaDialog = function() {
@@ -87,67 +97,86 @@ function selecionarGeometriaParaMover(layerName) {
     // Desabilitar dragging do mapa
     map.dragging.disable();
     
-    // Adicionar eventos do mapa IMEDIATAMENTE
-    map.on('mousemove', onMapMouseMoveMover);
-    map.on('click', onMapClickConfirmarMover);
+    // Obter container do mapa
+    mapContainer = map.getContainer();
+    
+    // Criar handlers de eventos DOM
+    mouseMoveHandler = function(e) {
+        if (!moverGeometriaMapaAtivo || !geometriaSelecionada || !previewLayer) return;
+        
+        // Converter posição do mouse para coordenadas do mapa
+        var containerPoint = L.point(e.clientX - mapContainer.getBoundingClientRect().left, 
+                                      e.clientY - mapContainer.getBoundingClientRect().top);
+        var pontoAtual = map.containerPointToLatLng(containerPoint);
+        
+        // Calcular deslocamento
+        var dLat = pontoAtual.lat - pontoInicial.lat;
+        var dLng = pontoAtual.lng - pontoInicial.lng;
+        
+        // Atualizar preview
+        var novasCoords = geometriaOriginal.map(function(v) {
+            var latlng = utmToLatLng(v.e, v.n, geometriaSelecionada.fuso);
+            return [latlng.lat + dLat, latlng.lng + dLng];
+        });
+        
+        previewLayer.setLatLngs(novasCoords);
+    };
+    
+    clickHandler = function(e) {
+        if (!moverGeometriaMapaAtivo || !geometriaSelecionada) return;
+        
+        e.stopPropagation();
+        e.preventDefault();
+        
+        console.log('[MOVER] Confirmando nova posição');
+        
+        // Converter posição do clique para coordenadas do mapa
+        var containerPoint = L.point(e.clientX - mapContainer.getBoundingClientRect().left, 
+                                      e.clientY - mapContainer.getBoundingClientRect().top);
+        var pontoFinal = map.containerPointToLatLng(containerPoint);
+        
+        // Converter para UTM
+        var pontoInicialUTM = latLngToUTM(pontoInicial.lat, pontoInicial.lng, geometriaSelecionada.fuso);
+        var pontoFinalUTM = latLngToUTM(pontoFinal.lat, pontoFinal.lng, geometriaSelecionada.fuso);
+        
+        var dx = pontoFinalUTM.e - pontoInicialUTM.e;
+        var dy = pontoFinalUTM.n - pontoInicialUTM.n;
+        
+        // Aplicar deslocamento
+        geometriaSelecionada.vertices = geometriaSelecionada.vertices.map(function(v) {
+            return {
+                id: v.id,
+                e: v.e + dx,
+                n: v.n + dy
+            };
+        });
+        
+        // Atualizar geometria
+        geometriaSelecionada.syncGeometry();
+        
+        showMessage('Geometria movida ' + dx.toFixed(2) + 'm (E), ' + dy.toFixed(2) + 'm (N)', 'success');
+        
+        // Desativar ferramenta
+        desativarMoverGeometriaMapa();
+    };
+    
+    // Adicionar eventos DOM
+    mapContainer.addEventListener('mousemove', mouseMoveHandler);
+    mapContainer.addEventListener('click', clickHandler);
     
     // Mudar cursor
-    map.getContainer().style.cursor = 'move';
+    mapContainer.style.cursor = 'move';
+    
+    // ESC para cancelar
+    document.addEventListener('keydown', onKeyDownMover);
     
     showMessage('Mova o mouse para posicionar. Clique para fixar. ESC para cancelar.', 'success');
 }
 
-function onMapMouseMoveMover(e) {
-    if (!moverGeometriaMapaAtivo || !geometriaSelecionada || !previewLayer) return;
-    
-    var pontoAtual = e.latlng;
-    
-    // Calcular deslocamento
-    var dLat = pontoAtual.lat - pontoInicial.lat;
-    var dLng = pontoAtual.lng - pontoInicial.lng;
-    
-    // Atualizar preview
-    var novasCoords = geometriaOriginal.map(function(v) {
-        var latlng = utmToLatLng(v.e, v.n, geometriaSelecionada.fuso);
-        return [latlng.lat + dLat, latlng.lng + dLng];
-    });
-    
-    previewLayer.setLatLngs(novasCoords);
-}
-
-function onMapClickConfirmarMover(e) {
-    if (!moverGeometriaMapaAtivo || !geometriaSelecionada) return;
-    
-    L.DomEvent.stopPropagation(e);
-    L.DomEvent.preventDefault(e);
-    
-    console.log('[MOVER] Confirmando nova posição');
-    
-    var pontoFinal = e.latlng;
-    
-    // Converter para UTM
-    var pontoInicialUTM = latLngToUTM(pontoInicial.lat, pontoInicial.lng, geometriaSelecionada.fuso);
-    var pontoFinalUTM = latLngToUTM(pontoFinal.lat, pontoFinal.lng, geometriaSelecionada.fuso);
-    
-    var dx = pontoFinalUTM.e - pontoInicialUTM.e;
-    var dy = pontoFinalUTM.n - pontoInicialUTM.n;
-    
-    // Aplicar deslocamento
-    geometriaSelecionada.vertices = geometriaSelecionada.vertices.map(function(v) {
-        return {
-            id: v.id,
-            e: v.e + dx,
-            n: v.n + dy
-        };
-    });
-    
-    // Atualizar geometria
-    geometriaSelecionada.syncGeometry();
-    
-    showMessage('Geometria movida ' + dx.toFixed(2) + 'm (E), ' + dy.toFixed(2) + 'm (N)', 'success');
-    
-    // Desativar ferramenta
-    desativarMoverGeometriaMapa();
+function onKeyDownMover(e) {
+    if (e.key === 'Escape' && moverGeometriaMapaAtivo) {
+        desativarMoverGeometriaMapa();
+    }
 }
 
 // Sobrescrever desativar
@@ -162,7 +191,9 @@ window.desativarMoverGeometriaMapa = function() {
     pontoInicial = null;
     
     // Restaurar cursor
-    map.getContainer().style.cursor = '';
+    if (mapContainer) {
+        mapContainer.style.cursor = '';
+    }
     
     // Remover preview
     if (previewLayer) {
@@ -170,12 +201,22 @@ window.desativarMoverGeometriaMapa = function() {
         previewLayer = null;
     }
     
-    // Remover eventos
-    map.off('mousemove', onMapMouseMoveMover);
-    map.off('click', onMapClickConfirmarMover);
+    // Remover eventos DOM
+    if (mapContainer && mouseMoveHandler) {
+        mapContainer.removeEventListener('mousemove', mouseMoveHandler);
+    }
+    if (mapContainer && clickHandler) {
+        mapContainer.removeEventListener('click', clickHandler);
+    }
+    
+    mouseMoveHandler = null;
+    clickHandler = null;
     
     // Reabilitar dragging do mapa
     map.dragging.enable();
+    
+    // Remover evento ESC
+    document.removeEventListener('keydown', onKeyDownMover);
     
     // Restaurar popups
     Object.values(terraManager.layers).forEach(function(tl) {
@@ -188,14 +229,10 @@ window.desativarMoverGeometriaMapa = function() {
     
     // Remover dropdown se existir
     var dropdown = document.getElementById('dropdown-mover-geometria');
-    if (dropdown) dropdown.remove();
+    if (dropdown) {
+        dropdown.remove();
+    }
     
-    showMessage('Ferramenta Mover Geometria (Mapa) desativada.', 'info');
+    showMessage('Ferramenta Mover Geometria desativada.', 'info');
 };
 
-// Adicionar ao listener de ESC
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape' && moverGeometriaMapaAtivo) {
-        desativarMoverGeometriaMapa();
-    }
-});
