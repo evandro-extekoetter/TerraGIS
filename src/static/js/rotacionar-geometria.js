@@ -99,6 +99,10 @@ function rotacionarPonto(ponto, eixo, anguloGraus) {
     };
 }
 
+var mapContainerRotacao = null;
+var mouseMoveHandlerRotacao = null;
+var clickHandlerRotacao = null;
+
 function iniciarRotacaoMapa(nomeGeometria) {
     geometriaParaRotacionar = terraManager.layers[nomeGeometria];
     
@@ -124,12 +128,50 @@ function iniciarRotacaoMapa(nomeGeometria) {
     // Desabilitar dragging do mapa
     map.dragging.disable();
     
-    // Adicionar eventos IMEDIATAMENTE
-    map.on('mousemove', onMouseMoveRotacao);
-    map.on('click', onClickConfirmarRotacao);
+    // Obter container do mapa
+    mapContainerRotacao = map.getContainer();
+    
+    // Criar handlers de eventos DOM
+    mouseMoveHandlerRotacao = function(e) {
+        if (!rotacionarAtivo || !geometriaParaRotacionar) return;
+        
+        // Converter posição do mouse para coordenadas do mapa
+        var containerPoint = L.point(e.clientX - mapContainerRotacao.getBoundingClientRect().left, 
+                                      e.clientY - mapContainerRotacao.getBoundingClientRect().top);
+        var mouseLatLng = map.containerPointToLatLng(containerPoint);
+        
+        var eixoLatLng = utmToLatLng(verticeEixo.e, verticeEixo.n, geometriaParaRotacionar.fuso);
+        
+        // Calcular ângulo entre eixo e mouse
+        var dx = mouseLatLng.lng - eixoLatLng.lng;
+        var dy = mouseLatLng.lat - eixoLatLng.lat;
+        anguloAtual = Math.atan2(dy, dx) * 180 / Math.PI;
+        
+        // Atualizar preview
+        atualizarPreviewRotacao();
+    };
+    
+    clickHandlerRotacao = function(e) {
+        if (!rotacionarAtivo) return;
+        
+        e.stopPropagation();
+        e.preventDefault();
+        
+        console.log('[ROTACIONAR] Confirmando rotação');
+        
+        aplicarRotacao();
+        finalizarRotacao();
+    };
+    
+    // Adicionar eventos DOM
+    mapContainerRotacao.addEventListener('mousemove', mouseMoveHandlerRotacao);
+    mapContainerRotacao.addEventListener('click', clickHandlerRotacao);
     
     // Mudar cursor
-    map.getContainer().style.cursor = 'crosshair';
+    mapContainerRotacao.style.cursor = 'crosshair';
+    
+    // ESC para cancelar
+    document.addEventListener('keydown', onKeyDownRotacao);
     
     // Criar preview inicial
     atualizarPreviewRotacao();
@@ -212,12 +254,25 @@ function finalizarRotacao() {
     anguloAtual = 0;
     
     // Restaurar cursor
-    map.getContainer().style.cursor = '';
+    if (mapContainerRotacao) {
+        mapContainerRotacao.style.cursor = '';
+    }
     
     if (previewLayerRotacao) {
         map.removeLayer(previewLayerRotacao);
         previewLayerRotacao = null;
     }
+    
+    // Remover eventos DOM
+    if (mapContainerRotacao && mouseMoveHandlerRotacao) {
+        mapContainerRotacao.removeEventListener('mousemove', mouseMoveHandlerRotacao);
+    }
+    if (mapContainerRotacao && clickHandlerRotacao) {
+        mapContainerRotacao.removeEventListener('click', clickHandlerRotacao);
+    }
+    
+    mouseMoveHandlerRotacao = null;
+    clickHandlerRotacao = null;
     
     // Restaurar popups
     Object.values(terraManager.layers).forEach(function(tl) {
@@ -228,8 +283,6 @@ function finalizarRotacao() {
         }
     });
     
-    map.off('mousemove', onMouseMoveRotacao);
-    map.off('click', onClickConfirmarRotacao);
     document.removeEventListener('keydown', onKeyDownRotacao);
     
     // Reabilitar dragging do mapa
