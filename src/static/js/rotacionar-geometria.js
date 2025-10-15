@@ -140,12 +140,13 @@ function iniciarRotacaoMapa(nomeGeometria) {
                                       e.clientY - mapContainerRotacao.getBoundingClientRect().top);
         var mouseLatLng = map.containerPointToLatLng(containerPoint);
         
-        var eixoLatLng = utmToLatLng(verticeEixo.e, verticeEixo.n, geometriaParaRotacionar.fuso);
+        // Converter mouse LatLng para UTM
+        var mouseUTM = latLngToUtm(mouseLatLng.lat, mouseLatLng.lng, geometriaParaRotacionar.fuso);
         
-        // Calcular ângulo entre eixo e mouse
-        var dx = mouseLatLng.lng - eixoLatLng.lng;
-        var dy = mouseLatLng.lat - eixoLatLng.lat;
-        anguloAtual = Math.atan2(dy, dx) * 180 / Math.PI;
+        // Calcular ângulo entre eixo e mouse em coordenadas UTM
+        var dx = mouseUTM.e - verticeEixo.e;
+        var dy = mouseUTM.n - verticeEixo.n;
+        anguloAtual = Math.atan2(dx, dy) * 180 / Math.PI;
         
         // Atualizar preview
         atualizarPreviewRotacao();
