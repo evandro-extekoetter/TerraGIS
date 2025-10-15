@@ -1044,6 +1044,7 @@
     <!-- Main JavaScript -->
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     <script>
+try {
 // Correção para Mover Geometria (Mapa) - usando eventos DOM
 console.log('✅ Correção Mover Geometria (Mapa) carregada!');
 
@@ -1281,6 +1282,9 @@ window.desativarMoverGeometriaMapa = function() {
     
     showMessage('Ferramenta Mover Geometria desativada.', 'info');
 };
+} catch(e) {
+    console.error('Erro ao carregar Mover Geometria (Mapa):', e);
+}
     </script>
 
     <script src="{{ url_for('static', filename='js/rotacionar-geometria.js') }}?v=1760488647"></script>
