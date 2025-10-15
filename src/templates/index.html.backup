@@ -25,116 +25,6 @@
                     <p>Análise e Edição GIS</p>
                 </div>
             </div>
-            
-            <!-- Menus da barra superior -->
-            <nav class="top-menu">
-                <div class="menu-item">
-                    <button class="menu-btn" onclick="toggleTopMenu('projeto-top-menu')">
-                        <img src="{{ url_for('static', filename='icons/criar_projeto_icon.png') }}" class="icon" alt=""> PROJETO ▼
-                    </button>
-                    <div id="projeto-top-menu" class="top-dropdown" style="display: none;">
-                        <button class="dropdown-item" onclick="newProject()">
-                            <img src="{{ url_for('static', filename='icons/criar_projeto_icon.png') }}" class="icon" alt=""> Novo
-                        </button>
-                        <button class="dropdown-item" onclick="saveProject()">
-                            <img src="{{ url_for('static', filename='icons/salvar_projeto_icon.png') }}" class="icon" alt=""> Salvar
-                        </button>
-                        <button class="dropdown-item" onclick="openProject()">
-                            <img src="{{ url_for('static', filename='icons/abrir_projeto_icon.png') }}" class="icon" alt=""> Abrir
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="menu-item">
-                    <button class="menu-btn" onclick="toggleTopMenu('construcao-top-menu')">
-                        <img src="{{ url_for('static', filename='icons/construction_icon.png') }}" class="icon" alt=""> CONSTRUÇÃO ▼
-                    </button>
-                    <div id="construcao-top-menu" class="top-dropdown" style="display: none;">
-                        <button class="dropdown-item" onclick="openCoordListDialog()">
-                            <img src="{{ url_for('static', filename='icons/list_icon.png') }}" class="icon" alt=""> UTM - Lista de Coordenadas
-                        </button>
-                        <button class="dropdown-item" onclick="openCoordTableDialog()">
-                            <img src="{{ url_for('static', filename='icons/table_icon.png') }}" class="icon" alt=""> UTM - Tabela de Coordenadas
-                        </button>
-                        <button class="dropdown-item" onclick="openListaLatLongDialog()">
-                            <img src="{{ url_for('static', filename='icons/list_icon.png') }}" class="icon" alt=""> Geográficas - Lista
-                        </button>
-                        <button class="dropdown-item" onclick="openTabelaLatLongDialog()">
-                            <img src="{{ url_for('static', filename='icons/table_icon.png') }}" class="icon" alt=""> Geográficas - Tabela
-                        </button>
-                        <button class="dropdown-item" onclick="openAzimuthDialog()">
-                            <img src="{{ url_for('static', filename='icons/azimuth_icon.png') }}" class="icon" alt=""> Azimute e Distância
-                        </button>
-                        <button class="dropdown-item" onclick="openBearingDialog()">
-                            <img src="{{ url_for('static', filename='icons/azimuth_icon.png') }}" class="icon" alt=""> Rumo e Distância
-                        </button>
-                        <button class="dropdown-item" onclick="openPoligonoSIGEFDialog()">
-                            <img src="{{ url_for('static', filename='icons/sigef_icon.png') }}" class="icon" alt=""> SIGEF
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="menu-item">
-                    <button class="menu-btn" onclick="toggleTopMenu('edicao-top-menu')">
-                        <img src="{{ url_for('static', filename='icons/edit_icon.png') }}" class="icon" alt=""> EDIÇÃO ▼
-                    </button>
-                    <div id="edicao-top-menu" class="top-dropdown" style="display: none;">
-                        <button class="dropdown-item" onclick="ativarAdicionarVerticesMapa()">
-                            <img src="{{ url_for('static', filename='icons/move_vertices_icon.png') }}" class="icon" alt=""> Vértice - Adicionar (Mapa)
-                        </button>
-                        <button class="dropdown-item" onclick="ativarMoverVerticesMapa()">
-                            <img src="{{ url_for('static', filename='icons/move_vertices_icon.png') }}" class="icon" alt=""> Vértice - Mover (Mapa)
-                        </button>
-                        <button class="dropdown-item" onclick="ativarRemoverVerticesMapa()">
-                            <img src="{{ url_for('static', filename='icons/remove_icon.png') }}" class="icon" alt=""> Vértice - Remover
-                        </button>
-                        <button class="dropdown-item" onclick="ativarRenomearVerticeMapa()">
-                            <img src="{{ url_for('static', filename='icons/rename_icon.png') }}" class="icon" alt=""> Vértice - Renomear
-                        </button>
-                        <button class="dropdown-item" onclick="openMoverGeometriaMapaDialog()">
-                            <img src="{{ url_for('static', filename='icons/move_geometry_icon.png') }}" class="icon" alt=""> Geometria - Mover (Mapa)
-                        </button>
-                        <button class="dropdown-item" onclick="openMoverGeometriaDialog()">
-                            <img src="{{ url_for('static', filename='icons/coordinates_icon.png') }}" class="icon" alt=""> Geometria - Mover (Digitando)
-                        </button>
-                        <button class="dropdown-item" onclick="openRotacionarGeometriaDialog()">
-                            <img src="{{ url_for('static', filename='icons/rotate_icon.png') }}" class="icon" alt=""> Geometria - Rotacionar
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="menu-item">
-                    <button class="menu-btn" onclick="toggleTopMenu('analise-top-menu')">
-                        <img src="{{ url_for('static', filename='icons/analysis_icon.png') }}" class="icon" alt=""> ANÁLISE ▼
-                    </button>
-                    <div id="analise-top-menu" class="top-dropdown" style="display: none;">
-                        <button class="dropdown-item" onclick="activateTool('measure-area')">
-                            <img src="{{ url_for('static', filename='icons/coordinates_icon.png') }}" class="icon" alt=""> Medir Área
-                        </button>
-                        <button class="dropdown-item" onclick="activateTool('measure-distance')">
-                            <img src="{{ url_for('static', filename='icons/distance_icon.png') }}" class="icon" alt=""> Medir Distância
-                        </button>
-                        <button class="dropdown-item" onclick="showCoordinates()">
-                            <img src="{{ url_for('static', filename='icons/coordinates_icon.png') }}" class="icon" alt=""> Coordenadas
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="menu-item">
-                    <button class="menu-btn" onclick="toggleTopMenu('medidas-top-menu')">
-                        <img src="{{ url_for('static', filename='icons/measure_icon.png') }}" class="icon" alt=""> MEDIDAS ▼
-                    </button>
-                    <div id="medidas-top-menu" class="top-dropdown" style="display: none;">
-                        <button class="dropdown-item" onclick="alert('Ferramenta Medidas em desenvolvimento')">
-                            <img src="{{ url_for('static', filename='icons/measure_icon.png') }}" class="icon" alt=""> Medir Distância
-                        </button>
-                        <button class="dropdown-item" onclick="alert('Ferramenta Medidas em desenvolvimento')">
-                            <img src="{{ url_for('static', filename='icons/measure_icon.png') }}" class="icon" alt=""> Medir Área
-                        </button>
-                    </div>
-                </div>
-            </nav>
-            
             <div class="project-info">
                 <span id="project-name">Sem projeto</span>
             </div>
@@ -144,15 +34,221 @@
     <!-- Main Content -->
     <div class="main-container">
         <!-- Sidebar -->
-        <!-- Sidebar - Apenas CAMADAS -->
         <aside class="sidebar">
+            <!-- PROJETO -->
+            <div class="tool-section">
+                <div class="submenu-container">
+                    <button class="tool-btn submenu-toggle" onclick="toggleSubmenu('projeto-menu')">
+                        <img src="{{ url_for('static', filename='icons/criar_projeto_icon.png') }}" class="icon" alt=""> PROJETO <span class="arrow">▼</span>
+                    </button>
+                    <div id="projeto-menu" class="submenu">
+                        <button class="tool-btn submenu-item" onclick="newProject()">
+                            <img src="{{ url_for('static', filename='icons/criar_projeto_icon.png') }}" class="icon" alt=""> Novo
+                        </button>
+                        <button class="tool-btn submenu-item" onclick="saveProject()">
+                            <img src="{{ url_for('static', filename='icons/salvar_projeto_icon.png') }}" class="icon" alt=""> Salvar
+                        </button>
+                        <button class="tool-btn submenu-item" onclick="openProject()">
+                            <img src="{{ url_for('static', filename='icons/abrir_projeto_icon.png') }}" class="icon" alt=""> Abrir
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONSTRUÇÃO -->
+            <div class="tool-section">
+                <div class="submenu-container">
+                    <button class="tool-btn submenu-toggle" onclick="toggleSubmenu('construcao-menu')">
+                        <img src="{{ url_for('static', filename='icons/construction_icon.png') }}" class="icon" alt=""> CONSTRUÇÃO <span class="arrow">▼</span>
+                    </button>
+                    <div id="construcao-menu" class="submenu">
+                        
+                        <!-- UTM (Submenu nível 2) -->
+                        <div class="submenu-container">
+                            <button class="tool-btn submenu-toggle submenu-item" onclick="toggleSubmenu('utm-submenu')">
+                                <img src="{{ url_for('static', filename='icons/utm_icon.png') }}" class="icon" alt=""> UTM <span class="arrow">▼</span>
+                            </button>
+                            <div id="utm-submenu" class="submenu submenu-level-2">
+                                <button class="tool-btn submenu-item" onclick="openCoordListDialog()">
+                                    <img src="{{ url_for('static', filename='icons/list_icon.png') }}" class="icon" alt=""> Lista de Coordenadas
+                                </button>
+                                <button class="tool-btn submenu-item" onclick="openCoordTableDialog()">
+                                    <img src="{{ url_for('static', filename='icons/table_icon.png') }}" class="icon" alt=""> Tabela de Coordenadas
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Geográficas (Submenu nível 2) -->
+                        <div class="submenu-container">
+                            <button class="tool-btn submenu-toggle submenu-item" onclick="toggleSubmenu('geo-submenu')">
+                                <img src="{{ url_for('static', filename='icons/geographic_icon.png') }}" class="icon" alt=""> Geográficas <span class="arrow">▼</span>
+                            </button>
+                            <div id="geo-submenu" class="submenu submenu-level-2">
+                                <button class="tool-btn submenu-item" onclick="openListaLatLongDialog()">
+                                    <img src="{{ url_for('static', filename='icons/list_icon.png') }}" class="icon" alt=""> Lista de Coordenadas
+                                </button>
+                                <button class="tool-btn submenu-item" onclick="openTabelaLatLongDialog()">
+                                    <img src="{{ url_for('static', filename='icons/table_icon.png') }}" class="icon" alt=""> Tabela de Coordenadas
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Azimute/Rumo (Submenu nível 2) -->
+                        <div class="submenu-container">
+                            <button class="tool-btn submenu-toggle submenu-item" onclick="toggleSubmenu('azimute-submenu')">
+                                <img src="{{ url_for('static', filename='icons/azimuth_icon.png') }}" class="icon" alt=""> Azimute/Rumo <span class="arrow">▼</span>
+                            </button>
+                            <div id="azimute-submenu" class="submenu submenu-level-2">
+                                <button class="tool-btn submenu-item" onclick="openAzimuthDialog()">
+                                    <img src="{{ url_for('static', filename='icons/azimuth_icon.png') }}" class="icon" alt=""> Azimute e Distância
+                                </button>
+                                <button class="tool-btn submenu-item" onclick="openBearingDialog()">
+                                    <img src="{{ url_for('static', filename='icons/azimuth_icon.png') }}" class="icon" alt=""> Rumo e Distância
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- SIGEF -->
+                        <button class="tool-btn submenu-item" onclick="openPoligonoSIGEFDialog()">
+                            <img src="{{ url_for('static', filename='icons/sigef_icon.png') }}" class="icon" alt=""> SIGEF
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- EDIÇÃO -->
+            <div class="tool-section">
+                <div class="submenu-container">
+                    <button class="tool-btn submenu-toggle" onclick="toggleSubmenu('edicao-menu')">
+                        <img src="{{ url_for('static', filename='icons/editing_icon.png') }}" class="icon" alt=""> EDIÇÃO <span class="arrow">▼</span>
+                    </button>
+                    <div id="edicao-menu" class="submenu">
+                
+                        <!-- Vértices (Menu Principal) -->
+                        <div class="submenu-container">
+                            <button class="tool-btn submenu-toggle submenu-item" onclick="toggleSubmenu('vertices-menu')">
+                                <img src="{{ url_for('static', filename='icons/coordinates_icon.png') }}" class="icon" alt=""> Vértices <span class="arrow">▼</span>
+                            </button>
+                            <div id="vertices-menu" class="submenu submenu-level-2">
+                                
+                                <!-- Adicionar (Submenu de 3º nível) -->
+                                <div class="submenu-container">
+                                    <button class="tool-btn submenu-toggle submenu-item" onclick="toggleSubmenu('adicionar-vertices-submenu')">
+                                        <img src="{{ url_for('static', filename='icons/add_vertices_icon.png') }}" class="icon" alt=""> Adicionar <span class="arrow">▼</span>
+                                    </button>
+                                    <div id="adicionar-vertices-submenu" class="submenu submenu-level-3">
+                                        <button class="tool-btn submenu-item" onclick="ativarAdicionarVerticesMapa()">
+                                            <img src="{{ url_for('static', filename='icons/move_vertices_icon.png') }}" class="icon" alt=""> Adicionar (Mapa)
+                                        </button>
+                                        <button class="tool-btn submenu-item" onclick="openAdicionarVerticesCoordenadasDialog()">
+                                            <img src="{{ url_for('static', filename='icons/coordinates_icon.png') }}" class="icon" alt=""> Adicionar (Coordenadas)
+                                        </button>
+                                        <button class="tool-btn submenu-item" onclick="openAdicionarVerticeAzimuteRumoDialog()">
+                                            <img src="{{ url_for('static', filename='icons/azimuth_icon.png') }}" class="icon" alt=""> Adicionar (Azimute/Rumo)
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Mover (Submenu de 3º nível) -->
+                                <div class="submenu-container">
+                                    <button class="tool-btn submenu-toggle submenu-item" onclick="toggleSubmenu('mover-vertices-submenu')">
+                                        <img src="{{ url_for('static', filename='icons/move_vertices_icon.png') }}" class="icon" alt=""> Mover <span class="arrow">▼</span>
+                                    </button>
+                                    <div id="mover-vertices-submenu" class="submenu submenu-level-3">
+                                        <button class="tool-btn submenu-item" onclick="ativarMoverVerticesMapa()">
+                                            <img src="{{ url_for('static', filename='icons/move_vertices_icon.png') }}" class="icon" alt=""> Mover (Mapa)
+                                        </button>
+                                        <button class="tool-btn submenu-item" onclick="openMoverVerticesCoordenadasDialog()">
+                                            <img src="{{ url_for('static', filename='icons/coordinates_icon.png') }}" class="icon" alt=""> Mover (Coordenadas)
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Remover -->
+                                <button class="tool-btn submenu-item" onclick="ativarRemoverVerticesMapa()">
+                                    <img src="{{ url_for('static', filename='icons/remove_icon.png') }}" class="icon" alt=""> Remover
+                                </button>
+                                
+                                <!-- Renomear -->
+                                <button class="tool-btn submenu-item" onclick="ativarRenomearVerticeMapa()">
+                                    <img src="{{ url_for('static', filename='icons/rename_icon.png') }}" class="icon" alt=""> Renomear
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Geometria (Menu Principal) -->
+                        <div class="submenu-container">
+                            <button class="tool-btn submenu-toggle submenu-item" onclick="toggleSubmenu('geometria-menu')">
+                                <img src="{{ url_for('static', filename='icons/move_geometry_icon.png') }}" class="icon" alt=""> Geometria <span class="arrow">▼</span>
+                            </button>
+                            <div id="geometria-menu" class="submenu submenu-level-2">
+                                <!-- Mover (Submenu) -->
+                                <div class="submenu-container">
+                                    <button class="tool-btn submenu-toggle submenu-item" onclick="toggleSubmenu('mover-geometria-submenu')">
+                                        <img src="{{ url_for('static', filename='icons/move_geometry_icon.png') }}" class="icon" alt=""> Mover <span class="arrow">▼</span>
+                                    </button>
+                                    <div id="mover-geometria-submenu" class="submenu submenu-level-3">
+                                        <button class="tool-btn submenu-item" onclick="ativarMoverGeometriaMapa()">
+                                            <img src="{{ url_for('static', filename='icons/move_geometry_icon.png') }}" class="icon" alt=""> Mover (Mapa)
+                                        </button>
+                                        <button class="tool-btn submenu-item" onclick="openMoverGeometriaDialog()">
+                                            <img src="{{ url_for('static', filename='icons/coordinates_icon.png') }}" class="icon" alt=""> Mover (Digitando)
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Copiar -->
+                                <button class="tool-btn submenu-item" onclick="ativarCopiarGeometriaMapa()">
+                                    <img src="{{ url_for('static', filename='icons/copy_icon.png') }}" class="icon" alt=""> Copiar
+                                </button>
+                                
+                                <!-- Rotacionar -->
+                                <button class="tool-btn submenu-item" onclick="openRotacionarGeometriaDialog()">
+                                    <img src="{{ url_for('static', filename='icons/rotate_icon.png') }}" class="icon" alt=""> Rotacionar
+                                </button>
+                                
+                                <!-- Deletar -->
+                                <button class="tool-btn submenu-item" id="delete-mode" onclick="activateTool('delete')">
+                                    <img src="{{ url_for('static', filename='icons/remove_icon.png') }}" class="icon" alt=""> Deletar
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Fechar Polígono -->
+                        <button class="tool-btn submenu-item" onclick="ativarFecharPoligono()">
+                            <img src="{{ url_for('static', filename='icons/close_polygon_icon.png') }}" class="icon" alt=""> Fechar Polígono
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ANÁLISE -->
+            <div class="tool-section">
+                <div class="submenu-container">
+                    <button class="tool-btn submenu-toggle" onclick="toggleSubmenu('analise-menu')">
+                        <img src="{{ url_for('static', filename='icons/analysis_icon.png') }}" class="icon" alt=""> ANÁLISE <span class="arrow">▼</span>
+                    </button>
+                    <div id="analise-menu" class="submenu">
+                        <button class="tool-btn submenu-item" id="measure-area" onclick="activateTool('measure-area')">
+                            <img src="{{ url_for('static', filename='icons/coordinates_icon.png') }}" class="icon" alt=""> Medir Área
+                        </button>
+                        <button class="tool-btn submenu-item" id="measure-distance" onclick="activateTool('measure-distance')">
+                            <img src="{{ url_for('static', filename='icons/distance_icon.png') }}" class="icon" alt=""> Medir Distância
+                        </button>
+                        <button class="tool-btn submenu-item" onclick="showCoordinates()">
+                            <img src="{{ url_for('static', filename='icons/coordinates_icon.png') }}" class="icon" alt=""> Coordenadas
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <!-- CAMADAS -->
             <div class="tool-section">
                 <div class="submenu-container">
                     <button class="tool-btn submenu-toggle" onclick="toggleSubmenu('camadas-menu')">
                         <img src="{{ url_for('static', filename='icons/criar_projeto_icon.png') }}" class="icon" alt=""> CAMADAS <span class="arrow">▼</span>
                     </button>
-                    <div id="camadas-menu" class="submenu" style="display: block;">
+                    <div id="camadas-menu" class="submenu">
                         <button class="tool-btn submenu-item" onclick="addLayer()">
                             <img src="{{ url_for('static', filename='icons/add_vertices_icon.png') }}" class="icon" alt=""> Nova Camada
                         </button>
@@ -167,17 +263,9 @@
 
         <!-- Map Container -->
         <main class="map-container">
-            
-            <div id="map"></div>
-            
-            <!-- Indicador de Ferramenta Ativa (Canto Inferior Esquerdo) -->
-            <div class="tool-indicator">
-                <span>ferramenta ativa: <strong id="current-tool-name">nenhuma</strong></span>
-            </div>
-            
-            <!-- Seletor de Base de Mapas (Canto Inferior Direito) -->
-            <div class="basemap-selector">
-                <label>Base do Mapa:</label>
+            <!-- Base Layer Selector -->
+            <div class="base-layer-selector">
+                <label for="baseLayerSelect">Base do Mapa:</label>
                 <select id="baseLayerSelect" onchange="changeBaseLayer()">
                     <option value="osm">OpenStreetMap</option>
                     <option value="satellite">Google Earth (Satélite)</option>
@@ -185,37 +273,50 @@
                     <option value="snci">SNCI - Terras Públicas (INCRA)</option>
                 </select>
                 
-                <label id="ufLabel" style="display:none; margin-left: 10px;">UF:</label>
+                <label for="ufSelect" id="ufLabel" style="display:none; margin-left: 15px;">Estado (UF):</label>
                 <select id="ufSelect" onchange="updateIncraLayer()" style="display:none;">
-                    <option value="">Selecione</option>
-                    <option value="AC">AC</option>
-                    <option value="AL">AL</option>
-                    <option value="AP">AP</option>
-                    <option value="AM">AM</option>
-                    <option value="BA">BA</option>
-                    <option value="CE">CE</option>
-                    <option value="DF">DF</option>
-                    <option value="ES">ES</option>
-                    <option value="GO">GO</option>
-                    <option value="MA">MA</option>
-                    <option value="MT">MT</option>
-                    <option value="MS">MS</option>
-                    <option value="MG">MG</option>
-                    <option value="PA">PA</option>
-                    <option value="PB">PB</option>
-                    <option value="PR">PR</option>
-                    <option value="PE">PE</option>
-                    <option value="PI">PI</option>
-                    <option value="RJ">RJ</option>
-                    <option value="RN">RN</option>
-                    <option value="RS">RS</option>
-                    <option value="RO">RO</option>
-                    <option value="RR">RR</option>
-                    <option value="SC">SC</option>
-                    <option value="SP">SP</option>
-                    <option value="SE">SE</option>
-                    <option value="TO">TO</option>
+                    <option value="AC">Acre (AC)</option>
+                    <option value="AL">Alagoas (AL)</option>
+                    <option value="AP">Amapá (AP)</option>
+                    <option value="AM">Amazonas (AM)</option>
+                    <option value="BA">Bahia (BA)</option>
+                    <option value="CE">Ceará (CE)</option>
+                    <option value="DF">Distrito Federal (DF)</option>
+                    <option value="ES">Espírito Santo (ES)</option>
+                    <option value="GO">Goiás (GO)</option>
+                    <option value="MA">Maranhão (MA)</option>
+                    <option value="MT" selected>Mato Grosso (MT)</option>
+                    <option value="MS">Mato Grosso do Sul (MS)</option>
+                    <option value="MG">Minas Gerais (MG)</option>
+                    <option value="PA">Pará (PA)</option>
+                    <option value="PB">Paraíba (PB)</option>
+                    <option value="PR">Paraná (PR)</option>
+                    <option value="PE">Pernambuco (PE)</option>
+                    <option value="PI">Piauí (PI)</option>
+                    <option value="RJ">Rio de Janeiro (RJ)</option>
+                    <option value="RN">Rio Grande do Norte (RN)</option>
+                    <option value="RS">Rio Grande do Sul (RS)</option>
+                    <option value="RO">Rondônia (RO)</option>
+                    <option value="RR">Roraima (RR)</option>
+                    <option value="SC">Santa Catarina (SC)</option>
+                    <option value="SP">São Paulo (SP)</option>
+                    <option value="SE">Sergipe (SE)</option>
+                    <option value="TO">Tocantins (TO)</option>
                 </select>
+                
+                <button id="legendBtn" onclick="openLegendModal()" style="display:none; margin-left: 15px;" title="Ver Legenda">
+                    📊 Legenda
+                </button>
+            </div>
+            
+            <div id="map"></div>
+            
+            <!-- Info Panel -->
+            <div class="info-panel">
+                <div class="info-item">
+                    <strong>Ferramenta Ativa:</strong>
+                    <span id="current-tool">Nenhuma</span>
+                </div>
             </div>
         </main>
     </div>

@@ -1037,7 +1037,8 @@ function openProject() {
 
 function activateTool(tool) {
     currentTool = tool;
-    updateToolIndicator(tool);
+    document.getElementById('current-tool').textContent = tool;
+    showMessage(`Ferramenta "${tool}" ativada`, 'info');
 }
 
 function addLayer() {
@@ -1400,7 +1401,8 @@ function ativarMoverVerticesMapa() {
     desativarTodasFerramentasEdicao();
     
     moverVerticesMapaAtivo = true;
-    updateToolIndicator('Mover Vértices (Mapa)');
+    
+    showMessage('Arraste os vértices (círculos vermelhos) para movê-los. ESC para desativar.', 'info');
     
     // === NOVA ARQUITETURA: Usar TerraManager ===
     terraManager.setAllEditable(true);
@@ -1412,7 +1414,7 @@ function desativarMoverVerticesMapa() {
     // === NOVA ARQUITETURA: Usar TerraManager ===
     terraManager.setAllEditable(false);
     
-    updateToolIndicator(null);
+    showMessage('Ferramenta Mover Vértices desativada.', 'info');
 }
 
 function habilitarArrasteVertices(layerName, layer) {
@@ -1569,7 +1571,8 @@ function ativarAdicionarVerticesMapa() {
     desativarTodasFerramentasEdicao();
     
     adicionarVerticesMapaAtivo = true;
-    updateToolIndicator('Adicionar Vértices (Mapa)');
+    
+    showMessage('Clique em uma aresta do polígono para adicionar vértice. ESC para cancelar.', 'info');
     
     // Adicionar evento de clique nos polígonos
     Object.values(terraManager.layers).forEach(terraLayer => {
@@ -1646,7 +1649,7 @@ function desativarAdicionarVerticesMapa() {
         }
     });
     
-    updateToolIndicator(null);
+    showMessage('Ferramenta Adicionar Vértices desativada.', 'info');
 }
 
 // Função auxiliar: distância de ponto até segmento
@@ -1968,7 +1971,8 @@ function ativarRemoverVerticesMapa() {
     desativarTodasFerramentasEdicao();
     
     removerVerticesMapaAtivo = true;
-    updateToolIndicator('Remover Vértices (Mapa)');
+    
+    showMessage('Clique em um vértice para removê-lo. ESC para cancelar.', 'info');
     
     // *** CORREÇÃO: Adicionar evento de clique nos marcadores ***
     Object.values(terraManager.layers).forEach(terraLayer => {
@@ -2032,7 +2036,7 @@ function desativarRemoverVerticesMapa() {
         });
     });
     
-    updateToolIndicator(null);
+    showMessage('Ferramenta Remover Vértices desativada.', 'info');
 }
 
 // ===== RENOMEAR VÉRTICE (MAPA) =====
@@ -2046,7 +2050,8 @@ function ativarRenomearVerticeMapa() {
     desativarTodasFerramentasEdicao();
     
     renomearVerticeMapaAtivo = true;
-    updateToolIndicator('Renomear Vértice (Mapa)');
+    
+    showMessage('Clique em um vértice para renomeá-lo. ESC para cancelar.', 'info');
     
     // *** CORREÇÃO: Implementar lógica de renomear vértice ***
     Object.values(terraManager.layers).forEach(terraLayer => {
@@ -2105,7 +2110,7 @@ function desativarRenomearVerticeMapa() {
         });
     });
     
-    updateToolIndicator(null);
+    showMessage('Ferramenta Renomear Vértice desativada.', 'info');
 }
 
 // ===== MOVER GEOMETRIA =====
@@ -2192,7 +2197,6 @@ function ativarMoverGeometriaMapa() {
     
     moverGeometriaMapaAtivo = true;
     geometriaSelecionada = null;
-    updateToolIndicator('Mover Geometria (Mapa)');
     
     // Criar dropdown para seleção de geometria
     const dropdown = document.createElement('select');
@@ -2219,6 +2223,8 @@ function ativarMoverGeometriaMapa() {
     });
     
     document.body.appendChild(dropdown);
+    
+    showMessage('Selecione a geometria no menu dropdown acima.', 'info');
 }
 
 function selecionarGeometriaParaMover(layerName) {
@@ -2296,7 +2302,7 @@ function desativarMoverGeometriaMapa() {
         }
     });
     
-    updateToolIndicator(null);
+    showMessage('Ferramenta Mover Geometria (Mapa) desativada.', 'info');
 }
 
 function onPolygonClickMoverGeometria(e) {
@@ -2405,14 +2411,15 @@ function ativarCopiarGeometriaMapa() {
     desativarTodasFerramentasEdicao();
     
     copiarGeometriaMapaAtivo = true;
-    updateToolIndicator('Copiar Geometria (Mapa)');
+    
+    showMessage('Clique em uma geometria e depois clique no mapa para copiar. Pressione ESC para cancelar.', 'info');
     
     // Implementar lógica de copiar geometria
 }
 
 function desativarCopiarGeometriaMapa() {
     copiarGeometriaMapaAtivo = false;
-    updateToolIndicator(null);
+    showMessage('Ferramenta Copiar Geometria desativada.', 'info');
 }
 
 // ===== ROTACIONAR GEOMETRIA =====
@@ -2429,14 +2436,15 @@ function ativarFecharPoligono() {
     desativarTodasFerramentasEdicao();
     
     fecharPoligonoAtivo = true;
-    updateToolIndicator('Fechar Polígono');
+    
+    showMessage('Clique em uma polilinha para fechá-la como polígono. Pressione ESC para cancelar.', 'info');
     
     // Implementar lógica de fechar polígono
 }
 
 function desativarFecharPoligono() {
     fecharPoligonoAtivo = false;
-    updateToolIndicator(null);
+    showMessage('Ferramenta Fechar Polígono desativada.', 'info');
 }
 
 // ===== DESATIVAR TODAS AS FERRAMENTAS DE EDIÇÃO =====
