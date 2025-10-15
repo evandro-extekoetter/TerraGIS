@@ -121,6 +121,9 @@ function iniciarRotacaoMapa(nomeGeometria) {
     verticeEixo = encontrarVerticeMaisAoNorte(geometriaParaRotacionar.vertices);
     anguloAtual = 0;
     
+    // Desabilitar dragging do mapa
+    map.dragging.disable();
+    
     // Adicionar eventos IMEDIATAMENTE
     map.on('mousemove', onMouseMoveRotacao);
     map.on('click', onClickConfirmarRotacao);
@@ -228,6 +231,9 @@ function finalizarRotacao() {
     map.off('mousemove', onMouseMoveRotacao);
     map.off('click', onClickConfirmarRotacao);
     document.removeEventListener('keydown', onKeyDownRotacao);
+    
+    // Reabilitar dragging do mapa
+    map.dragging.enable();
 }
 
 function abrirDialogoAnguloEspecifico(nomeGeometria) {

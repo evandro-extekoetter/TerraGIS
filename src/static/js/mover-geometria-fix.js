@@ -84,6 +84,9 @@ function selecionarGeometriaParaMover(layerName) {
         fillOpacity: 0.1
     }).addTo(map);
     
+    // Desabilitar dragging do mapa
+    map.dragging.disable();
+    
     // Adicionar eventos do mapa IMEDIATAMENTE
     map.on('mousemove', onMapMouseMoveMover);
     map.on('click', onMapClickConfirmarMover);
@@ -170,6 +173,9 @@ window.desativarMoverGeometriaMapa = function() {
     // Remover eventos
     map.off('mousemove', onMapMouseMoveMover);
     map.off('click', onMapClickConfirmarMover);
+    
+    // Reabilitar dragging do mapa
+    map.dragging.enable();
     
     // Restaurar popups
     Object.values(terraManager.layers).forEach(function(tl) {
