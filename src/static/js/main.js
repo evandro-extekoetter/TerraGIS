@@ -2243,6 +2243,14 @@ function selecionarGeometriaParaMover(layerName) {
     const primeiroVertice = geometriaSelecionada.vertices[0];
     pontoInicial = utmToLatLng(primeiroVertice.e, primeiroVertice.n, geometriaSelecionada.fuso);
     
+    // Desabilitar popups de todas as geometrias
+    Object.values(terraManager.layers).forEach(tl => {
+        if (tl.geometryLayer) {
+            tl.geometryLayer.closePopup();
+            tl.geometryLayer.unbindPopup();
+        }
+    });
+    
     // Criar preview layer
     const coordsOriginais = geometriaSelecionada.vertices.map(v => 
         utmToLatLng(v.e, v.n, geometriaSelecionada.fuso)
@@ -2285,6 +2293,12 @@ function desativarMoverGeometriaMapa() {
     Object.values(terraManager.layers).forEach(terraLayer => {
         if (terraLayer.polygon) {
             terraLayer.polygon.off('click', onPolygonClickMoverGeometria);
+        }
+        // Restaurar popups
+        if (terraLayer.geometryLayer) {
+            const layerName = terraLayer.type === 'polygon' ? 
+                `${terraLayer.name}_Poligono` : `${terraLayer.name}_Polilinha`;
+            terraLayer.geometryLayer.bindPopup(`<b>${layerName}</b>`);
         }
     });
     

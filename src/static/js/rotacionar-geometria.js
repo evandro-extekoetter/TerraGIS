@@ -105,6 +105,15 @@ function iniciarRotacaoMapa(nomeGeometria) {
         return;
     }
     
+    // Desabilitar popups de todas as geometrias
+    for (var nome in terraManager.layers) {
+        var tl = terraManager.layers[nome];
+        if (tl.geometryLayer) {
+            tl.geometryLayer.closePopup();
+            tl.geometryLayer.unbindPopup();
+        }
+    }
+    
     rotacionarAtivo = true;
     verticeEixo = encontrarVerticeMaisAoNorte(geometriaParaRotacionar.vertices);
     anguloAtual = 0;
@@ -200,6 +209,16 @@ function finalizarRotacao() {
     if (previewLayerRotacao) {
         map.removeLayer(previewLayerRotacao);
         previewLayerRotacao = null;
+    }
+    
+    // Restaurar popups
+    for (var nome in terraManager.layers) {
+        var tl = terraManager.layers[nome];
+        if (tl.geometryLayer) {
+            var layerName = tl.type === 'polygon' ? 
+                tl.name + '_Poligono' : tl.name + '_Polilinha';
+            tl.geometryLayer.bindPopup('<b>' + layerName + '</b>');
+        }
     }
     
     map.off('mousemove', onMouseMoveRotacao);
