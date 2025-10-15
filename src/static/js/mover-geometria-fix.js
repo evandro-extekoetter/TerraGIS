@@ -3,65 +3,78 @@ console.log('✅ Correção Mover Geometria (Mapa) carregada!');
 
 // Sobrescrever função original
 window.openMoverGeometriaMapaDialog = function() {
-    console.log('[MOVER] Abrindo diálogo');
+    console.log('[MOVER] Abrindo dropdown');
     
     // Desativar outras ferramentas
     desativarTodasFerramentasEdicao();
     
     moverGeometriaMapaAtivo = true;
     
-    showMessage('Clique no polígono que deseja mover. ESC para cancelar.', 'info');
+    // Criar dropdown
+    var dropdown = document.createElement('div');
+    dropdown.id = 'dropdown-mover-geometria';
+    dropdown.style.cssText = 'position: absolute; top: 80px; left: 250px; z-index: 9999; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);';
     
-    // Adicionar evento mousedown nos polígonos
-    Object.values(terraManager.layers).forEach(function(terraLayer) {
-        if (terraLayer.geometryLayer) {
-            // Desabilitar popup
-            terraLayer.geometryLayer.unbindPopup();
-            
-            // Usar mousedown (igual adicionar vértice)
-            terraLayer.geometryLayer.on('mousedown', onPolygonMouseDownMover);
-        }
-    });
-};
-
-function onPolygonMouseDownMover(e) {
-    if (!moverGeometriaMapaAtivo) return;
+    var label = document.createElement('label');
+    label.textContent = 'Selecione a geometria:';
+    label.style.cssText = 'display: block; margin-bottom: 8px; font-weight: bold;';
     
-    L.DomEvent.stopPropagation(e);
-    L.DomEvent.preventDefault(e);
+    var select = document.createElement('select');
+    select.style.cssText = 'width: 200px; padding: 8px;';
+    select.innerHTML = '<option value="">-- Selecione --</option>';
     
-    console.log('[MOVER] Polígono clicado');
-    
-    // Encontrar qual terraLayer foi clicado
-    var terraLayerClicado = null;
     for (var nome in terraManager.layers) {
-        var tl = terraManager.layers[nome];
-        if (tl.geometryLayer === e.target) {
-            terraLayerClicado = tl;
-            break;
-        }
+        var option = document.createElement('option');
+        option.value = nome;
+        option.textContent = nome;
+        select.appendChild(option);
     }
     
-    if (!terraLayerClicado) {
-        console.error('[MOVER] TerraLayer não encontrado');
+    select.onchange = function() {
+        if (this.value) {
+            selecionarGeometriaParaMover(this.value);
+            dropdown.remove();
+        }
+    };
+    
+    dropdown.appendChild(label);
+    dropdown.appendChild(select);
+    document.body.appendChild(dropdown);
+    
+    showMessage('Selecione a geometria no menu dropdown.', 'info');
+};
+
+function selecionarGeometriaParaMover(layerName) {
+    geometriaSelecionada = terraManager.layers[layerName];
+    
+    if (!geometriaSelecionada) {
+        showMessage('Geometria não encontrada.', 'error');
+        desativarMoverGeometriaMapa();
         return;
     }
     
-    console.log('[MOVER] Geometria selecionada:', terraLayerClicado.name);
+    console.log('[MOVER] Geometria selecionada:', layerName);
     
-    // Salvar geometria selecionada
-    geometriaSelecionada = terraLayerClicado;
-    geometriaOriginal = terraLayerClicado.vertices.map(function(v) {
+    // Salvar coordenadas originais
+    geometriaOriginal = geometriaSelecionada.vertices.map(function(v) {
         return {e: v.e, n: v.n};
     });
     
     // Ponto inicial = primeiro vértice
-    var primeiroVertice = terraLayerClicado.vertices[0];
-    pontoInicial = utmToLatLng(primeiroVertice.e, primeiroVertice.n, terraLayerClicado.fuso);
+    var primeiroVertice = geometriaSelecionada.vertices[0];
+    pontoInicial = utmToLatLng(primeiroVertice.e, primeiroVertice.n, geometriaSelecionada.fuso);
+    
+    // Desabilitar popups
+    Object.values(terraManager.layers).forEach(function(tl) {
+        if (tl.geometryLayer) {
+            tl.geometryLayer.closePopup();
+            tl.geometryLayer.unbindPopup();
+        }
+    });
     
     // Criar preview vermelho tracejado
-    var coordsOriginais = terraLayerClicado.vertices.map(function(v) {
-        return utmToLatLng(v.e, v.n, terraLayerClicado.fuso);
+    var coordsOriginais = geometriaSelecionada.vertices.map(function(v) {
+        return utmToLatLng(v.e, v.n, geometriaSelecionada.fuso);
     });
     
     previewLayer = L.polygon(coordsOriginais, {
@@ -71,16 +84,12 @@ function onPolygonMouseDownMover(e) {
         fillOpacity: 0.1
     }).addTo(map);
     
-    // Remover eventos dos polígonos
-    Object.values(terraManager.layers).forEach(function(tl) {
-        if (tl.geometryLayer) {
-            tl.geometryLayer.off('mousedown', onPolygonMouseDownMover);
-        }
-    });
-    
-    // Adicionar eventos do mapa
+    // Adicionar eventos do mapa IMEDIATAMENTE
     map.on('mousemove', onMapMouseMoveMover);
     map.on('click', onMapClickConfirmarMover);
+    
+    // Mudar cursor
+    map.getContainer().style.cursor = 'move';
     
     showMessage('Mova o mouse para posicionar. Clique para fixar. ESC para cancelar.', 'success');
 }
@@ -149,6 +158,9 @@ window.desativarMoverGeometriaMapa = function() {
     geometriaOriginal = null;
     pontoInicial = null;
     
+    // Restaurar cursor
+    map.getContainer().style.cursor = '';
+    
     // Remover preview
     if (previewLayer) {
         map.removeLayer(previewLayer);
@@ -159,17 +171,18 @@ window.desativarMoverGeometriaMapa = function() {
     map.off('mousemove', onMapMouseMoveMover);
     map.off('click', onMapClickConfirmarMover);
     
-    // Remover eventos dos polígonos e restaurar popups
+    // Restaurar popups
     Object.values(terraManager.layers).forEach(function(tl) {
         if (tl.geometryLayer) {
-            tl.geometryLayer.off('mousedown', onPolygonMouseDownMover);
-            
-            // Restaurar popup
             var layerName = tl.type === 'polygon' ? 
                 tl.name + '_Poligono' : tl.name + '_Polilinha';
             tl.geometryLayer.bindPopup('<b>' + layerName + '</b>');
         }
     });
+    
+    // Remover dropdown se existir
+    var dropdown = document.getElementById('dropdown-mover-geometria');
+    if (dropdown) dropdown.remove();
     
     showMessage('Ferramenta Mover Geometria (Mapa) desativada.', 'info');
 };
