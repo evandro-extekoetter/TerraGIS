@@ -128,6 +128,9 @@ function iniciarRotacaoMapa(nomeGeometria) {
     // Mudar cursor
     map.getContainer().style.cursor = 'crosshair';
     
+    // Criar preview inicial
+    atualizarPreviewRotacao();
+    
     showMessage('Mova o mouse para rotacionar. Clique para confirmar. ESC para cancelar.', 'info');
 }
 
