@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TerraGIS - Análise e Edição GIS</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- Leaflet Draw CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    <!-- Workaround: CSS inline para menus superiores -->
+    <style>
+    /* MENUS SUPERIORES */
+    .top-menu { display: flex; gap: 8px; align-items: center; }
+    .menu-item { position: relative; }
+    .menu-btn { background: linear-gradient(135deg, #2A4A62 0%, #1A3A52 100%); color: #FFFFFF; border: 1px solid #3A5A72; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; border-radius: 6px; display: flex; align-items: center; gap: 8px; transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 0.5px; }
+    .menu-btn:hover { background: linear-gradient(135deg, #3A5A82 0%, #2A4A62 100%); border-color: #F4A460; box-shadow: 0 2px 8px rgba(244, 164, 96, 0.3); }
+    .menu-btn .icon { width: 16px; height: 16px; }
+    .top-dropdown { position: absolute; top: 100%; left: 0; margin-top: 4px; background: #2A2A2A; border: 1px solid #404040; border-radius: 6px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5); min-width: 250px; z-index: 1000; padding: 8px 0; }
+    .dropdown-item { width: 100%; padding: 10px 16px; background: transparent; color: #FFFFFF; border: none; text-align: left; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: all 0.2s ease; }
+    .dropdown-item:hover { background: linear-gradient(135deg, #2A4A62 0%, #1A3A52 100%); color: #F4A460; }
+    .dropdown-item .icon { width: 18px; height: 18px; }
+    
+    /* INDICADOR DE FERRAMENTA */
+    .tool-indicator { position: absolute; bottom: 20px; left: 20px; background: rgba(42, 42, 42, 0.95); border: 1px solid #404040; border-radius: 6px; padding: 10px 16px; font-size: 13px; color: #E0E0E0; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4); z-index: 500; }
+    .tool-indicator strong { color: #F4A460; font-weight: 600; text-transform: uppercase; }
+    
+    /* SELETOR DE BASE DE MAPA */
+    .basemap-selector { position: absolute; bottom: 20px; right: 20px; background: rgba(42, 42, 42, 0.95); border: 1px solid #404040; border-radius: 6px; padding: 12px 16px; display: flex; align-items: center; gap: 12px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4); z-index: 500; }
+    .basemap-selector label { font-size: 13px; color: #E0E0E0; font-weight: 600; }
+    .basemap-selector select { background: #1A1A1A; color: #FFFFFF; border: 1px solid #404040; border-radius: 4px; padding: 6px 12px; font-size: 13px; cursor: pointer; transition: all 0.2s ease; }
+    .basemap-selector select:hover { border-color: #F4A460; }
+    .basemap-selector select:focus { outline: none; border-color: #F4A460; box-shadow: 0 0 0 2px rgba(244, 164, 96, 0.2); }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <img src="{{ url_for('static', filename='icons/icone.png') }}" alt="TerraGIS" class="logo-img">
+                <div class="logo-text">
+                    <h1>TerraGIS</h1>
+                    <p>Análise e Edição GIS</p>
+                </div>
+            </div>
+            
+            <!-- Menus da barra superior -->
+            <nav class="top-menu">
+                <div class="menu-item">
+                    <button class="menu-btn" onclick="toggleTopMenu('projeto-top-menu')">
+                        <img src="{{ url_for('static', filename='icons/criar_projeto_icon.png') }}" class="icon" alt=""> PROJETO ▼
+                    </button>
+                    <div id="projeto-top-menu" class="top-dropdown" style="display: none;">
+                        <button class="dropdown-item" onclick="newProject()">
+                            <img src="{{ url_for('static', filename='icons/criar_projeto_icon.png') }}" class="icon" alt=""> Novo
+                        </button>
+                        <button class="dropdown-item" onclick="saveProject()">
+                            <img src="{{ url_for('static', filename='icons/salvar_projeto_icon.png') }}" class="icon" alt=""> Salvar
+                        </button>
+                        <button class="dropdown-item" onclick="openProject()">
+                            <img src="{{ url_for('static', filename='icons/abrir_projeto_icon.png') }}" class="icon" alt=""> Abrir
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="menu-item">
+                    <button class="menu-btn" onclick="toggleTopMenu('construcao-top-menu')">
+                        <img src="{{ url_for('static', filename='icons/construction_icon.png') }}" class="icon" alt=""> CONSTRUÇÃO ▼
+                    </button>
+                    <div id="construcao-top-menu" class="top-dropdown" style="display: none;">
+                        <button class="dropdown-item" onclick="openCoordListDialog()">
+                            <img src="{{ url_for('static', filename='icons/list_icon.png') }}" class="icon" alt=""> UTM - Lista de Coordenadas
+                        </button>
+                        <button class="dropdown-item" onclick="openCoordTableDialog()">
+                            <img src="{{ url_for('static', filename='icons/table_icon.png') }}" class="icon" alt=""> UTM - Tabela de Coordenadas
+                        </button>
+                        <button class="dropdown-item" onclick="openListaLatLongDialog()">
+                            <img src="{{ url_for('static', filename='icons/list_icon.png') }}" class="icon" alt=""> Geográficas - Lista
+                        </button>
+                        <button class="dropdown-item" onclick="openTabelaLatLongDialog()">
+                            <img src="{{ url_for('static', filename='icons/table_icon.png') }}" class="icon" alt=""> Geográficas - Tabela
+                        </button>
+                        <button class="dropdown-item" onclick="openAzimuthDialog()">
+                            <img src="{{ url_for('static', filename='icons/azimuth_icon.png') }}" class="icon" alt=""> Azimute e Distância
+                        </button>
+                        <button class="dropdown-item" onclick="openBearingDialog()">
+                            <img src="{{ url_for('static', filename='icons/azimuth_icon.png') }}" class="icon" alt=""> Rumo e Distância
+                        </button>
+                        <button class="dropdown-item" onclick="openPoligonoSIGEFDialog()">
+                            <img src="{{ url_for('static', filename='icons/sigef_icon.png') }}" class="icon" alt=""> SIGEF
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="menu-item">
+                    <button class="menu-btn" onclick="toggleTopMenu('edicao-top-menu')">
+                        <img src="{{ url_for('static', filename='icons/edit_icon.png') }}" class="icon" alt=""> EDIÇÃO ▼
+                    </button>
+                    <div id="edicao-top-menu" class="top-dropdown" style="display: none;">
+                        <button class="dropdown-item" onclick="ativarAdicionarVerticesMapa()">
+                            <img src="{{ url_for('static', filename='icons/move_vertices_icon.png') }}" class="icon" alt=""> Vértice - Adicionar (Mapa)
+                        </button>
+                        <button class="dropdown-item" onclick="ativarMoverVerticesMapa()">
+                            <img src="{{ url_for('static', filename='icons/move_vertices_icon.png') }}" class="icon" alt=""> Vértice - Mover (Mapa)
+                        </button>
+                        <button class="dropdown-item" onclick="ativarRemoverVerticesMapa()">
+                            <img src="{{ url_for('static', filename='icons/remove_icon.png') }}" class="icon" alt=""> Vértice - Remover
+                        </button>
+                        <button class="dropdown-item" onclick="ativarRenomearVerticeMapa()">
+                            <img src="{{ url_for('static', filename='icons/rename_icon.png') }}" class="icon" alt=""> Vértice - Renomear
+                        </button>
+                        <button class="dropdown-item" onclick="openMoverGeometriaMapaDialog()">
+                            <img src="{{ url_for('static', filename='icons/move_geometry_icon.png') }}" class="icon" alt=""> Geometria - Mover (Mapa)
+                        </button>
+                        <button class="dropdown-item" onclick="openMoverGeometriaDialog()">
+                            <img src="{{ url_for('static', filename='icons/coordinates_icon.png') }}" class="icon" alt=""> Geometria - Mover (Digitando)
+                        </button>
+                        <button class="dropdown-item" onclick="openRotacionarGeometriaDialog()">
+                            <img src="{{ url_for('static', filename='icons/rotate_icon.png') }}" class="icon" alt=""> Geometria - Rotacionar
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="menu-item">
+                    <button class="menu-btn" onclick="toggleTopMenu('analise-top-menu')">
+                        <img src="{{ url_for('static', filename='icons/analysis_icon.png') }}" class="icon" alt=""> ANÁLISE ▼
+                    </button>
+                    <div id="analise-top-menu" class="top-dropdown" style="display: none;">
+                        <button class="dropdown-item" onclick="activateTool('measure-area')">
+                            <img src="{{ url_for('static', filename='icons/coordinates_icon.png') }}" class="icon" alt=""> Medir Área
+                        </button>
+                        <button class="dropdown-item" onclick="activateTool('measure-distance')">
+                            <img src="{{ url_for('static', filename='icons/distance_icon.png') }}" class="icon" alt=""> Medir Distância
+                        </button>
+                        <button class="dropdown-item" onclick="showCoordinates()">
+                            <img src="{{ url_for('static', filename='icons/coordinates_icon.png') }}" class="icon" alt=""> Coordenadas
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="menu-item">
+                    <button class="menu-btn" onclick="toggleTopMenu('medidas-top-menu')">
+                        <img src="{{ url_for('static', filename='icons/measure_icon.png') }}" class="icon" alt=""> MEDIDAS ▼
+                    </button>
+                    <div id="medidas-top-menu" class="top-dropdown" style="display: none;">
+                        <button class="dropdown-item" onclick="alert('Ferramenta Medidas em desenvolvimento')">
+                            <img src="{{ url_for('static', filename='icons/measure_icon.png') }}" class="icon" alt=""> Medir Distância
+                        </button>
+                        <button class="dropdown-item" onclick="alert('Ferramenta Medidas em desenvolvimento')">
+                            <img src="{{ url_for('static', filename='icons/measure_icon.png') }}" class="icon" alt=""> Medir Área
+                        </button>
+                    </div>
+                </div>
+            </nav>
+            
+            <div class="project-info">
+                <span id="project-name">Sem projeto</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="main-container">
+        <!-- Sidebar -->
+        <!-- Sidebar - Apenas CAMADAS -->
+        <aside class="sidebar">
+            <!-- CAMADAS -->
+            <div class="tool-section">
+                <div class="submenu-container">
+                    <button class="tool-btn submenu-toggle" onclick="toggleSubmenu('camadas-menu')">
+                        <img src="{{ url_for('static', filename='icons/criar_projeto_icon.png') }}" class="icon" alt=""> CAMADAS <span class="arrow">▼</span>
+                    </button>
+                    <div id="camadas-menu" class="submenu" style="display: block;">
+                        <button class="tool-btn submenu-item" onclick="addLayer()">
+                            <img src="{{ url_for('static', filename='icons/add_vertices_icon.png') }}" class="icon" alt=""> Nova Camada
+                        </button>
+                        <div id="layers-list" class="layers-list">
+                            <!-- Camadas serão adicionadas aqui -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+
+        <!-- Map Container -->
+        <main class="map-container">
+            
+            <div id="map"></div>
+            
+            <!-- Indicador de Ferramenta Ativa (Canto Inferior Esquerdo) -->
+            <div class="tool-indicator">
+                <span>ferramenta ativa: <strong id="current-tool-name">nenhuma</strong></span>
+            </div>
+            
+            <!-- Seletor de Base de Mapas (Canto Inferior Direito) -->
+            <div class="basemap-selector">
+                <label>Base do Mapa:</label>
+                <select id="baseLayerSelect" onchange="changeBaseLayer()">
+                    <option value="osm">OpenStreetMap</option>
+                    <option value="satellite">Google Earth (Satélite)</option>
+                    <option value="sigef">SIGEF - Imóveis Certificados (INCRA)</option>
+                    <option value="snci">SNCI - Terras Públicas (INCRA)</option>
+                </select>
+                
+                <label id="ufLabel" style="display:none; margin-left: 10px;">UF:</label>
+                <select id="ufSelect" onchange="updateIncraLayer()" style="display:none;">
+                    <option value="">Selecione</option>
+                    <option value="AC">AC</option>
+                    <option value="AL">AL</option>
+                    <option value="AP">AP</option>
+                    <option value="AM">AM</option>
+                    <option value="BA">BA</option>
+                    <option value="CE">CE</option>
+                    <option value="DF">DF</option>
+                    <option value="ES">ES</option>
+                    <option value="GO">GO</option>
+                    <option value="MA">MA</option>
+                    <option value="MT">MT</option>
+                    <option value="MS">MS</option>
+                    <option value="MG">MG</option>
+                    <option value="PA">PA</option>
+                    <option value="PB">PB</option>
+                    <option value="PR">PR</option>
+                    <option value="PE">PE</option>
+                    <option value="PI">PI</option>
+                    <option value="RJ">RJ</option>
+                    <option value="RN">RN</option>
+                    <option value="RS">RS</option>
+                    <option value="RO">RO</option>
+                    <option value="RR">RR</option>
+                    <option value="SC">SC</option>
+                    <option value="SP">SP</option>
+                    <option value="SE">SE</option>
+                    <option value="TO">TO</option>
+                </select>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Novo Projeto -->
+    <div id="modal-new-project" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Criar Novo Projeto</h2>
+                <button class="close-btn" onclick="closeModal('modal-new-project')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="project-name-input">Nome do Projeto:</label>
+                    <input type="text" id="project-name-input" placeholder="Ex: Análise Fazenda Santa Maria">
+                </div>
+                <div class="form-group">
+                    <label for="fuso-utm-select">Fuso UTM:</label>
+                    <select id="fuso-utm-select">
+                        <option value="">Selecione o fuso</option>
+                        <option value="18S">18S</option>
+                        <option value="19S">19S</option>
+                        <option value="20S">20S</option>
+                        <option value="21S" selected>21S</option>
+                        <option value="22S">22S</option>
+                        <option value="23S">23S</option>
+                        <option value="24S">24S</option>
+                        <option value="25S">25S</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal('modal-new-project')">Cancelar</button>
+                <button class="btn-primary" onclick="createProject()">Criar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Nova Camada -->
+    <div id="modal-new-layer" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Nova Camada</h2>
+                <button class="close-btn" onclick="closeModal('modal-new-layer')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="layer-name-input">Nome da Camada:</label>
+                    <input type="text" id="layer-name-input" placeholder="Ex: Polígonos de Análise">
+                </div>
+                <div class="form-group">
+                    <label for="layer-type-select">Tipo:</label>
+                    <select id="layer-type-select">
+                        <option value="polygon">Polígono</option>
+                        <option value="line">Linha</option>
+                        <option value="point">Ponto</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="layer-color-input">Cor:</label>
+                    <input type="color" id="layer-color-input" value="#3388ff">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal('modal-new-layer')">Cancelar</button>
+                <button class="btn-primary" onclick="createLayer()">Criar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Lista Coordenadas UTM -->
+    <div id="modal-coord-list" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>📝 Lista de Coordenadas UTM</h2>
+                <button class="close-btn" onclick="closeModal('modal-coord-list')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="coord-list-name">Nome da camada:</label>
+                    <input type="text" id="coord-list-name" placeholder="TT" value="TT">
+                </div>
+                <div class="form-group">
+                    <label for="coord-list-fuso">Fuso UTM:</label>
+                    <select id="coord-list-fuso">
+                        <option value="18S">18S</option>
+                        <option value="19S">19S</option>
+                        <option value="20S">20S</option>
+                        <option value="21S" selected>21S</option>
+                        <option value="22S">22S</option>
+                        <option value="23S">23S</option>
+                        <option value="24S">24S</option>
+                        <option value="25S">25S</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="coord-list-color">Cor:</label>
+                    <input type="color" id="coord-list-color" value="#2196F3">
+                </div>
+                <div class="form-group">
+                    <label for="coord-list-input">Coordenadas:</label>
+                    <textarea id="coord-list-input" rows="10" placeholder="P-01;752000,250;8569200,750&#10;P-02;752100,500;8569200,750&#10;P-03;752100,500;8569300,000&#10;P-04;752000,250;8569300,000"></textarea>
+                    <small>Formato: VÉRTICE;E;N (separado por ponto e vírgula, vírgula como decimal)</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal('modal-coord-list')">Cancelar</button>
+                <button class="btn-primary" onclick="createPolygonFromCoordList()">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Tabela Coordenadas UTM -->
+    <div id="modal-coord-table" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>📋 Tabela de Coordenadas UTM</h2>
+                <button class="close-btn" onclick="closeModal('modal-coord-table')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="coord-table-name">Nome da camada:</label>
+                    <input type="text" id="coord-table-name" placeholder="TT" value="TT">
+                </div>
+                <div class="form-group">
+                    <label for="coord-table-fuso">Fuso UTM:</label>
+                    <select id="coord-table-fuso">
+                        <option value="18S">18S</option>
+                        <option value="19S">19S</option>
+                        <option value="20S">20S</option>
+                        <option value="21S" selected>21S</option>
+                        <option value="22S">22S</option>
+                        <option value="23S">23S</option>
+                        <option value="24S">24S</option>
+                        <option value="25S">25S</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="coord-table-color">Cor:</label>
+                    <input type="color" id="coord-table-color" value="#2196F3">
+                </div>
+                <div class="form-group">
+                    <label>Tabela de Coordenadas:</label>
+                    <div class="table-container">
+                        <table id="coord-table" class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>VÉRTICE</th>
+                                    <th>UTM(E)</th>
+                                    <th>UTM(N)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="coord-table-body">
+                                <!-- Linhas serão adicionadas aqui -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="table-buttons">
+                        <button class="btn-secondary" onclick="addTableRow('coord-table-body', 3)">+ Linha</button>
+                        <button class="btn-secondary" onclick="removeTableRow('coord-table-body')">- Linha</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal('modal-coord-table')">Cancelar</button>
+                <button class="btn-primary" onclick="createPolygonFromCoordTable()">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Azimute + Distância -->
+    <div id="modal-azimuth" class="modal">
+        <div class="modal-content modal-xlarge">
+            <div class="modal-header">
+                <h2>🧭 Azimute + Distância</h2>
+                <button class="close-btn" onclick="closeModal('modal-azimuth')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="azimuth-name">Nome da camada:</label>
+                    <input type="text" id="azimuth-name" placeholder="TT" value="TT">
+                </div>
+                
+                <!-- Abas para entrada do vértice inicial -->
+                <div class="tabs">
+                    <div class="tab-buttons">
+                        <button class="tab-btn active" onclick="switchTab('azimuth', 0)">Clique no Mapa</button>
+                        <button class="tab-btn" onclick="switchTab('azimuth', 1)">UTM</button>
+                        <button class="tab-btn" onclick="switchTab('azimuth', 2)">Lat/Long</button>
+                    </div>
+                    
+                    <div class="tab-content">
+                        <!-- Aba 1: Clique no Mapa -->
+                        <div class="tab-pane active" id="azimuth-tab-0">
+                            <button class="btn-primary" onclick="selectPointOnMap('azimuth')">Selecionar no mapa</button>
+                            <input type="text" id="azimuth-coord-mapa" placeholder="Coordenadas aparecerão aqui após clique" readonly>
+                        </div>
+                        
+                        <!-- Aba 2: UTM -->
+                        <div class="tab-pane" id="azimuth-tab-1">
+                            <div class="form-group">
+                                <label for="azimuth-utm-fuso">Fuso UTM:</label>
+                                <select id="azimuth-utm-fuso">
+                                    <option value="18S">18S</option>
+                                    <option value="19S">19S</option>
+                                    <option value="20S">20S</option>
+                                    <option value="21S" selected>21S</option>
+                                    <option value="22S">22S</option>
+                                    <option value="23S">23S</option>
+                                    <option value="24S">24S</option>
+                                    <option value="25S">25S</option>
+                                </select>
+                </div>
+                <div class="form-group">
+                    <label for="azimuth-color">Cor:</label>
+                    <input type="color" id="azimuth-color" value="#FF9800">
+                            </div>
+                            <div class="form-group">
+                                <label for="azimuth-start-utm">Vértice inicial (id;E;N):</label>
+                                <input type="text" id="azimuth-start-utm" placeholder="P-01;752000,250;8569200,750">
+                            </div>
+                        </div>
+                        
+                        <!-- Aba 3: Lat/Long -->
+                        <div class="tab-pane" id="azimuth-tab-2">
+                            <div class="form-group">
+                                <label for="azimuth-ll-fuso">Fuso UTM de destino:</label>
+                                <select id="azimuth-ll-fuso">
+                                    <option value="18S">18S</option>
+                                    <option value="19S">19S</option>
+                                    <option value="20S">20S</option>
+                                    <option value="21S" selected>21S</option>
+                                    <option value="22S">22S</option>
+                                    <option value="23S">23S</option>
+                                    <option value="24S">24S</option>
+                                    <option value="25S">25S</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="azimuth-start-ll">Vértice inicial (id;longitude;latitude):</label>
+                                <input type="text" id="azimuth-start-ll" placeholder='P-01;-56°23\'20,828";-14°29\'18,542"'>
+                                <small>Formato: P-01;-56°23'20,828";-14°29'18,542"</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tabela de Azimute e Distância -->
+                <div class="form-group">
+                    <label>Azimute e Distância:</label>
+                    <div class="table-container">
+                        <table id="azimuth-table" class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>VÉRTICE</th>
+                                    <th>DISTÂNCIA</th>
+                                    <th>AZIMUTE</th>
+                                </tr>
+                            </thead>
+                            <tbody id="azimuth-table-body">
+                                <!-- Linhas serão adicionadas aqui -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="table-buttons">
+                        <button class="btn-secondary" onclick="addTableRow('azimuth-table-body', 3)">+ Linha</button>
+                        <button class="btn-secondary" onclick="removeTableRow('azimuth-table-body')">- Linha</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal('modal-azimuth')">Cancelar</button>
+                <button class="btn-primary" onclick="createPolygonFromAzimuth()">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Rumo + Distância -->
+    <div id="modal-bearing" class="modal">
+        <div class="modal-content modal-xlarge">
+            <div class="modal-header">
+                <h2>↗️ Rumo + Distância</h2>
+                <button class="close-btn" onclick="closeModal('modal-bearing')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="bearing-name">Nome da camada:</label>
+                    <input type="text" id="bearing-name" placeholder="TT" value="TT">
+                </div>
+                
+                <!-- Abas para entrada do vértice inicial -->
+                <div class="tabs">
+                    <div class="tab-buttons">
+                        <button class="tab-btn active" onclick="switchTab('bearing', 0)">Clique no Mapa</button>
+                        <button class="tab-btn" onclick="switchTab('bearing', 1)">UTM</button>
+                        <button class="tab-btn" onclick="switchTab('bearing', 2)">Lat/Long</button>
+                    </div>
+                    
+                    <div class="tab-content">
+                        <!-- Aba 1: Clique no Mapa -->
+                        <div class="tab-pane active" id="bearing-tab-0">
+                            <button class="btn-primary" onclick="selectPointOnMap('bearing')">Selecionar no mapa</button>
+                            <input type="text" id="bearing-coord-mapa" placeholder="Coordenadas aparecerão aqui após clique" readonly>
+                        </div>
+                        
+                        <!-- Aba 2: UTM -->
+                        <div class="tab-pane" id="bearing-tab-1">
+                            <div class="form-group">
+                                <label for="bearing-utm-fuso">Fuso UTM:</label>
+                                <select id="bearing-utm-fuso">
+                                    <option value="18S">18S</option>
+                                    <option value="19S">19S</option>
+                                    <option value="20S">20S</option>
+                                    <option value="21S" selected>21S</option>
+                                    <option value="22S">22S</option>
+                                    <option value="23S">23S</option>
+                                    <option value="24S">24S</option>
+                                    <option value="25S">25S</option>
+                                </select>
+                </div>
+                <div class="form-group">
+                    <label for="bearing-color">Cor:</label>
+                    <input type="color" id="bearing-color" value="#9C27B0">
+                            </div>
+                            <div class="form-group">
+                                <label for="bearing-start-utm">Vértice inicial (id;E;N):</label>
+                                <input type="text" id="bearing-start-utm" placeholder="P-01;752000,250;8569200,750">
+                            </div>
+                        </div>
+                        
+                        <!-- Aba 3: Lat/Long -->
+                        <div class="tab-pane" id="bearing-tab-2">
+                            <div class="form-group">
+                                <label for="bearing-ll-fuso">Fuso UTM de destino:</label>
+                                <select id="bearing-ll-fuso">
+                                    <option value="18S">18S</option>
+                                    <option value="19S">19S</option>
+                                    <option value="20S">20S</option>
+                                    <option value="21S" selected>21S</option>
+                                    <option value="22S">22S</option>
+                                    <option value="23S">23S</option>
+                                    <option value="24S">24S</option>
+                                    <option value="25S">25S</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="bearing-start-ll">Vértice inicial (id;longitude;latitude):</label>
+                                <input type="text" id="bearing-start-ll" placeholder='P-01;-56°23\'20,828";-14°29\'18,542"'>
+                                <small>Formato: P-01;-56°23'20,828";-14°29'18,542"</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tabela de Rumo e Distância -->
+                <div class="form-group">
+                    <label>Rumo e Distância:</label>
+                    <div class="table-container">
+                        <table id="bearing-table" class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>VÉRTICE</th>
+                                    <th>DISTÂNCIA</th>
+                                    <th>RUMO</th>
+                                    <th>QUADRANTE</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bearing-table-body">
+                                <!-- Linhas serão adicionadas aqui -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="table-buttons">
+                        <button class="btn-secondary" onclick="addTableRow('bearing-table-body', 4)">+ Linha</button>
+                        <button class="btn-secondary" onclick="removeTableRow('bearing-table-body')">- Linha</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal('modal-bearing')">Cancelar</button>
+                <button class="btn-primary" onclick="createPolygonFromBearing()">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Lista Lat/Long (SIGEF) -->
+    <div id="modal-lista-latlong" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🌍 Lista de Coordenadas "Lat/Long (SIGEF)"</h2>
+                <button class="modal-close" onclick="closeModal('modal-lista-latlong')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="lista-latlong-name">Nome da camada:</label>
+                    <input type="text" id="lista-latlong-name" placeholder="TT" value="TT">
+                </div>
+                
+                <div class="form-group">
+                    <label for="lista-latlong-utm">Fuso UTM de destino:</label>
+                    <select id="lista-latlong-utm">
+                        <option value="18S">18S</option>
+                        <option value="19S">19S</option>
+                        <option value="20S">20S</option>
+                        <option value="21S" selected>21S</option>
+                        <option value="22S">22S</option>
+                        <option value="23S">23S</option>
+                        <option value="24S">24S</option>
+                        <option value="25S">25S</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="lista-latlong-color">Cor:</label>
+                    <input type="color" id="lista-latlong-color" value="#4CAF50">
+                </div>
+                
+                <div class="form-group">
+                    <label for="lista-latlong-coords">Coordenadas:</label>
+                    <textarea id="lista-latlong-coords" rows="10" placeholder='P-01;-56°23&#39;20,828";-14°29&#39;18,542"'></textarea>
+                    <small>Formato: VÉRTICE;LONGITUDE;LATITUDE  (graus° minutos' segundos,decimais")</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal('modal-lista-latlong')">Cancelar</button>
+                <button class="btn-primary" onclick="createPolygonFromListaLatLong()">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Tabela Lat/Long (SIGEF) -->
+    <div id="modal-tabela-latlong" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>🌐 Tabela de Coordenadas Lat/Long (SIGEF)</h2>
+                <button class="modal-close" onclick="closeModal('modal-tabela-latlong')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="tabela-latlong-name">Nome da camada:</label>
+                    <input type="text" id="tabela-latlong-name" placeholder="TT" value="TT">
+                </div>
+                
+                <div class="form-group">
+                    <label for="tabela-latlong-utm">Fuso UTM de destino:</label>
+                    <select id="tabela-latlong-utm">
+                        <option value="18S">18S</option>
+                        <option value="19S">19S</option>
+                        <option value="20S">20S</option>
+                        <option value="21S" selected>21S</option>
+                        <option value="22S">22S</option>
+                        <option value="23S">23S</option>
+                        <option value="24S">24S</option>
+                        <option value="25S">25S</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="tabela-latlong-color">Cor:</label>
+                    <input type="color" id="tabela-latlong-color" value="#4CAF50">
+                </div>
+                
+                <div class="form-group">
+                    <label>Coordenadas:</label>
+                    <div class="table-buttons">
+                        <button type="button" class="btn-add" onclick="addRowTabelaLatLong()">+ Linha</button>
+                        <button type="button" class="btn-remove" onclick="removeRowTabelaLatLong()">- Linha</button>
+                    </div>
+                    <div class="table-container">
+                        <table id="tabela-latlong-table" class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>VÉRTICE</th>
+                                    <th>LONGITUDE (DMS)</th>
+                                    <th>LATITUDE (DMS)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><input type="text" placeholder="P-01"></td>
+                                    <td><input type="text" placeholder='-56°23&#39;20,828"'></td>
+                                    <td><input type="text" placeholder='-14°29&#39;18,542"'></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="text" placeholder="P-02"></td>
+                                    <td><input type="text" placeholder='-56°23&#39;21,000"'></td>
+                                    <td><input type="text" placeholder='-14°29&#39;19,000"'></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="text" placeholder="P-03"></td>
+                                    <td><input type="text" placeholder='-56°23&#39;22,000"'></td>
+                                    <td><input type="text" placeholder='-14°29&#39;20,000"'></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal('modal-tabela-latlong')">Cancelar</button>
+                <button class="btn-primary" onclick="createPolygonFromTabelaLatLong()">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Vértices SIGEF -->
+    <div id="modal-poligono-sigef" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📦 Vértices SIGEF</h2>
+                <button class="modal-close" onclick="closeModal('modal-poligono-sigef')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="sigef-nome-imovel">Nome do Imóvel/Matrícula:</label>
+                    <input type="text" id="sigef-nome-imovel" placeholder="Digite o nome do imóvel ou matrícula">
+                </div>
+                
+                <div class="form-group">
+                    <label for="sigef-fuso">Fuso UTM de destino:</label>
+                    <select id="sigef-fuso">
+                        <option value="18S">18S</option>
+                        <option value="19S">19S</option>
+                        <option value="20S">20S</option>
+                        <option value="21S" selected>21S</option>
+                        <option value="22S">22S</option>
+                        <option value="23S">23S</option>
+                        <option value="24S">24S</option>
+                        <option value="25S">25S</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="sigef-arquivo">Arquivo Shapefile SIGEF (ZIP):</label>
+                    <input type="file" id="sigef-arquivo" accept=".zip" onchange="handleSIGEFFileSelect(event)">
+                    <small><strong>⚠️ Importante:</strong> Selecione o arquivo .ZIP contendo TODOS os arquivos do shapefile (.shp, .dbf, .shx, .prj)</small>
+                </div>
+                
+                <div id="sigef-info" style="display:none; margin-top: 10px; padding: 10px; background: #2A2A2A; border-radius: 4px;">
+                    <p><strong>Arquivo selecionado:</strong> <span id="sigef-filename"></span></p>
+                    <p><strong>Vértices encontrados:</strong> <span id="sigef-vertices-count">0</span></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal('modal-poligono-sigef')">Cancelar</button>
+                <button class="btn-primary" onclick="importarPoligonoSIGEF()">Importar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Legenda INCRA -->
+    <div id="modal-legend" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2>📊 Legenda - Camadas INCRA</h2>
+                <button class="close-btn" onclick="closeModal('modal-legend')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="legend-content" style="text-align: center;">
+                    <p>Carregando legenda...</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal('modal-legend')">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Mover Vértice -->
+    <div id="modal-mover-vertice" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📍 Mover Vértice</h2>
+                <button class="close-btn" onclick="closeModal('modal-mover-vertice')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="mover-vertice-camada">Camada:</label>
+                    <select id="mover-vertice-camada" onchange="loadVerticesForMove()">
+                        <option value="">Selecione uma camada</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="mover-vertice-id">Vértice:</label>
+                    <select id="mover-vertice-id">
+                        <option value="">Selecione um vértice</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="mover-vertice-e">Nova Coordenada E (UTM):</label>
+                    <input type="text" id="mover-vertice-e" placeholder="752000,250">
+                </div>
+                <div class="form-group">
+                    <label for="mover-vertice-n">Nova Coordenada N (UTM):</label>
+                    <input type="text" id="mover-vertice-n" placeholder="8569200,750">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal('modal-mover-vertice')">Cancelar</button>
+                <button class="btn-primary" onclick="aplicarMoverVertice()">Aplicar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Adicionar Vértice -->
+    <div id="modal-adicionar-vertice" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>➕ Adicionar Vértice</h2>
+                <button class="close-btn" onclick="closeModal('modal-adicionar-vertice')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="adicionar-vertice-camada">Camada:</label>
+                    <select id="adicionar-vertice-camada" onchange="loadVerticesForAdd()">
+                        <option value="">Selecione uma camada</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="adicionar-vertice-id">ID do Novo Vértice:</label>
+                    <input type="text" id="adicionar-vertice-id" placeholder="P-05">
+                </div>
+                <div class="form-group">
+                    <label for="adicionar-vertice-e">Coordenada E (UTM):</label>
+                    <input type="text" id="adicionar-vertice-e" placeholder="752000,250">
+                </div>
+                <div class="form-group">
+                    <label for="adicionar-vertice-n">Coordenada N (UTM):</label>
+                    <input type="text" id="adicionar-vertice-n" placeholder="8569200,750">
+                </div>
+                <div class="form-group">
+                    <label for="adicionar-vertice-posicao">Inserir após vértice:</label>
+                    <select id="adicionar-vertice-posicao">
+                        <option value="">Selecione posição</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal('modal-adicionar-vertice')">Cancelar</button>
+                <button class="btn-primary" onclick="aplicarAdicionarVertice()">Adicionar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Remover Vértice -->
+    <div id="modal-remover-vertice" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>➖ Remover Vértice</h2>
+                <button class="close-btn" onclick="closeModal('modal-remover-vertice')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="remover-vertice-camada">Camada:</label>
+                    <select id="remover-vertice-camada" onchange="loadVerticesForRemove()">
+                        <option value="">Selecione uma camada</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="remover-vertice-id">Vértice:</label>
+                    <select id="remover-vertice-id">
+                        <option value="">Selecione um vértice</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <small style="color: #F4A460;">⚠️ O polígono deve ter no mínimo 3 vértices.</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal('modal-remover-vertice')">Cancelar</button>
+                <button class="btn-primary" onclick="aplicarRemoverVertice()">Remover</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Mover Geometria -->
+    <div id="modal-mover-geometria" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🔄 Mover Geometria</h2>
+                <button class="close-btn" onclick="closeModal('modal-mover-geometria')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="mover-geometria-camada">Camada:</label>
+                    <select id="mover-geometria-camada">
+                        <option value="">Selecione uma camada</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="mover-geometria-dx">Deslocamento em X (metros):</label>
+                    <input type="text" id="mover-geometria-dx" placeholder="100,50">
+                    <small>Positivo = Leste, Negativo = Oeste</small>
+                </div>
+                <div class="form-group">
+                    <label for="mover-geometria-dy">Deslocamento em Y (metros):</label>
+                    <input type="text" id="mover-geometria-dy" placeholder="200,75">
+                    <small>Positivo = Norte, Negativo = Sul</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal('modal-mover-geometria')">Cancelar</button>
+                <button class="btn-primary" onclick="aplicarMoverGeometria()">Aplicar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- Leaflet Draw JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+    
+    <!-- Leaflet.Editable for interactive editing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.path.drag/0.0.6/L.Path.Drag.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-editable/1.2.0/Leaflet.Editable.min.js"></script>
+    
+    <!-- Turf.js for geospatial analysis -->
+    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+    
+    <!-- Proj4js for coordinat    <!-- Proj4js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.9.0/proj4.js"></script>
+
+    <!-- TerraGIS Core (Sistema de Camadas) -->
+    <script src="{{ url_for('static', filename='js/terra-core.js') }}"></script>
+
+    <!-- Main JavaScript -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+try {
+// Correção para Mover Geometria (Mapa) - usando eventos DOM
+console.log('✅ Correção Mover Geometria (Mapa) carregada!');
+
+// Variáveis globais
+var moverGeometriaMapaAtivo = false;
+var geometriaSelecionada = null;
+var geometriaOriginal = null;
+var pontoInicial = null;
+var previewLayer = null;
+var mapContainer = null;
+var mouseMoveHandler = null;
+var clickHandler = null;
+
+// Sobrescrever função original
+window.openMoverGeometriaMapaDialog = function() {
+    console.log('[MOVER] Abrindo dropdown');
+    
+    // Desativar outras ferramentas
+    desativarTodasFerramentasEdicao();
+    
+    moverGeometriaMapaAtivo = true;
+    
+    // Criar dropdown
+    var dropdown = document.createElement('div');
+    dropdown.id = 'dropdown-mover-geometria';
+    dropdown.style.cssText = 'position: absolute; top: 80px; left: 250px; z-index: 9999; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);';
+    
+    var label = document.createElement('label');
+    label.textContent = 'Selecione a geometria:';
+    label.style.cssText = 'display: block; margin-bottom: 8px; font-weight: bold;';
+    
+    var select = document.createElement('select');
+    select.style.cssText = 'width: 200px; padding: 8px;';
+    select.innerHTML = '<option value="">-- Selecione --</option>';
+    
+    for (var nome in terraManager.layers) {
+        var option = document.createElement('option');
+        option.value = nome;
+        option.textContent = nome;
+        select.appendChild(option);
+    }
+    
+    select.onchange = function() {
+        if (this.value) {
+            selecionarGeometriaParaMover(this.value);
+            dropdown.remove();
+        }
+    };
+    
+    dropdown.appendChild(label);
+    dropdown.appendChild(select);
+    document.body.appendChild(dropdown);
+    
+    showMessage('Selecione a geometria no menu dropdown.', 'info');
+};
+
+function selecionarGeometriaParaMover(layerName) {
+    geometriaSelecionada = terraManager.layers[layerName];
+    
+    if (!geometriaSelecionada) {
+        showMessage('Geometria não encontrada.', 'error');
+        desativarMoverGeometriaMapa();
+        return;
+    }
+    
+    console.log('[MOVER] Geometria selecionada:', layerName);
+    
+    // Salvar coordenadas originais
+    geometriaOriginal = geometriaSelecionada.vertices.map(function(v) {
+        return {e: v.e, n: v.n};
+    });
+    
+    // Ponto inicial = primeiro vértice
+    var primeiroVertice = geometriaSelecionada.vertices[0];
+    pontoInicial = utmToLatLng(primeiroVertice.e, primeiroVertice.n, geometriaSelecionada.fuso);
+    
+    // Desabilitar popups
+    Object.values(terraManager.layers).forEach(function(tl) {
+        if (tl.geometryLayer) {
+            tl.geometryLayer.closePopup();
+            tl.geometryLayer.unbindPopup();
+        }
+    });
+    
+    // Criar preview vermelho tracejado
+    var coordsOriginais = geometriaSelecionada.vertices.map(function(v) {
+        return utmToLatLng(v.e, v.n, geometriaSelecionada.fuso);
+    });
+    
+    previewLayer = L.polygon(coordsOriginais, {
+        color: 'red',
+        weight: 2,
+        dashArray: '5, 5',
+        fillOpacity: 0.1
+    }).addTo(map);
+    
+    // Desabilitar dragging do mapa
+    map.dragging.disable();
+    
+    // Obter container do mapa
+    mapContainer = map.getContainer();
+    
+    // Criar handlers de eventos DOM
+    mouseMoveHandler = function(e) {
+        if (!moverGeometriaMapaAtivo || !geometriaSelecionada || !previewLayer) return;
+        
+        // Converter posição do mouse para coordenadas do mapa
+        var containerPoint = L.point(e.clientX - mapContainer.getBoundingClientRect().left, 
+                                      e.clientY - mapContainer.getBoundingClientRect().top);
+        var pontoAtual = map.containerPointToLatLng(containerPoint);
+        
+        // Calcular deslocamento
+        var dLat = pontoAtual.lat - pontoInicial.lat;
+        var dLng = pontoAtual.lng - pontoInicial.lng;
+        
+        // Atualizar preview
+        var novasCoords = geometriaOriginal.map(function(v) {
+            var latlng = utmToLatLng(v.e, v.n, geometriaSelecionada.fuso);
+            return [latlng.lat + dLat, latlng.lng + dLng];
+        });
+        
+        previewLayer.setLatLngs(novasCoords);
+    };
+    
+    clickHandler = function(e) {
+        if (!moverGeometriaMapaAtivo || !geometriaSelecionada) return;
+        
+        e.stopPropagation();
+        e.preventDefault();
+        
+        console.log('[MOVER] Confirmando nova posição');
+        
+        // Converter posição do clique para coordenadas do mapa
+        var containerPoint = L.point(e.clientX - mapContainer.getBoundingClientRect().left, 
+                                      e.clientY - mapContainer.getBoundingClientRect().top);
+        var pontoFinal = map.containerPointToLatLng(containerPoint);
+        
+        // Converter para UTM
+        var pontoInicialUTM = latLngToUTM(pontoInicial.lat, pontoInicial.lng, geometriaSelecionada.fuso);
+        var pontoFinalUTM = latLngToUTM(pontoFinal.lat, pontoFinal.lng, geometriaSelecionada.fuso);
+        
+        var dx = pontoFinalUTM.e - pontoInicialUTM.e;
+        var dy = pontoFinalUTM.n - pontoInicialUTM.n;
+        
+        // Aplicar deslocamento
+        geometriaSelecionada.vertices = geometriaSelecionada.vertices.map(function(v) {
+            return {
+                id: v.id,
+                e: v.e + dx,
+                n: v.n + dy
+            };
+        });
+        
+        // Atualizar geometria
+        geometriaSelecionada.syncGeometry();
+        
+        showMessage('Geometria movida ' + dx.toFixed(2) + 'm (E), ' + dy.toFixed(2) + 'm (N)', 'success');
+        
+        // Desativar ferramenta
+        desativarMoverGeometriaMapa();
+    };
+    
+    // Adicionar eventos DOM
+    mapContainer.addEventListener('mousemove', mouseMoveHandler);
+    mapContainer.addEventListener('click', clickHandler);
+    
+    // Mudar cursor
+    mapContainer.style.cursor = 'move';
+    
+    // ESC para cancelar
+    document.addEventListener('keydown', onKeyDownMover);
+    
+    showMessage('Geometria \''+layerName+'\' selecionada. Mova o mouse para posicionar. Clique para fixar. ESC para cancelar.', 'success');
+}
+
+function onKeyDownMover(e) {
+    if (e.key === 'Escape' && moverGeometriaMapaAtivo) {
+        desativarMoverGeometriaMapa();
+    }
+}
+
+// Sobrescrever desativar
+window.desativarMoverGeometriaMapa = function() {
+    if (!moverGeometriaMapaAtivo) return;
+    
+    console.log('[MOVER] Desativando');
+    
+    moverGeometriaMapaAtivo = false;
+    geometriaSelecionada = null;
+    geometriaOriginal = null;
+    pontoInicial = null;
+    
+    // Restaurar cursor
+    if (mapContainer) {
+        mapContainer.style.cursor = '';
+    }
+    
+    // Remover preview
+    if (previewLayer) {
+        map.removeLayer(previewLayer);
+        previewLayer = null;
+    }
+    
+    // Remover eventos DOM
+    if (mapContainer && mouseMoveHandler) {
+        mapContainer.removeEventListener('mousemove', mouseMoveHandler);
+    }
+    if (mapContainer && clickHandler) {
+        mapContainer.removeEventListener('click', clickHandler);
+    }
+    
+    mouseMoveHandler = null;
+    clickHandler = null;
+    
+    // Reabilitar dragging do mapa
+    map.dragging.enable();
+    
+    // Remover evento ESC
+    document.removeEventListener('keydown', onKeyDownMover);
+    
+    // Restaurar popups
+    Object.values(terraManager.layers).forEach(function(tl) {
+        if (tl.geometryLayer) {
+            var layerName = tl.type === 'polygon' ? 
+                tl.name + '_Poligono' : tl.name + '_Polilinha';
+            tl.geometryLayer.bindPopup('<b>' + layerName + '</b>');
+        }
+    });
+    
+    // Remover dropdown se existir
+    var dropdown = document.getElementById('dropdown-mover-geometria');
+    if (dropdown) {
+        dropdown.remove();
+    }
+    
+    showMessage('Ferramenta Mover Geometria desativada.', 'info');
+};
+} catch(e) {
+    console.error('Erro ao carregar Mover Geometria (Mapa):', e);
+}
+    </script>
+
+    <script src="{{ url_for('static', filename='js/rotacionar-geometria.js') }}?v=1760488647"></script>
+
+    <!-- Modal Adicionar Vértice por Azimute/Rumo -->
+    <div id="modal-adicionar-vertice-azimute" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🧭 Adicionar Vértice por Azimute/Rumo</h2>
+                <button class="close-btn" onclick="closeModal('modal-adicionar-vertice-azimute')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="azimute-camada">1. Selecionar Geometria:</label>
+                    <select id="azimute-camada" onchange="loadVerticesForAzimute()">
+                        <option value="">Selecione uma camada</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="azimute-vertice-partida">2. Vértice de Partida:</label>
+                    <select id="azimute-vertice-partida">
+                        <option value="">Selecione um vértice</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="azimute-metodo">3. Método:</label>
+                    <select id="azimute-metodo" onchange="toggleQuadranteField()">
+                        <option value="azimute">Azimute + Distância</option>
+                        <option value="rumo">Rumo + Distância</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="azimute-novo-id">4. ID do Novo Vértice:</label>
+                    <input type="text" id="azimute-novo-id" placeholder="P-05">
+                </div>
+                <div class="form-group">
+                    <label for="azimute-valor" id="azimute-valor-label">Azimute (°):</label>
+                    <input type="text" id="azimute-valor" placeholder="45°30'15&quot; ou 45.5042">
+                </div>
+                <div class="form-group" id="azimute-quadrante-group" style="display: none;">
+                    <label for="azimute-quadrante">Quadrante:</label>
+                    <input type="text" id="azimute-quadrante" placeholder="NE, SE, SW ou NW">
+                </div>
+                <div class="form-group">
+                    <label for="azimute-distancia">Distância (m):</label>
+                    <input type="text" id="azimute-distancia" placeholder="100,50">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal('modal-adicionar-vertice-azimute')">Cancelar</button>
+                <button class="btn-primary" onclick="aplicarAdicionarVerticeAzimute()">Inserir Vértice</button>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
