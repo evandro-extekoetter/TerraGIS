@@ -2927,3 +2927,255 @@ function createPolylineFromBearing() {
     closeModal('modal-polyline-bearing');
 }
 
+// ==========================================
+// DESENHO À MÃO LIVRE
+// ==========================================
+
+let freehandDrawingActive = false;
+let freehandPoints = [];
+let freehandConfig = null;
+let freehandMarkers = [];
+let freehandPolyline = null;
+
+function openFreehandDrawingDialog(type) {
+    // Setar tipo padrão se fornecido
+    if (type === 'polygon' || type === 'polyline') {
+        const radios = document.getElementsByName('freehand-type');
+        radios.forEach(radio => {
+            radio.checked = (radio.value === type);
+        });
+    }
+    
+    openModal('modal-freehand-drawing');
+}
+
+function startFreehandDrawing() {
+    // Obter configurações
+    const layerName = document.getElementById('freehand-layer-name').value.trim();
+    const firstVertex = document.getElementById('freehand-first-vertex').value.trim();
+    const color = document.getElementById('freehand-color').value;
+    const typeRadio = document.querySelector('input[name="freehand-type"]:checked');
+    const type = typeRadio ? typeRadio.value : 'polygon';
+    
+    // Validar
+    if (!layerName) {
+        alert('Por favor, informe o nome da camada.');
+        return;
+    }
+    
+    if (!firstVertex) {
+        alert('Por favor, informe o nome do primeiro vértice.');
+        return;
+    }
+    
+    // Salvar configuração
+    freehandConfig = {
+        layerName: layerName,
+        firstVertex: firstVertex,
+        color: color,
+        type: type
+    };
+    
+    // Limpar desenho anterior
+    freehandPoints = [];
+    freehandMarkers.forEach(marker => map.removeLayer(marker));
+    freehandMarkers = [];
+    if (freehandPolyline) {
+        map.removeLayer(freehandPolyline);
+        freehandPolyline = null;
+    }
+    
+    // Ativar modo de desenho
+    freehandDrawingActive = true;
+    setActiveTool(`Desenho à Mão Livre (${type === 'polygon' ? 'Polígono' : 'Polilinha'})`);
+    
+    // Fechar modal
+    closeModal('modal-freehand-drawing');
+    
+    // Mostrar instruções
+    alert(`Desenho à mão livre ativado!\n\nClique no mapa para adicionar pontos.\nClique duplo para finalizar o desenho.\n\nMínimo: ${type === 'polygon' ? '3 pontos' : '2 pontos'}`);
+}
+
+function handleFreehandMapClick(e) {
+    if (!freehandDrawingActive) return;
+    
+    // Adicionar ponto
+    freehandPoints.push(e.latlng);
+    
+    // Adicionar marcador
+    const marker = L.circleMarker(e.latlng, {
+        radius: 5,
+        fillColor: freehandConfig.color,
+        color: '#000',
+        weight: 1,
+        opacity: 1,
+        fillOpacity: 0.8
+    }).addTo(map);
+    
+    freehandMarkers.push(marker);
+    
+    // Atualizar linha de visualização
+    if (freehandPolyline) {
+        map.removeLayer(freehandPolyline);
+    }
+    
+    if (freehandPoints.length > 1) {
+        freehandPolyline = L.polyline(freehandPoints, {
+            color: freehandConfig.color,
+            weight: 2,
+            opacity: 0.7
+        }).addTo(map);
+    }
+    
+    console.log(`Ponto ${freehandPoints.length} adicionado`);
+}
+
+function handleFreehandMapDblClick(e) {
+    if (!freehandDrawingActive) return;
+    
+    // Prevenir que o último clique seja adicionado duas vezes
+    e.originalEvent.preventDefault();
+    
+    // Validar número mínimo de pontos
+    const minPoints = freehandConfig.type === 'polygon' ? 3 : 2;
+    
+    if (freehandPoints.length < minPoints) {
+        alert(`É necessário pelo menos ${minPoints} pontos para criar ${freehandConfig.type === 'polygon' ? 'um polígono' : 'uma polilinha'}.`);
+        return;
+    }
+    
+    // Finalizar desenho
+    finalizeFreehandDrawing();
+}
+
+function finalizeFreehandDrawing() {
+    if (freehandPoints.length === 0) return;
+    
+    // Remover marcadores e linha temporária
+    freehandMarkers.forEach(marker => map.removeLayer(marker));
+    freehandMarkers = [];
+    if (freehandPolyline) {
+        map.removeLayer(freehandPolyline);
+        freehandPolyline = null;
+    }
+    
+    // Criar geometria
+    if (freehandConfig.type === 'polygon') {
+        createFreehandPolygon();
+    } else {
+        createFreehandPolyline();
+    }
+    
+    // Desativar modo de desenho
+    freehandDrawingActive = false;
+    setActiveTool('NENHUMA');
+    
+    // Limpar
+    freehandPoints = [];
+    freehandConfig = null;
+}
+
+function createFreehandPolygon() {
+    // Extrair coordenadas
+    const coords = freehandPoints.map(latlng => [latlng.lat, latlng.lng]);
+    
+    // Criar IDs dos vértices
+    const ids = [];
+    const firstVertexName = freehandConfig.firstVertex;
+    const match = firstVertexName.match(/^([A-Za-z-]+)(\d+)$/);
+    
+    if (match) {
+        const prefix = match[1];
+        let num = parseInt(match[2]);
+        for (let i = 0; i < coords.length; i++) {
+            ids.push(`${prefix}${String(num).padStart(match[2].length, '0')}`);
+            num++;
+        }
+    } else {
+        for (let i = 0; i < coords.length; i++) {
+            ids.push(`${firstVertexName}-${i + 1}`);
+        }
+    }
+    
+    // Usar função existente para desenhar polígono
+    const layerName = `${freehandConfig.layerName}_Poligono`;
+    drawPolygon(coords, ids, layerName, freehandConfig.color);
+    
+    console.log(`Polígono criado: ${layerName} com ${coords.length} vértices`);
+}
+
+function createFreehandPolyline() {
+    // Extrair coordenadas
+    const coords = freehandPoints.map(latlng => [latlng.lat, latlng.lng]);
+    
+    // Criar IDs dos vértices
+    const ids = [];
+    const firstVertexName = freehandConfig.firstVertex;
+    const match = firstVertexName.match(/^([A-Za-z-]+)(\d+)$/);
+    
+    if (match) {
+        const prefix = match[1];
+        let num = parseInt(match[2]);
+        for (let i = 0; i < coords.length; i++) {
+            ids.push(`${prefix}${String(num).padStart(match[2].length, '0')}`);
+            num++;
+        }
+    } else {
+        for (let i = 0; i < coords.length; i++) {
+            ids.push(`${firstVertexName}-${i + 1}`);
+        }
+    }
+    
+    // Usar função existente para desenhar polilinha
+    const layerName = `${freehandConfig.layerName}_Polilinha`;
+    drawPolyline(coords, ids, layerName, freehandConfig.color);
+    
+    console.log(`Polilinha criada: ${layerName} com ${coords.length} vértices`);
+}
+
+// Adicionar event listeners ao mapa
+map.on('click', handleFreehandMapClick);
+map.on('dblclick', handleFreehandMapDblClick);
+
+// Funções para abrir diálogos de POLILINHA
+
+function openPolylineCoordTableDialog(type) {
+    if (type === 'utm') {
+        openModal('modal-polyline-coord-table');
+        
+        // Adicionar 3 linhas iniciais se a tabela estiver vazia
+        const tbody = document.getElementById('polyline-coord-table-body');
+        if (tbody.rows.length === 0) {
+            for (let i = 0; i < 3; i++) {
+                addTableRow('polyline-coord-table-body', 3);
+            }
+        }
+    } else if (type === 'latlong') {
+        openModal('modal-polyline-tabela-latlong');
+        
+        // Adicionar 3 linhas iniciais se a tabela estiver vazia
+        const tbody = document.getElementById('polyline-tabela-latlong-body');
+        if (tbody.rows.length === 0) {
+            for (let i = 0; i < 3; i++) {
+                addTableRow('polyline-tabela-latlong-body', 3);
+            }
+        }
+    }
+}
+
+function openPolylineCoordListDialog(type) {
+    if (type === 'utm') {
+        openModal('modal-polyline-coord-list');
+    } else if (type === 'latlong') {
+        openModal('modal-polyline-lista-latlong');
+    }
+}
+
+function openPolylineAzimuthDialog() {
+    openModal('modal-polyline-azimuth');
+}
+
+function openPolylineBearingDialog() {
+    openModal('modal-polyline-bearing');
+}
+
