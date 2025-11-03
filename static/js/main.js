@@ -3002,6 +3002,10 @@ function startFreehandDrawing() {
     // Fechar modal
     closeModal('modal-freehand-drawing');
     
+    // Registrar event listeners do mapa
+    map.on('click', handleFreehandMapClick);
+    map.on('dblclick', handleFreehandDblClick);
+    
     // Mostrar instruções
     alert(`Desenho à mão livre ativado!\n\nClique no mapa para adicionar pontos.\nClique duplo para finalizar o desenho.\n\nMínimo: ${type === 'polygon' ? '3 pontos' : '2 pontos'}`);
 }
@@ -3079,6 +3083,10 @@ function finalizeFreehandDrawing() {
     // Desativar modo de desenho
     freehandDrawingActive = false;
     updateToolIndicator('nenhuma');
+    
+    // Remover event listeners
+    map.off('click', handleFreehandMapClick);
+    map.off('dblclick', handleFreehandDblClick);
     
     // Limpar
     freehandPoints = [];
