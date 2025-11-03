@@ -3133,49 +3133,4 @@ function createFreehandPolyline() {
     console.log(`Polilinha criada: ${layerName} com ${coords.length} vértices`);
 }
 
-// Adicionar event listeners ao mapa
-map.on('click', handleFreehandMapClick);
-map.on('dblclick', handleFreehandMapDblClick);
-
-// Funções para abrir diálogos de POLILINHA
-
-function openPolylineCoordTableDialog(type) {
-    if (type === 'utm') {
-        openModal('modal-polyline-coord-table');
-        
-        // Adicionar 3 linhas iniciais se a tabela estiver vazia
-        const tbody = document.getElementById('polyline-coord-table-body');
-        if (tbody.rows.length === 0) {
-            for (let i = 0; i < 3; i++) {
-                addTableRow('polyline-coord-table-body', 3);
-            }
-        }
-    } else if (type === 'latlong') {
-        openModal('modal-polyline-tabela-latlong');
-        
-        // Adicionar 3 linhas iniciais se a tabela estiver vazia
-        const tbody = document.getElementById('polyline-tabela-latlong-body');
-        if (tbody.rows.length === 0) {
-            for (let i = 0; i < 3; i++) {
-                addTableRow('polyline-tabela-latlong-body', 3);
-            }
-        }
-    }
-}
-
-function openPolylineCoordListDialog(type) {
-    if (type === 'utm') {
-        openModal('modal-polyline-coord-list');
-    } else if (type === 'latlong') {
-        openModal('modal-polyline-lista-latlong');
-    }
-}
-
-function openPolylineAzimuthDialog() {
-    openModal('modal-polyline-azimuth');
-}
-
-function openPolylineBearingDialog() {
-    openModal('modal-polyline-bearing');
-}
 
