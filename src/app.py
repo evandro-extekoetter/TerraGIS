@@ -352,10 +352,15 @@ def process_sigef():
         shp_path = os.path.join(temp_dir, shp_files[0])
         
         # Processar shapefile usando leitura binária simples
+        print(f"🔍 Processando shapefile: {shp_path}")
         coords, ids = process_shapefile_simple(shp_path)
         
         if not coords:
-            return jsonify({'error': 'Não foi possível extrair vértices do shapefile'}), 400
+            # Tentar ler erro do log
+            error_msg = 'Não foi possível extrair vértices do shapefile. '
+            error_msg += 'Verifique se o arquivo contém geometrias de pontos ou polígonos e se todos os arquivos (.shp, .dbf, .shx, .prj) estão no ZIP.'
+            print(f"❌ {error_msg}")
+            return jsonify({'error': error_msg}), 400
         
         # Limpar arquivos temporários
         import shutil
@@ -379,7 +384,12 @@ def process_shapefile_simple(shp_path):
     ids = []
     
     try:
-        import shapefile
+        try:
+            import shapefile
+        except ImportError:
+            print("❌ Biblioteca 'pyshp' não instalada!")
+            print("🔧 Execute: pip install pyshp")
+            return [], []
         
         # Verificar se arquivo existe
         if not os.path.exists(shp_path):

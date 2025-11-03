@@ -75,106 +75,27 @@
                         <img src="{{ url_for('static', filename='icons/construction_icon.png') }}" class="icon" alt=""> CONSTRUÇÃO ▼
                     </button>
                     <div id="construcao-top-menu" class="top-dropdown" style="display: none;">
-                        <!-- POLÍGONO -->
-                        <button class="dropdown-item submenu-trigger" onclick="toggleSubmenu(event, 'poligono-submenu')">
-                            <img src="{{ url_for('static', filename='icons/polygon_icon.png') }}" class="icon" alt=""> POLÍGONO ▶
+                        <button class="dropdown-item" onclick="openCoordListDialog()">
+                            <img src="{{ url_for('static', filename='icons/list_icon.png') }}" class="icon" alt=""> UTM - Lista de Coordenadas
                         </button>
-                        <div id="poligono-submenu" class="top-dropdown submenu" style="display: none; left: 100%; top: 0; margin-left: 4px;">
-                            <button class="dropdown-item submenu-trigger" onclick="toggleSubmenu(event, 'poligono-tabela-submenu')">
-                                <img src="{{ url_for('static', filename='icons/table_icon.png') }}" class="icon" alt=""> TABELA ▶
-                            </button>
-                            <div id="poligono-tabela-submenu" class="top-dropdown submenu" style="display: none; left: 100%; top: 0; margin-left: 4px;">
-                                <button class="dropdown-item" onclick="openCoordTableDialog()">
-                                    <img src="{{ url_for('static', filename='icons/utm_icon.png') }}" class="icon" alt=""> UTM
-                                </button>
-                                <button class="dropdown-item" onclick="openTabelaLatLongDialog()">
-                                    <img src="{{ url_for('static', filename='icons/geographic_icon.png') }}" class="icon" alt=""> GEOGRÁFICA
-                                </button>
-                            </div>
-                            
-                            <button class="dropdown-item submenu-trigger" onclick="toggleSubmenu(event, 'poligono-lista-submenu')">
-                                <img src="{{ url_for('static', filename='icons/list_icon.png') }}" class="icon" alt=""> LISTA ▶
-                            </button>
-                            <div id="poligono-lista-submenu" class="top-dropdown submenu" style="display: none; left: 100%; top: 0; margin-left: 4px;">
-                                <button class="dropdown-item" onclick="openCoordListDialog()">
-                                    <img src="{{ url_for('static', filename='icons/utm_icon.png') }}" class="icon" alt=""> UTM
-                                </button>
-                                <button class="dropdown-item" onclick="openListaLatLongDialog()">
-                                    <img src="{{ url_for('static', filename='icons/geographic_icon.png') }}" class="icon" alt=""> GEOGRÁFICA
-                                </button>
-                            </div>
-                            
-                            <button class="dropdown-item submenu-trigger" onclick="toggleSubmenu(event, 'poligono-angulos-submenu')">
-                                <img src="{{ url_for('static', filename='icons/azimuth_icon.png') }}" class="icon" alt=""> ÂNGULOS ▶
-                            </button>
-                            <div id="poligono-angulos-submenu" class="top-dropdown submenu" style="display: none; left: 100%; top: 0; margin-left: 4px;">
-                                <button class="dropdown-item" onclick="openAzimuthDialog()">
-                                    <img src="{{ url_for('static', filename='icons/azimuth_icon.png') }}" class="icon" alt=""> AZIMUTE + DISTÂNCIA
-                                </button>
-                                <button class="dropdown-item" onclick="openBearingDialog()">
-                                    <img src="{{ url_for('static', filename='icons/azimuth_icon.png') }}" class="icon" alt=""> RUMO + DISTÂNCIA
-                                </button>
-                            </div>
-                            
-                            <button class="dropdown-item" onclick="openPoligonoSIGEFDialog()">
-                                <img src="{{ url_for('static', filename='icons/sigef_icon.png') }}" class="icon" alt=""> SIGEF
-                            </button>
-                        </div>
-                        
-                        <!-- POLILINHA -->
-                        <button class="dropdown-item submenu-trigger" onclick="toggleSubmenu(event, 'polilinha-submenu')">
-                            <img src="{{ url_for('static', filename='icons/polyline_icon.png') }}" class="icon" alt=""> POLILINHA ▶
+                        <button class="dropdown-item" onclick="openCoordTableDialog()">
+                            <img src="{{ url_for('static', filename='icons/table_icon.png') }}" class="icon" alt=""> UTM - Tabela de Coordenadas
                         </button>
-                        <div id="polilinha-submenu" class="top-dropdown submenu" style="display: none; left: 100%; top: 0; margin-left: 4px;">
-                            <button class="dropdown-item submenu-trigger" onclick="toggleSubmenu(event, 'polilinha-tabela-submenu')">
-                                <img src="{{ url_for('static', filename='icons/table_icon.png') }}" class="icon" alt=""> TABELA ▶
-                            </button>
-                            <div id="polilinha-tabela-submenu" class="top-dropdown submenu" style="display: none; left: 100%; top: 0; margin-left: 4px;">
-                                <button class="dropdown-item" onclick="openCoordTableDialog()">
-                                    <img src="{{ url_for('static', filename='icons/utm_icon.png') }}" class="icon" alt=""> UTM
-                                </button>
-                                <button class="dropdown-item" onclick="openTabelaLatLongDialog()">
-                                    <img src="{{ url_for('static', filename='icons/geographic_icon.png') }}" class="icon" alt=""> GEOGRÁFICA
-                                </button>
-                            </div>
-                            
-                            <button class="dropdown-item submenu-trigger" onclick="toggleSubmenu(event, 'polilinha-lista-submenu')">
-                                <img src="{{ url_for('static', filename='icons/list_icon.png') }}" class="icon" alt=""> LISTA ▶
-                            </button>
-                            <div id="polilinha-lista-submenu" class="top-dropdown submenu" style="display: none; left: 100%; top: 0; margin-left: 4px;">
-                                <button class="dropdown-item" onclick="openCoordListDialog()">
-                                    <img src="{{ url_for('static', filename='icons/utm_icon.png') }}" class="icon" alt=""> UTM
-                                </button>
-                                <button class="dropdown-item" onclick="openListaLatLongDialog()">
-                                    <img src="{{ url_for('static', filename='icons/geographic_icon.png') }}" class="icon" alt=""> GEOGRÁFICA
-                                </button>
-                            </div>
-                            
-                            <button class="dropdown-item submenu-trigger" onclick="toggleSubmenu(event, 'polilinha-angulos-submenu')">
-                                <img src="{{ url_for('static', filename='icons/azimuth_icon.png') }}" class="icon" alt=""> ÂNGULOS ▶
-                            </button>
-                            <div id="polilinha-angulos-submenu" class="top-dropdown submenu" style="display: none; left: 100%; top: 0; margin-left: 4px;">
-                                <button class="dropdown-item" onclick="openAzimuthDialog()">
-                                    <img src="{{ url_for('static', filename='icons/azimuth_icon.png') }}" class="icon" alt=""> AZIMUTE + DISTÂNCIA
-                                </button>
-                                <button class="dropdown-item" onclick="openBearingDialog()">
-                                    <img src="{{ url_for('static', filename='icons/azimuth_icon.png') }}" class="icon" alt=""> RUMO + DISTÂNCIA
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <!-- MÃO LIVRE -->
-                        <button class="dropdown-item submenu-trigger" onclick="toggleSubmenu(event, 'maolivre-submenu')">
-                            <img src="{{ url_for('static', filename='icons/draw_icon.png') }}" class="icon" alt=""> MÃO LIVRE ▶
+                        <button class="dropdown-item" onclick="openListaLatLongDialog()">
+                            <img src="{{ url_for('static', filename='icons/list_icon.png') }}" class="icon" alt=""> Geográficas - Lista
                         </button>
-                        <div id="maolivre-submenu" class="top-dropdown submenu" style="display: none; left: 100%; top: 0; margin-left: 4px;">
-                            <button class="dropdown-item" onclick="alert('Função Mão Livre - Polígono em desenvolvimento')">
-                                <img src="{{ url_for('static', filename='icons/polygon_icon.png') }}" class="icon" alt=""> POLÍGONO
-                            </button>
-                            <button class="dropdown-item" onclick="alert('Função Mão Livre - Polilinha em desenvolvimento')">
-                                <img src="{{ url_for('static', filename='icons/polyline_icon.png') }}" class="icon" alt=""> POLILINHA
-                            </button>
-                        </div>
+                        <button class="dropdown-item" onclick="openTabelaLatLongDialog()">
+                            <img src="{{ url_for('static', filename='icons/table_icon.png') }}" class="icon" alt=""> Geográficas - Tabela
+                        </button>
+                        <button class="dropdown-item" onclick="openAzimuthDialog()">
+                            <img src="{{ url_for('static', filename='icons/azimuth_icon.png') }}" class="icon" alt=""> Azimute e Distância
+                        </button>
+                        <button class="dropdown-item" onclick="openBearingDialog()">
+                            <img src="{{ url_for('static', filename='icons/azimuth_icon.png') }}" class="icon" alt=""> Rumo e Distância
+                        </button>
+                        <button class="dropdown-item" onclick="openPoligonoSIGEFDialog()">
+                            <img src="{{ url_for('static', filename='icons/sigef_icon.png') }}" class="icon" alt=""> SIGEF
+                        </button>
                     </div>
                 </div>
                 
@@ -402,7 +323,19 @@
                     <label for="coord-list-name">Nome da camada:</label>
                     <input type="text" id="coord-list-name" placeholder="TT" value="TT">
                 </div>
-
+                <div class="form-group">
+                    <label for="coord-list-fuso">Fuso UTM:</label>
+                    <select id="coord-list-fuso">
+                        <option value="18S">18S</option>
+                        <option value="19S">19S</option>
+                        <option value="20S">20S</option>
+                        <option value="21S" selected>21S</option>
+                        <option value="22S">22S</option>
+                        <option value="23S">23S</option>
+                        <option value="24S">24S</option>
+                        <option value="25S">25S</option>
+                    </select>
+                </div>
                 <div class="form-group">
                     <label for="coord-list-color">Cor:</label>
                     <input type="color" id="coord-list-color" value="#2196F3">
@@ -432,7 +365,19 @@
                     <label for="coord-table-name">Nome da camada:</label>
                     <input type="text" id="coord-table-name" placeholder="TT" value="TT">
                 </div>
-
+                <div class="form-group">
+                    <label for="coord-table-fuso">Fuso UTM:</label>
+                    <select id="coord-table-fuso">
+                        <option value="18S">18S</option>
+                        <option value="19S">19S</option>
+                        <option value="20S">20S</option>
+                        <option value="21S" selected>21S</option>
+                        <option value="22S">22S</option>
+                        <option value="23S">23S</option>
+                        <option value="24S">24S</option>
+                        <option value="25S">25S</option>
+                    </select>
+                </div>
                 <div class="form-group">
                     <label for="coord-table-color">Cor:</label>
                     <input type="color" id="coord-table-color" value="#2196F3">
@@ -496,7 +441,19 @@
                         
                         <!-- Aba 2: UTM -->
                         <div class="tab-pane" id="azimuth-tab-1">
-
+                            <div class="form-group">
+                                <label for="azimuth-utm-fuso">Fuso UTM:</label>
+                                <select id="azimuth-utm-fuso">
+                                    <option value="18S">18S</option>
+                                    <option value="19S">19S</option>
+                                    <option value="20S">20S</option>
+                                    <option value="21S" selected>21S</option>
+                                    <option value="22S">22S</option>
+                                    <option value="23S">23S</option>
+                                    <option value="24S">24S</option>
+                                    <option value="25S">25S</option>
+                                </select>
+                </div>
                 <div class="form-group">
                     <label for="azimuth-color">Cor:</label>
                     <input type="color" id="azimuth-color" value="#FF9800">
@@ -509,7 +466,19 @@
                         
                         <!-- Aba 3: Lat/Long -->
                         <div class="tab-pane" id="azimuth-tab-2">
-
+                            <div class="form-group">
+                                <label for="azimuth-ll-fuso">Fuso UTM de destino:</label>
+                                <select id="azimuth-ll-fuso">
+                                    <option value="18S">18S</option>
+                                    <option value="19S">19S</option>
+                                    <option value="20S">20S</option>
+                                    <option value="21S" selected>21S</option>
+                                    <option value="22S">22S</option>
+                                    <option value="23S">23S</option>
+                                    <option value="24S">24S</option>
+                                    <option value="25S">25S</option>
+                                </select>
+                            </div>
                             <div class="form-group">
                                 <label for="azimuth-start-ll">Vértice inicial (id;longitude;latitude):</label>
                                 <input type="text" id="azimuth-start-ll" placeholder='P-01;-56°23\'20,828";-14°29\'18,542"'>
@@ -579,7 +548,19 @@
                         
                         <!-- Aba 2: UTM -->
                         <div class="tab-pane" id="bearing-tab-1">
-
+                            <div class="form-group">
+                                <label for="bearing-utm-fuso">Fuso UTM:</label>
+                                <select id="bearing-utm-fuso">
+                                    <option value="18S">18S</option>
+                                    <option value="19S">19S</option>
+                                    <option value="20S">20S</option>
+                                    <option value="21S" selected>21S</option>
+                                    <option value="22S">22S</option>
+                                    <option value="23S">23S</option>
+                                    <option value="24S">24S</option>
+                                    <option value="25S">25S</option>
+                                </select>
+                </div>
                 <div class="form-group">
                     <label for="bearing-color">Cor:</label>
                     <input type="color" id="bearing-color" value="#9C27B0">
@@ -592,7 +573,19 @@
                         
                         <!-- Aba 3: Lat/Long -->
                         <div class="tab-pane" id="bearing-tab-2">
-
+                            <div class="form-group">
+                                <label for="bearing-ll-fuso">Fuso UTM de destino:</label>
+                                <select id="bearing-ll-fuso">
+                                    <option value="18S">18S</option>
+                                    <option value="19S">19S</option>
+                                    <option value="20S">20S</option>
+                                    <option value="21S" selected>21S</option>
+                                    <option value="22S">22S</option>
+                                    <option value="23S">23S</option>
+                                    <option value="24S">24S</option>
+                                    <option value="25S">25S</option>
+                                </select>
+                            </div>
                             <div class="form-group">
                                 <label for="bearing-start-ll">Vértice inicial (id;longitude;latitude):</label>
                                 <input type="text" id="bearing-start-ll" placeholder='P-01;-56°23\'20,828";-14°29\'18,542"'>
@@ -646,7 +639,19 @@
                     <input type="text" id="lista-latlong-name" placeholder="TT" value="TT">
                 </div>
                 
-
+                <div class="form-group">
+                    <label for="lista-latlong-utm">Fuso UTM de destino:</label>
+                    <select id="lista-latlong-utm">
+                        <option value="18S">18S</option>
+                        <option value="19S">19S</option>
+                        <option value="20S">20S</option>
+                        <option value="21S" selected>21S</option>
+                        <option value="22S">22S</option>
+                        <option value="23S">23S</option>
+                        <option value="24S">24S</option>
+                        <option value="25S">25S</option>
+                    </select>
+                </div>
                 <div class="form-group">
                     <label for="lista-latlong-color">Cor:</label>
                     <input type="color" id="lista-latlong-color" value="#4CAF50">
@@ -678,7 +683,19 @@
                     <input type="text" id="tabela-latlong-name" placeholder="TT" value="TT">
                 </div>
                 
-
+                <div class="form-group">
+                    <label for="tabela-latlong-utm">Fuso UTM de destino:</label>
+                    <select id="tabela-latlong-utm">
+                        <option value="18S">18S</option>
+                        <option value="19S">19S</option>
+                        <option value="20S">20S</option>
+                        <option value="21S" selected>21S</option>
+                        <option value="22S">22S</option>
+                        <option value="23S">23S</option>
+                        <option value="24S">24S</option>
+                        <option value="25S">25S</option>
+                    </select>
+                </div>
                 <div class="form-group">
                     <label for="tabela-latlong-color">Cor:</label>
                     <input type="color" id="tabela-latlong-color" value="#4CAF50">
@@ -740,7 +757,20 @@
                     <input type="text" id="sigef-nome-imovel" placeholder="Digite o nome do imóvel ou matrícula">
                 </div>
                 
-
+                <div class="form-group">
+                    <label for="sigef-fuso">Fuso UTM de destino:</label>
+                    <select id="sigef-fuso">
+                        <option value="18S">18S</option>
+                        <option value="19S">19S</option>
+                        <option value="20S">20S</option>
+                        <option value="21S" selected>21S</option>
+                        <option value="22S">22S</option>
+                        <option value="23S">23S</option>
+                        <option value="24S">24S</option>
+                        <option value="25S">25S</option>
+                    </select>
+                </div>
+                
                 <div class="form-group">
                     <label for="sigef-arquivo">Arquivo Shapefile SIGEF (ZIP):</label>
                     <input type="file" id="sigef-arquivo" accept=".zip" onchange="handleSIGEFFileSelect(event)">
