@@ -149,10 +149,10 @@
                                         <img src="{{ url_for('static', filename='icons/table_icon.png') }}" class="icon" alt=""> TABELA ▶
                                     </button>
                                     <div id="polilinha-tabela-submenu" class="top-dropdown" style="display: none; position: absolute; left: 100%; top: 0; margin-left: 4px;">
-                                        <button class="dropdown-item" onclick="alert('Polilinha Tabela UTM em desenvolvimento')">
+                                        <button class="dropdown-item" onclick="openPolylineCoordTableDialog()">
                                             <img src="{{ url_for('static', filename='icons/table_icon.png') }}" class="icon" alt=""> UTM
                                         </button>
-                                        <button class="dropdown-item" onclick="alert('Polilinha Tabela Geográfica em desenvolvimento')">
+                                        <button class="dropdown-item" onclick="openPolylineTabelaLatLongDialog()">
                                             <img src="{{ url_for('static', filename='icons/table_icon.png') }}" class="icon" alt=""> GEOGRÁFICA
                                         </button>
                                     </div>
@@ -164,10 +164,10 @@
                                         <img src="{{ url_for('static', filename='icons/list_icon.png') }}" class="icon" alt=""> LISTA ▶
                                     </button>
                                     <div id="polilinha-lista-submenu" class="top-dropdown" style="display: none; position: absolute; left: 100%; top: 0; margin-left: 4px;">
-                                        <button class="dropdown-item" onclick="alert('Polilinha Lista UTM em desenvolvimento')">
+                                        <button class="dropdown-item" onclick="openPolylineCoordListDialog()">
                                             <img src="{{ url_for('static', filename='icons/list_icon.png') }}" class="icon" alt=""> UTM
                                         </button>
-                                        <button class="dropdown-item" onclick="alert('Polilinha Lista Geográfica em desenvolvimento')">
+                                        <button class="dropdown-item" onclick="openPolylineListaLatLongDialog()">
                                             <img src="{{ url_for('static', filename='icons/list_icon.png') }}" class="icon" alt=""> GEOGRÁFICA
                                         </button>
                                     </div>
@@ -179,10 +179,10 @@
                                         <img src="{{ url_for('static', filename='icons/azimuth_icon.png') }}" class="icon" alt=""> ÂNGULOS ▶
                                     </button>
                                     <div id="polilinha-angulos-submenu" class="top-dropdown" style="display: none; position: absolute; left: 100%; top: 0; margin-left: 4px;">
-                                        <button class="dropdown-item" onclick="alert('Polilinha Azimute em desenvolvimento')">
+                                        <button class="dropdown-item" onclick="openPolylineAzimuthDialog()">
                                             <img src="{{ url_for('static', filename='icons/azimuth_icon.png') }}" class="icon" alt=""> AZIMUTE + DISTÂNCIA
                                         </button>
-                                        <button class="dropdown-item" onclick="alert('Polilinha Rumo em desenvolvimento')">
+                                        <button class="dropdown-item" onclick="openPolylineBearingDialog()">
                                             <img src="{{ url_for('static', filename='icons/azimuth_icon.png') }}" class="icon" alt=""> RUMO + DISTÂNCIA
                                         </button>
                                     </div>
@@ -200,7 +200,7 @@
                                 <button class="dropdown-item" onclick="alert('Mão Livre Polígono em desenvolvimento')">
                                     <img src="{{ url_for('static', filename='icons/polygon_icon.png') }}" class="icon" alt=""> POLÍGONO
                                 </button>
-                                <button class="dropdown-item" onclick="alert('Mão Livre Polilinha em desenvolvimento')">
+                                <button class="dropdown-item" onclick="openFreehandDialog('polyline')">
                                     <img src="{{ url_for('static', filename='icons/polyline_icon.png') }}" class="icon" alt=""> POLILINHA
                                 </button>
                             </div>
