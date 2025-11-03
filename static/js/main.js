@@ -3089,8 +3089,20 @@ function finalizeFreehandDrawing() {
 }
 
 function createFreehandPolygon() {
-    // Extrair coordenadas
-    const coords = freehandPoints.map(latlng => [latlng.lat, latlng.lng]);
+    console.log('=== createFreehandPolygon CHAMADA ===');
+    console.log('freehandPoints:', freehandPoints);
+    console.log('freehandConfig:', freehandConfig);
+    
+    // Usar fuso do projeto
+    const fuso = currentProject ? currentProject.fuso : 22;
+    console.log('fuso do projeto:', fuso);
+    
+    // Converter lat/lng para UTM
+    const coords = freehandPoints.map(latlng => {
+        const utm = latLngToUTM(latlng.lat, latlng.lng, fuso);
+        return [utm.e, utm.n];
+    });
+    console.log('coords convertidas para UTM:', coords);
     
     // Criar IDs dos vértices
     const ids = [];
@@ -3112,14 +3124,31 @@ function createFreehandPolygon() {
     
     // Usar função existente para desenhar polígono
     const layerName = `${freehandConfig.layerName}_Poligono`;
-    drawPolygon(coords, ids, layerName, freehandConfig.color);
+    console.log('layerName:', layerName);
+    console.log('ids:', ids);
+    
+    const colors = {
+        line: freehandConfig.color,
+        fill: freehandConfig.color,
+        vertex: freehandConfig.color
+    };
+    console.log('colors:', colors);
+    console.log('Chamando drawPolygon...');
+    drawPolygon(coords, ids, layerName, fuso, colors);
+    console.log('drawPolygon retornou');
     
     console.log(`Polígono criado: ${layerName} com ${coords.length} vértices`);
 }
 
 function createFreehandPolyline() {
-    // Extrair coordenadas
-    const coords = freehandPoints.map(latlng => [latlng.lat, latlng.lng]);
+    // Usar fuso do projeto
+    const fuso = currentProject ? currentProject.fuso : 22;
+    
+    // Converter lat/lng para UTM
+    const coords = freehandPoints.map(latlng => {
+        const utm = latLngToUTM(latlng.lat, latlng.lng, fuso);
+        return [utm.e, utm.n];
+    });
     
     // Criar IDs dos vértices
     const ids = [];
@@ -3141,7 +3170,11 @@ function createFreehandPolyline() {
     
     // Usar função existente para desenhar polilinha
     const layerName = `${freehandConfig.layerName}_Polilinha`;
-    drawPolyline(coords, ids, layerName, freehandConfig.color);
+    const colors = {
+        line: freehandConfig.color,
+        vertex: freehandConfig.color
+    };
+    drawPolyline(coords, ids, layerName, fuso, colors);
     
     console.log(`Polilinha criada: ${layerName} com ${coords.length} vértices`);
 }
