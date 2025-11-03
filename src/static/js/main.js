@@ -2511,3 +2511,33 @@ function updateToolIndicator(toolName) {
     }
 }
 
+
+
+/**
+ * Alterna a visibilidade dos submenus
+ * @param {Event} event - Evento do clique
+ * @param {string} submenuId - ID do submenu a ser alternado
+ */
+function toggleSubmenu(event, submenuId) {
+    event.stopPropagation(); // Evitar que o clique feche o menu pai
+    
+    const submenu = document.getElementById(submenuId);
+    if (!submenu) return;
+    
+    // Fechar todos os outros submenus no mesmo nível
+    const parentMenu = submenu.parentElement;
+    const allSubmenus = parentMenu.querySelectorAll('.submenu');
+    allSubmenus.forEach(s => {
+        if (s.id !== submenuId) {
+            s.style.display = 'none';
+        }
+    });
+    
+    // Alternar o submenu atual
+    if (submenu.style.display === 'none' || submenu.style.display === '') {
+        submenu.style.display = 'block';
+    } else {
+        submenu.style.display = 'none';
+    }
+}
+
