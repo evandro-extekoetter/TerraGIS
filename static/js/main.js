@@ -3004,10 +3004,10 @@ function startFreehandDrawing() {
     
     // Registrar event listeners do mapa
     map.on('click', handleFreehandMapClick);
-    map.on('dblclick', handleFreehandDblClick);
+    document.addEventListener('keydown', handleFreehandKeyPress);
     
     // Mostrar instruções
-    alert(`Desenho à mão livre ativado!\n\nClique no mapa para adicionar pontos.\nClique duplo para finalizar o desenho.\n\nMínimo: ${type === 'polygon' ? '3 pontos' : '2 pontos'}`);
+    alert(`Desenho à mão livre ativado!\n\nClique no mapa para adicionar pontos.\nPressione ENTER para finalizar.\n\nMínimo: ${type === 'polygon' ? '3 pontos' : '2 pontos'}`);
 }
 
 function handleFreehandMapClick(e) {
@@ -3044,22 +3044,17 @@ function handleFreehandMapClick(e) {
     console.log(`Ponto ${freehandPoints.length} adicionado`);
 }
 
-function handleFreehandMapDblClick(e) {
+function handleFreehandKeyPress(e) {
     if (!freehandDrawingActive) return;
-    
-    // Prevenir que o último clique seja adicionado duas vezes
-    e.originalEvent.preventDefault();
-    
-    // Validar número mínimo de pontos
-    const minPoints = freehandConfig.type === 'polygon' ? 3 : 2;
-    
-    if (freehandPoints.length < minPoints) {
-        alert(`É necessário pelo menos ${minPoints} pontos para criar ${freehandConfig.type === 'polygon' ? 'um polígono' : 'uma polilinha'}.`);
-        return;
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        const minPoints = freehandConfig.type === 'polygon' ? 3 : 2;
+        if (freehandPoints.length < minPoints) {
+            alert(`É necessário pelo menos ${minPoints} pontos para criar ${freehandConfig.type === 'polygon' ? 'um polígono' : 'uma polilinha'}.`);
+            return;
+        }
+        finalizeFreehandDrawing();
     }
-    
-    // Finalizar desenho
-    finalizeFreehandDrawing();
 }
 
 function finalizeFreehandDrawing() {
@@ -3086,7 +3081,7 @@ function finalizeFreehandDrawing() {
     
     // Remover event listeners
     map.off('click', handleFreehandMapClick);
-    map.off('dblclick', handleFreehandDblClick);
+    document.removeEventListener('keydown', handleFreehandKeyPress);
     
     // Limpar
     freehandPoints = [];
