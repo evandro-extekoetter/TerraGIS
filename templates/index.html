@@ -214,27 +214,53 @@
                         <img src="{{ url_for('static', filename='icons/edit_icon.png') }}" class="icon" alt=""> EDIÇÃO ▼
                     </button>
                     <div id="edicao-top-menu" class="top-dropdown" style="display: none;">
-                        <button class="dropdown-item" onclick="ativarAdicionarVerticesMapa()">
-                            <img src="{{ url_for('static', filename='icons/move_vertices_icon.png') }}" class="icon" alt=""> Vértice - Adicionar (Mapa)
-                        </button>
-                        <button class="dropdown-item" onclick="ativarMoverVerticesMapa()">
-                            <img src="{{ url_for('static', filename='icons/move_vertices_icon.png') }}" class="icon" alt=""> Vértice - Mover (Mapa)
-                        </button>
-                        <button class="dropdown-item" onclick="ativarRemoverVerticesMapa()">
-                            <img src="{{ url_for('static', filename='icons/remove_icon.png') }}" class="icon" alt=""> Vértice - Remover
-                        </button>
-                        <button class="dropdown-item" onclick="ativarRenomearVerticeMapa()">
-                            <img src="{{ url_for('static', filename='icons/rename_icon.png') }}" class="icon" alt=""> Vértice - Renomear
-                        </button>
-                        <button class="dropdown-item" onclick="openMoverGeometriaMapaDialog()">
-                            <img src="{{ url_for('static', filename='icons/move_geometry_icon.png') }}" class="icon" alt=""> Geometria - Mover (Mapa)
-                        </button>
-                        <button class="dropdown-item" onclick="openMoverGeometriaDialog()">
-                            <img src="{{ url_for('static', filename='icons/coordinates_icon.png') }}" class="icon" alt=""> Geometria - Mover (Digitando)
-                        </button>
-                        <button class="dropdown-item" onclick="openRotacionarGeometriaDialog()">
-                            <img src="{{ url_for('static', filename='icons/rotate_icon.png') }}" class="icon" alt=""> Geometria - Rotacionar
-                        </button>
+                        <!-- VÉRTICE submenu -->
+                        <div class="submenu-container">
+                            <button class="dropdown-item submenu-trigger" onclick="toggleSubmenu(event, 'edicao-vertice-submenu')">
+                                <img src="{{ url_for('static', filename='icons/move_vertices_icon.png') }}" class="icon" alt=""> VÉRTICE ▶
+                            </button>
+                            <div id="edicao-vertice-submenu" class="submenu" style="display: none;">
+                                <button class="submenu-item" onclick="ativarAdicionarVerticesMapa(); closeAllMenus();">
+                                    <img src="{{ url_for('static', filename='icons/move_vertices_icon.png') }}" class="icon" alt=""> Adicionar (Mapa)
+                                </button>
+                                <button class="submenu-item" onclick="ativarMoverVerticesMapa(); closeAllMenus();">
+                                    <img src="{{ url_for('static', filename='icons/move_vertices_icon.png') }}" class="icon" alt=""> Mover (Mapa)
+                                </button>
+                                <button class="submenu-item" onclick="ativarRemoverVerticesMapa(); closeAllMenus();">
+                                    <img src="{{ url_for('static', filename='icons/remove_icon.png') }}" class="icon" alt=""> Remover
+                                </button>
+                                <button class="submenu-item" onclick="ativarRenomearVerticeMapa(); closeAllMenus();">
+                                    <img src="{{ url_for('static', filename='icons/rename_icon.png') }}" class="icon" alt=""> Renomear
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- GEOMETRIA submenu -->
+                        <div class="submenu-container">
+                            <button class="dropdown-item submenu-trigger" onclick="toggleSubmenu(event, 'edicao-geometria-submenu')">
+                                <img src="{{ url_for('static', filename='icons/move_geometry_icon.png') }}" class="icon" alt=""> GEOMETRIA ▶
+                            </button>
+                            <div id="edicao-geometria-submenu" class="submenu" style="display: none;">
+                                <!-- Mover sub-submenu -->
+                                <div class="submenu-container">
+                                    <button class="submenu-item submenu-trigger" onclick="toggleSubmenu(event, 'edicao-geometria-mover-submenu')">
+                                        <img src="{{ url_for('static', filename='icons/move_geometry_icon.png') }}" class="icon" alt=""> Mover ▶
+                                    </button>
+                                    <div id="edicao-geometria-mover-submenu" class="submenu" style="display: none;">
+                                        <button class="submenu-item" onclick="openMoverGeometriaMapaDialog(); closeAllMenus();">
+                                            <img src="{{ url_for('static', filename='icons/move_geometry_icon.png') }}" class="icon" alt=""> Mapa
+                                        </button>
+                                        <button class="submenu-item" onclick="openMoverGeometriaDialog(); closeAllMenus();">
+                                            <img src="{{ url_for('static', filename='icons/coordinates_icon.png') }}" class="icon" alt=""> Por Distância (Digitando)
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <button class="submenu-item" onclick="openRotacionarGeometriaDialog(); closeAllMenus();">
+                                    <img src="{{ url_for('static', filename='icons/rotate_icon.png') }}" class="icon" alt=""> Rotacionar
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 

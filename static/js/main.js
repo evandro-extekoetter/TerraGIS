@@ -2488,6 +2488,51 @@ function toggleTopMenu(menuId) {
 }
 
 /**
+ * Fecha todos os menus e submenus
+ */
+function closeAllMenus() {
+    // Fechar menus principais
+    const allMenus = document.querySelectorAll('.top-dropdown');
+    allMenus.forEach(m => {
+        m.style.display = 'none';
+    });
+    
+    // Fechar todos os submenus
+    const allSubmenus = document.querySelectorAll('.submenu');
+    allSubmenus.forEach(s => {
+        s.style.display = 'none';
+    });
+}
+
+/**
+ * Alterna a visibilidade de um submenu
+ * @param {Event} event - Evento do clique
+ * @param {string} submenuId - ID do submenu a ser alternado
+ */
+function toggleSubmenu(event, submenuId) {
+    event.stopPropagation();
+    
+    const submenu = document.getElementById(submenuId);
+    if (!submenu) return;
+    
+    // Fechar outros submenus no mesmo nível
+    const parent = submenu.parentElement.parentElement;
+    const siblings = parent.querySelectorAll('.submenu');
+    siblings.forEach(s => {
+        if (s.id !== submenuId) {
+            s.style.display = 'none';
+        }
+    });
+    
+    // Alternar o submenu atual
+    if (submenu.style.display === 'none' || submenu.style.display === '') {
+        submenu.style.display = 'block';
+    } else {
+        submenu.style.display = 'none';
+    }
+}
+
+/**
  * Fecha todos os menus dropdown quando clicar fora deles
  */
 document.addEventListener('click', function(event) {
