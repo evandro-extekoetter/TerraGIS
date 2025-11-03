@@ -197,10 +197,10 @@
                                 <img src="{{ url_for('static', filename='icons/freehand_icon.png') }}" class="icon" alt=""> MÃO LIVRE ▶
                             </button>
                             <div id="maolivre-submenu" class="top-dropdown" style="display: none; position: absolute; left: 100%; top: 0; margin-left: 4px;">
-                                <button class="dropdown-item" onclick="alert('Mão Livre Polígono em desenvolvimento')">
+                                <button class="dropdown-item" onclick="openFreehandDrawingDialog('polygon')">
                                     <img src="{{ url_for('static', filename='icons/polygon_icon.png') }}" class="icon" alt=""> POLÍGONO
                                 </button>
-                                <button class="dropdown-item" onclick="openFreehandDialog('polyline')">
+                                <button class="dropdown-item" onclick="openFreehandDrawingDialog('polyline')">
                                     <img src="{{ url_for('static', filename='icons/polyline_icon.png') }}" class="icon" alt=""> POLILINHA
                                 </button>
                             </div>
@@ -1549,9 +1549,25 @@ window.desativarMoverGeometriaMapa = function() {
                     <input type="text" id="polyline-azimuth-start-n" placeholder="8569200,750">
                 </div>
                 <div class="form-group">
-                    <label for="polyline-azimuth-input">Azimute e Distância (azimute;distância):</label>
-                    <textarea id="polyline-azimuth-input" rows="10" placeholder='45°30'15";100,50&#10;90°15'30";150,75'></textarea>
-                    <small>Formato: azimute;distância (um por linha)</small>
+                    <label>Azimute e Distância:</label>
+                    <div class="table-container">
+                        <table id="polyline-azimuth-table" class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>VÉRTICE</th>
+                                    <th>DISTÂNCIA</th>
+                                    <th>AZIMUTE</th>
+                                </tr>
+                            </thead>
+                            <tbody id="polyline-azimuth-table-body">
+                                <!-- Linhas serão adicionadas aqui -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="table-buttons">
+                        <button class="btn-secondary" onclick="addTableRow('polyline-azimuth-table-body', 3)">+ Linha</button>
+                        <button class="btn-secondary" onclick="removeTableRow('polyline-azimuth-table-body')">- Linha</button>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -1586,9 +1602,26 @@ window.desativarMoverGeometriaMapa = function() {
                     <input type="text" id="polyline-bearing-start-n" placeholder="8569200,750">
                 </div>
                 <div class="form-group">
-                    <label for="polyline-bearing-input">Rumo e Distância (rumo;distância):</label>
-                    <textarea id="polyline-bearing-input" rows="10" placeholder='NE 45°30'15";100,50&#10;SE 30°15'45";150,75'></textarea>
-                    <small>Formato: rumo;distância (ex: NE 45°30'15";100,50)</small>
+                    <label>Rumo e Distância:</label>
+                    <div class="table-container">
+                        <table id="polyline-bearing-table" class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>VÉRTICE</th>
+                                    <th>DISTÂNCIA</th>
+                                    <th>RUMO</th>
+                                    <th>QUADRANTE</th>
+                                </tr>
+                            </thead>
+                            <tbody id="polyline-bearing-table-body">
+                                <!-- Linhas serão adicionadas aqui -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="table-buttons">
+                        <button class="btn-secondary" onclick="addTableRow('polyline-bearing-table-body', 4)">+ Linha</button>
+                        <button class="btn-secondary" onclick="removeTableRow('polyline-bearing-table-body')">- Linha</button>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">

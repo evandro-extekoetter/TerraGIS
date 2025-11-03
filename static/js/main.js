@@ -2811,29 +2811,35 @@ function openPolylineAzimuthDialog() {
 
 function createPolylineFromAzimuth() {
     const layerName = document.getElementById('polyline-azimuth-name').value.trim() || 'TT';
-    const fuso = document.getElementById('polyline-azimuth-fuso').value;
     const startE = parseFloat_BR(document.getElementById('polyline-azimuth-start-e').value);
     const startN = parseFloat_BR(document.getElementById('polyline-azimuth-start-n').value);
-    const anglesText = document.getElementById('polyline-azimuth-input').value.trim();
     
-    if (!anglesText) {
-        showMessage('Por favor, digite os azimutes e distâncias.', 'error');
+    // Ler dados da tabela
+    const tableBody = document.getElementById('polyline-azimuth-table-body');
+    const rows = tableBody.getElementsByTagName('tr');
+    
+    if (rows.length === 0) {
+        showMessage('Por favor, adicione pelo menos uma linha na tabela.', 'error');
         return;
     }
     
-    const lines = anglesText.split('\n').filter(line => line.trim());
     const coords = [[startE, startN]];
     const ids = ['P-00'];
     
     let currentE = startE;
     let currentN = startN;
     
-    for (let i = 0; i < lines.length; i++) {
+    for (let i = 0; i < rows.length; i++) {
+        const cells = rows[i].getElementsByTagName('input');
+        if (cells.length < 3) continue;
+        
+        const vertexId = cells[0].value.trim();
+        const distance = parseFloat_BR(cells[1].value);
+        const azimuthDMS = cells[2].value.trim();
+        
+        if (!vertexId || !distance || !azimuthDMS) continue;
+        
         try {
-            const parts = parseLine(lines[i], 2);
-            const azimuthDMS = parts[0];
-            const distance = parseFloat_BR(parts[1]);
-            
             const azimuthDec = dmsToDecimal(azimuthDMS);
             const azimuthRad = azimuthDec * Math.PI / 180;
             
@@ -2844,9 +2850,9 @@ function createPolylineFromAzimuth() {
             currentN += deltaN;
             
             coords.push([currentE, currentN]);
-            ids.push(`P-${String(i + 1).padStart(2, '0')}`);
+            ids.push(vertexId);
         } catch (error) {
-            console.error('Erro ao processar linha:', lines[i], error);
+            console.error('Erro ao processar linha:', i, error);
         }
     }
     
@@ -2873,29 +2879,37 @@ function openPolylineBearingDialog() {
 
 function createPolylineFromBearing() {
     const layerName = document.getElementById('polyline-bearing-name').value.trim() || 'TT';
-    const fuso = document.getElementById('polyline-bearing-fuso').value;
     const startE = parseFloat_BR(document.getElementById('polyline-bearing-start-e').value);
     const startN = parseFloat_BR(document.getElementById('polyline-bearing-start-n').value);
-    const bearingsText = document.getElementById('polyline-bearing-input').value.trim();
     
-    if (!bearingsText) {
-        showMessage('Por favor, digite os rumos e distâncias.', 'error');
+    // Ler dados da tabela
+    const tableBody = document.getElementById('polyline-bearing-table-body');
+    const rows = tableBody.getElementsByTagName('tr');
+    
+    if (rows.length === 0) {
+        showMessage('Por favor, adicione pelo menos uma linha na tabela.', 'error');
         return;
     }
     
-    const lines = bearingsText.split('\n').filter(line => line.trim());
     const coords = [[startE, startN]];
     const ids = ['P-00'];
     
     let currentE = startE;
     let currentN = startN;
     
-    for (let i = 0; i < lines.length; i++) {
+    for (let i = 0; i < rows.length; i++) {
+        const cells = rows[i].getElementsByTagName('input');
+        if (cells.length < 4) continue;
+        
+        const vertexId = cells[0].value.trim();
+        const distance = parseFloat_BR(cells[1].value);
+        const rumo = cells[2].value.trim();
+        const quadrante = cells[3].value.trim().toUpperCase();
+        
+        if (!vertexId || !distance || !rumo || !quadrante) continue;
+        
         try {
-            const parts = parseLine(lines[i], 2);
-            const bearingText = parts[0];
-            const distance = parseFloat_BR(parts[1]);
-            
+            const bearingText = `${quadrante} ${rumo}`;
             const azimuthDec = bearingToAzimuth(bearingText);
             const azimuthRad = azimuthDec * Math.PI / 180;
             
@@ -2906,9 +2920,9 @@ function createPolylineFromBearing() {
             currentN += deltaN;
             
             coords.push([currentE, currentN]);
-            ids.push(`P-${String(i + 1).padStart(2, '0')}`);
+            ids.push(vertexId);
         } catch (error) {
-            console.error('Erro ao processar linha:', lines[i], error);
+            console.error('Erro ao processar linha:', i, error);
         }
     }
     
