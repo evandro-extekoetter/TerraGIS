@@ -2511,3 +2511,27 @@ function updateToolIndicator(toolName) {
     }
 }
 
+
+
+/**
+ * Alterna a visibilidade dos submenus inline (hierárquicos)
+ * @param {Event} event - Evento de clique
+ * @param {string} submenuId - ID do submenu a ser alternado
+ */
+function toggleSubmenuInline(event, submenuId) {
+    event.stopPropagation(); // Evitar que o clique feche o menu pai
+    
+    const submenu = document.getElementById(submenuId);
+    if (!submenu) {
+        console.error('Submenu não encontrado:', submenuId);
+        return;
+    }
+    
+    // Alternar o submenu
+    if (submenu.style.display === 'none' || submenu.style.display === '') {
+        submenu.style.display = 'block';
+    } else {
+        submenu.style.display = 'none';
+    }
+}
+

@@ -75,27 +75,137 @@
                         <img src="{{ url_for('static', filename='icons/construction_icon.png') }}" class="icon" alt=""> CONSTRUÇÃO ▼
                     </button>
                     <div id="construcao-top-menu" class="top-dropdown" style="display: none;">
-                        <button class="dropdown-item" onclick="openCoordListDialog()">
-                            <img src="{{ url_for('static', filename='icons/list_icon.png') }}" class="icon" alt=""> UTM - Lista de Coordenadas
-                        </button>
-                        <button class="dropdown-item" onclick="openCoordTableDialog()">
-                            <img src="{{ url_for('static', filename='icons/table_icon.png') }}" class="icon" alt=""> UTM - Tabela de Coordenadas
-                        </button>
-                        <button class="dropdown-item" onclick="openListaLatLongDialog()">
-                            <img src="{{ url_for('static', filename='icons/list_icon.png') }}" class="icon" alt=""> Geográficas - Lista
-                        </button>
-                        <button class="dropdown-item" onclick="openTabelaLatLongDialog()">
-                            <img src="{{ url_for('static', filename='icons/table_icon.png') }}" class="icon" alt=""> Geográficas - Tabela
-                        </button>
-                        <button class="dropdown-item" onclick="openAzimuthDialog()">
-                            <img src="{{ url_for('static', filename='icons/azimuth_icon.png') }}" class="icon" alt=""> Azimute e Distância
-                        </button>
-                        <button class="dropdown-item" onclick="openBearingDialog()">
-                            <img src="{{ url_for('static', filename='icons/azimuth_icon.png') }}" class="icon" alt=""> Rumo e Distância
-                        </button>
-                        <button class="dropdown-item" onclick="openPoligonoSIGEFDialog()">
-                            <img src="{{ url_for('static', filename='icons/sigef_icon.png') }}" class="icon" alt=""> SIGEF
-                        </button>
+                        
+                        <!-- POLÍGONO -->
+                        <div style="position: relative;">
+                            <button class="dropdown-item" onclick="toggleSubmenuInline(event, 'poligono-submenu')">
+                                <img src="{{ url_for('static', filename='icons/polygon_icon.png') }}" class="icon" alt=""> POLÍGONO ▶
+                            </button>
+                            <div id="poligono-submenu" class="top-dropdown" style="display: none; position: absolute; left: 100%; top: 0; margin-left: 4px;">
+                                
+                                <!-- TABELA -->
+                                <div style="position: relative;">
+                                    <button class="dropdown-item" onclick="toggleSubmenuInline(event, 'poligono-tabela-submenu')">
+                                        <img src="{{ url_for('static', filename='icons/table_icon.png') }}" class="icon" alt=""> TABELA ▶
+                                    </button>
+                                    <div id="poligono-tabela-submenu" class="top-dropdown" style="display: none; position: absolute; left: 100%; top: 0; margin-left: 4px;">
+                                        <button class="dropdown-item" onclick="openCoordTableDialog()">
+                                            <img src="{{ url_for('static', filename='icons/table_icon.png') }}" class="icon" alt=""> UTM
+                                        </button>
+                                        <button class="dropdown-item" onclick="openTabelaLatLongDialog()">
+                                            <img src="{{ url_for('static', filename='icons/table_icon.png') }}" class="icon" alt=""> GEOGRÁFICA
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- LISTA -->
+                                <div style="position: relative;">
+                                    <button class="dropdown-item" onclick="toggleSubmenuInline(event, 'poligono-lista-submenu')">
+                                        <img src="{{ url_for('static', filename='icons/list_icon.png') }}" class="icon" alt=""> LISTA ▶
+                                    </button>
+                                    <div id="poligono-lista-submenu" class="top-dropdown" style="display: none; position: absolute; left: 100%; top: 0; margin-left: 4px;">
+                                        <button class="dropdown-item" onclick="openCoordListDialog()">
+                                            <img src="{{ url_for('static', filename='icons/list_icon.png') }}" class="icon" alt=""> UTM
+                                        </button>
+                                        <button class="dropdown-item" onclick="openListaLatLongDialog()">
+                                            <img src="{{ url_for('static', filename='icons/list_icon.png') }}" class="icon" alt=""> GEOGRÁFICA
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- ÂNGULOS -->
+                                <div style="position: relative;">
+                                    <button class="dropdown-item" onclick="toggleSubmenuInline(event, 'poligono-angulos-submenu')">
+                                        <img src="{{ url_for('static', filename='icons/azimuth_icon.png') }}" class="icon" alt=""> ÂNGULOS ▶
+                                    </button>
+                                    <div id="poligono-angulos-submenu" class="top-dropdown" style="display: none; position: absolute; left: 100%; top: 0; margin-left: 4px;">
+                                        <button class="dropdown-item" onclick="openAzimuthDialog()">
+                                            <img src="{{ url_for('static', filename='icons/azimuth_icon.png') }}" class="icon" alt=""> AZIMUTE + DISTÂNCIA
+                                        </button>
+                                        <button class="dropdown-item" onclick="openBearingDialog()">
+                                            <img src="{{ url_for('static', filename='icons/azimuth_icon.png') }}" class="icon" alt=""> RUMO + DISTÂNCIA
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- SIGEF -->
+                                <button class="dropdown-item" onclick="openPoligonoSIGEFDialog()">
+                                    <img src="{{ url_for('static', filename='icons/sigef_icon.png') }}" class="icon" alt=""> SIGEF
+                                </button>
+                                
+                            </div>
+                        </div>
+                        
+                        <!-- POLILINHA -->
+                        <div style="position: relative;">
+                            <button class="dropdown-item" onclick="toggleSubmenuInline(event, 'polilinha-submenu')">
+                                <img src="{{ url_for('static', filename='icons/polyline_icon.png') }}" class="icon" alt=""> POLILINHA ▶
+                            </button>
+                            <div id="polilinha-submenu" class="top-dropdown" style="display: none; position: absolute; left: 100%; top: 0; margin-left: 4px;">
+                                
+                                <!-- TABELA -->
+                                <div style="position: relative;">
+                                    <button class="dropdown-item" onclick="toggleSubmenuInline(event, 'polilinha-tabela-submenu')">
+                                        <img src="{{ url_for('static', filename='icons/table_icon.png') }}" class="icon" alt=""> TABELA ▶
+                                    </button>
+                                    <div id="polilinha-tabela-submenu" class="top-dropdown" style="display: none; position: absolute; left: 100%; top: 0; margin-left: 4px;">
+                                        <button class="dropdown-item" onclick="alert('Polilinha Tabela UTM em desenvolvimento')">
+                                            <img src="{{ url_for('static', filename='icons/table_icon.png') }}" class="icon" alt=""> UTM
+                                        </button>
+                                        <button class="dropdown-item" onclick="alert('Polilinha Tabela Geográfica em desenvolvimento')">
+                                            <img src="{{ url_for('static', filename='icons/table_icon.png') }}" class="icon" alt=""> GEOGRÁFICA
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- LISTA -->
+                                <div style="position: relative;">
+                                    <button class="dropdown-item" onclick="toggleSubmenuInline(event, 'polilinha-lista-submenu')">
+                                        <img src="{{ url_for('static', filename='icons/list_icon.png') }}" class="icon" alt=""> LISTA ▶
+                                    </button>
+                                    <div id="polilinha-lista-submenu" class="top-dropdown" style="display: none; position: absolute; left: 100%; top: 0; margin-left: 4px;">
+                                        <button class="dropdown-item" onclick="alert('Polilinha Lista UTM em desenvolvimento')">
+                                            <img src="{{ url_for('static', filename='icons/list_icon.png') }}" class="icon" alt=""> UTM
+                                        </button>
+                                        <button class="dropdown-item" onclick="alert('Polilinha Lista Geográfica em desenvolvimento')">
+                                            <img src="{{ url_for('static', filename='icons/list_icon.png') }}" class="icon" alt=""> GEOGRÁFICA
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- ÂNGULOS -->
+                                <div style="position: relative;">
+                                    <button class="dropdown-item" onclick="toggleSubmenuInline(event, 'polilinha-angulos-submenu')">
+                                        <img src="{{ url_for('static', filename='icons/azimuth_icon.png') }}" class="icon" alt=""> ÂNGULOS ▶
+                                    </button>
+                                    <div id="polilinha-angulos-submenu" class="top-dropdown" style="display: none; position: absolute; left: 100%; top: 0; margin-left: 4px;">
+                                        <button class="dropdown-item" onclick="alert('Polilinha Azimute em desenvolvimento')">
+                                            <img src="{{ url_for('static', filename='icons/azimuth_icon.png') }}" class="icon" alt=""> AZIMUTE + DISTÂNCIA
+                                        </button>
+                                        <button class="dropdown-item" onclick="alert('Polilinha Rumo em desenvolvimento')">
+                                            <img src="{{ url_for('static', filename='icons/azimuth_icon.png') }}" class="icon" alt=""> RUMO + DISTÂNCIA
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                        </div>
+                        
+                        <!-- MÃO LIVRE -->
+                        <div style="position: relative;">
+                            <button class="dropdown-item" onclick="toggleSubmenuInline(event, 'maolivre-submenu')">
+                                <img src="{{ url_for('static', filename='icons/freehand_icon.png') }}" class="icon" alt=""> MÃO LIVRE ▶
+                            </button>
+                            <div id="maolivre-submenu" class="top-dropdown" style="display: none; position: absolute; left: 100%; top: 0; margin-left: 4px;">
+                                <button class="dropdown-item" onclick="alert('Mão Livre Polígono em desenvolvimento')">
+                                    <img src="{{ url_for('static', filename='icons/polygon_icon.png') }}" class="icon" alt=""> POLÍGONO
+                                </button>
+                                <button class="dropdown-item" onclick="alert('Mão Livre Polilinha em desenvolvimento')">
+                                    <img src="{{ url_for('static', filename='icons/polyline_icon.png') }}" class="icon" alt=""> POLILINHA
+                                </button>
+                            </div>
+                        </div>
+                        
                     </div>
                 </div>
                 
