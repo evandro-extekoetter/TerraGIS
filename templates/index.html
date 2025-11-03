@@ -1536,17 +1536,69 @@ window.desativarMoverGeometriaMapa = function() {
                     <label for="polyline-azimuth-name">Nome da camada:</label>
                     <input type="text" id="polyline-azimuth-name" placeholder="TT" value="TT">
                 </div>
-                <div class="form-group">
-                    <label for="polyline-azimuth-color">Cor:</label>
-                    <input type="color" id="polyline-azimuth-color" value="#FF8800">
-                </div>
-                <div class="form-group">
-                    <label for="polyline-azimuth-start-e">Ponto inicial E (UTM):</label>
-                    <input type="text" id="polyline-azimuth-start-e" placeholder="752000,250">
-                </div>
-                <div class="form-group">
-                    <label for="polyline-azimuth-start-n">Ponto inicial N (UTM):</label>
-                    <input type="text" id="polyline-azimuth-start-n" placeholder="8569200,750">
+                
+                <!-- Abas para entrada do vértice inicial -->
+                <div class="tabs">
+                    <div class="tab-buttons">
+                        <button class="tab-btn active" onclick="switchTab('polyline-azimuth', 0)">Clique no Mapa</button>
+                        <button class="tab-btn" onclick="switchTab('polyline-azimuth', 1)">UTM</button>
+                        <button class="tab-btn" onclick="switchTab('polyline-azimuth', 2)">Lat/Long</button>
+                    </div>
+                    
+                    <div class="tab-content">
+                        <!-- Aba 1: Clique no Mapa -->
+                        <div class="tab-pane active" id="polyline-azimuth-tab-0">
+                            <button class="btn-primary" onclick="selectPointOnMap('polyline-azimuth')">Selecionar no mapa</button>
+                            <input type="text" id="polyline-azimuth-coord-mapa" placeholder="Coordenadas aparecerão aqui após clique" readonly>
+                        </div>
+                        
+                        <!-- Aba 2: UTM -->
+                        <div class="tab-pane" id="polyline-azimuth-tab-1">
+                            <div class="form-group">
+                                <label for="polyline-azimuth-utm-fuso">Fuso UTM:</label>
+                                <select id="polyline-azimuth-utm-fuso">
+                                    <option value="18S">18S</option>
+                                    <option value="19S">19S</option>
+                                    <option value="20S">20S</option>
+                                    <option value="21S" selected>21S</option>
+                                    <option value="22S">22S</option>
+                                    <option value="23S">23S</option>
+                                    <option value="24S">24S</option>
+                                    <option value="25S">25S</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="polyline-azimuth-color">Cor:</label>
+                                <input type="color" id="polyline-azimuth-color" value="#FF8800">
+                            </div>
+                            <div class="form-group">
+                                <label for="polyline-azimuth-start-utm">Vértice inicial (id;E;N):</label>
+                                <input type="text" id="polyline-azimuth-start-utm" placeholder="P-01;752000,250;8569200,750">
+                            </div>
+                        </div>
+                        
+                        <!-- Aba 3: Lat/Long -->
+                        <div class="tab-pane" id="polyline-azimuth-tab-2">
+                            <div class="form-group">
+                                <label for="polyline-azimuth-ll-fuso">Fuso UTM de destino:</label>
+                                <select id="polyline-azimuth-ll-fuso">
+                                    <option value="18S">18S</option>
+                                    <option value="19S">19S</option>
+                                    <option value="20S">20S</option>
+                                    <option value="21S" selected>21S</option>
+                                    <option value="22S">22S</option>
+                                    <option value="23S">23S</option>
+                                    <option value="24S">24S</option>
+                                    <option value="25S">25S</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="polyline-azimuth-start-ll">Vértice inicial (id;longitude;latitude):</label>
+                                <input type="text" id="polyline-azimuth-start-ll" placeholder='P-01;-56°23\'20,828";-14°29\'18,542"'>
+                                <small>Formato: P-01;-56°23'20,828";-14°29'18,542"</small>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>Azimute e Distância:</label>
@@ -1589,17 +1641,69 @@ window.desativarMoverGeometriaMapa = function() {
                     <label for="polyline-bearing-name">Nome da camada:</label>
                     <input type="text" id="polyline-bearing-name" placeholder="TT" value="TT">
                 </div>
-                <div class="form-group">
-                    <label for="polyline-bearing-color">Cor:</label>
-                    <input type="color" id="polyline-bearing-color" value="#FF8800">
-                </div>
-                <div class="form-group">
-                    <label for="polyline-bearing-start-e">Ponto inicial E (UTM):</label>
-                    <input type="text" id="polyline-bearing-start-e" placeholder="752000,250">
-                </div>
-                <div class="form-group">
-                    <label for="polyline-bearing-start-n">Ponto inicial N (UTM):</label>
-                    <input type="text" id="polyline-bearing-start-n" placeholder="8569200,750">
+                
+                <!-- Abas para entrada do vértice inicial -->
+                <div class="tabs">
+                    <div class="tab-buttons">
+                        <button class="tab-btn active" onclick="switchTab('polyline-bearing', 0)">Clique no Mapa</button>
+                        <button class="tab-btn" onclick="switchTab('polyline-bearing', 1)">UTM</button>
+                        <button class="tab-btn" onclick="switchTab('polyline-bearing', 2)">Lat/Long</button>
+                    </div>
+                    
+                    <div class="tab-content">
+                        <!-- Aba 1: Clique no Mapa -->
+                        <div class="tab-pane active" id="polyline-bearing-tab-0">
+                            <button class="btn-primary" onclick="selectPointOnMap('polyline-bearing')">Selecionar no mapa</button>
+                            <input type="text" id="polyline-bearing-coord-mapa" placeholder="Coordenadas aparecerão aqui após clique" readonly>
+                        </div>
+                        
+                        <!-- Aba 2: UTM -->
+                        <div class="tab-pane" id="polyline-bearing-tab-1">
+                            <div class="form-group">
+                                <label for="polyline-bearing-utm-fuso">Fuso UTM:</label>
+                                <select id="polyline-bearing-utm-fuso">
+                                    <option value="18S">18S</option>
+                                    <option value="19S">19S</option>
+                                    <option value="20S">20S</option>
+                                    <option value="21S" selected>21S</option>
+                                    <option value="22S">22S</option>
+                                    <option value="23S">23S</option>
+                                    <option value="24S">24S</option>
+                                    <option value="25S">25S</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="polyline-bearing-color">Cor:</label>
+                                <input type="color" id="polyline-bearing-color" value="#FF8800">
+                            </div>
+                            <div class="form-group">
+                                <label for="polyline-bearing-start-utm">Vértice inicial (id;E;N):</label>
+                                <input type="text" id="polyline-bearing-start-utm" placeholder="P-01;752000,250;8569200,750">
+                            </div>
+                        </div>
+                        
+                        <!-- Aba 3: Lat/Long -->
+                        <div class="tab-pane" id="polyline-bearing-tab-2">
+                            <div class="form-group">
+                                <label for="polyline-bearing-ll-fuso">Fuso UTM de destino:</label>
+                                <select id="polyline-bearing-ll-fuso">
+                                    <option value="18S">18S</option>
+                                    <option value="19S">19S</option>
+                                    <option value="20S">20S</option>
+                                    <option value="21S" selected>21S</option>
+                                    <option value="22S">22S</option>
+                                    <option value="23S">23S</option>
+                                    <option value="24S">24S</option>
+                                    <option value="25S">25S</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="polyline-bearing-start-ll">Vértice inicial (id;longitude;latitude):</label>
+                                <input type="text" id="polyline-bearing-start-ll" placeholder='P-01;-56°23\'20,828";-14°29\'18,542"'>
+                                <small>Formato: P-01;-56°23'20,828";-14°29'18,542"</small>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>Rumo e Distância:</label>
@@ -1638,19 +1742,7 @@ window.desativarMoverGeometriaMapa = function() {
                 <button class="close-btn" onclick="closeModal('modal-freehand-drawing')">&times;</button>
             </div>
             <div class="modal-body">
-                <div class="form-group">
-                    <label>Tipo de Geometria:</label>
-                    <div style="display: flex; gap: 20px; margin-top: 10px;">
-                        <label style="display: flex; align-items: center; gap: 8px;">
-                            <input type="radio" name="freehand-type" value="polygon" checked>
-                            <span>Polígono</span>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 8px;">
-                            <input type="radio" name="freehand-type" value="polyline">
-                            <span>Polilinha</span>
-                        </label>
-                    </div>
-                </div>
+                <input type="hidden" name="freehand-type" id="freehand-type" value="polygon">
                 
                 <div class="form-group">
                     <label for="freehand-layer-name">Nome da camada:</label>

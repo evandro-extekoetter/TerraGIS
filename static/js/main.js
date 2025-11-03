@@ -2952,12 +2952,9 @@ let freehandMarkers = [];
 let freehandPolyline = null;
 
 function openFreehandDrawingDialog(type) {
-    // Setar tipo padrão se fornecido
+    // Setar tipo no campo hidden
     if (type === 'polygon' || type === 'polyline') {
-        const radios = document.getElementsByName('freehand-type');
-        radios.forEach(radio => {
-            radio.checked = (radio.value === type);
-        });
+        document.getElementById('freehand-type').value = type;
     }
     
     openModal('modal-freehand-drawing');
@@ -2968,8 +2965,7 @@ function startFreehandDrawing() {
     const layerName = document.getElementById('freehand-layer-name').value.trim();
     const firstVertex = document.getElementById('freehand-first-vertex').value.trim();
     const color = document.getElementById('freehand-color').value;
-    const typeRadio = document.querySelector('input[name="freehand-type"]:checked');
-    const type = typeRadio ? typeRadio.value : 'polygon';
+    const type = document.getElementById('freehand-type').value;
     
     // Validar
     if (!layerName) {
@@ -3001,7 +2997,7 @@ function startFreehandDrawing() {
     
     // Ativar modo de desenho
     freehandDrawingActive = true;
-    setActiveTool(`Desenho à Mão Livre (${type === 'polygon' ? 'Polígono' : 'Polilinha'})`);
+    updateToolIndicator(`Desenho à Mão Livre (${type === 'polygon' ? 'Polígono' : 'Polilinha'})`);
     
     // Fechar modal
     closeModal('modal-freehand-drawing');
@@ -3082,7 +3078,7 @@ function finalizeFreehandDrawing() {
     
     // Desativar modo de desenho
     freehandDrawingActive = false;
-    setActiveTool('NENHUMA');
+    updateToolIndicator('nenhuma');
     
     // Limpar
     freehandPoints = [];
