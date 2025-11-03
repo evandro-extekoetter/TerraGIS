@@ -2535,3 +2535,395 @@ function toggleSubmenuInline(event, submenuId) {
     }
 }
 
+// ===== FUNÇÕES PARA POLILINHA =====
+
+// Desenhar polilinha com vértices
+function drawPolyline(coords, ids, layerName, fuso, colors = {}) {
+    // Cores padrão
+    const defaultColors = {
+        line: '#ff8800',
+        vertex: '#ff0000'
+    };
+    
+    const lineColor = colors.line || defaultColors.line;
+    const vertexColor = colors.vertex || defaultColors.vertex;
+    
+    // Criar TerraLayer do tipo polyline
+    const terraLayer = new TerraLayer(layerName, 'polyline');
+    terraLayer.fuso = fuso;
+    terraLayer.color = lineColor;
+    terraLayer.vertexColor = vertexColor;
+    
+    // Adicionar vértices
+    coords.forEach(([e, n], i) => {
+        const vertexId = ids && ids[i] ? ids[i] : `P-${String(i+1).padStart(2, '0')}`;
+        terraLayer.addVertex(vertexId, e, n);
+    });
+    
+    // Sincronizar geometria (cria polilinha e marcadores)
+    terraLayer.syncGeometry();
+    
+    // Adicionar ao gerenciador
+    const layerKey = terraManager.addLayer(terraLayer);
+    
+    // === COMPATIBILIDADE: Manter referência no sistema antigo ===
+    // Isso permite que o painel de camadas continue funcionando
+    const polyline = terraLayer.geometryLayer;
+    const verticesLayer = terraLayer.verticesLayer;
+    
+    addLayer(layerKey, polyline, verticesLayer);
+    
+    // Armazenar referência à TerraLayer no sistema antigo
+    if (layers[layerKey]) {
+        layers[layerKey].terraLayer = terraLayer;
+        layers[layerKey].coords = coords;
+        layers[layerKey].ids = ids;
+        layers[layerKey].fuso = fuso;
+    }
+    
+    // Ajustar zoom
+    if (polyline && polyline.getBounds) {
+        map.fitBounds(polyline.getBounds());
+    }
+    
+    showMessage(`Polilinha "${layerName}" criada com sucesso!`, 'success');
+    updateToolIndicator('nenhuma');
+}
+
+// ===== FERRAMENTA: TABELA DE COORDENADAS UTM (POLILINHA) =====
+
+function openPolylineCoordTableDialog() {
+    openModal('modal-polyline-coord-table');
+    
+    // Adicionar 3 linhas iniciais se a tabela estiver vazia
+    const tbody = document.getElementById('polyline-coord-table-body');
+    if (tbody.rows.length === 0) {
+        for (let i = 0; i < 3; i++) {
+            addTableRow('polyline-coord-table-body', 3);
+        }
+    }
+}
+
+function createPolylineFromCoordTable() {
+    const layerName = document.getElementById('polyline-coord-table-name').value.trim() || 'TT';
+    const fuso = document.getElementById('polyline-coord-table-fuso').value;
+    const tableData = getTableData('polyline-coord-table-body');
+    
+    const coords = [];
+    const ids = [];
+    
+    for (const row of tableData) {
+        if (row.length < 3) continue;
+        
+        try {
+            const vId = row[0] || `P-${String(ids.length + 1).padStart(2, '0')}`;
+            const e = parseFloat_BR(row[1]);
+            const n = parseFloat_BR(row[2]);
+            
+            coords.push([e, n]);
+            ids.push(vId);
+        } catch (error) {
+            console.error('Erro ao processar linha:', row, error);
+        }
+    }
+    
+    if (coords.length < 2) {
+        showMessage('Polilinha precisa de pelo menos 2 coordenadas válidas', 'error');
+        return;
+    }
+    
+    // Obter cor selecionada
+    const color = document.getElementById('polyline-coord-table-color').value;
+    const colors = {
+        line: color,
+        vertex: color
+    };
+    
+    drawPolyline(coords, ids, layerName, fuso, colors);
+    closeModal('modal-polyline-coord-table');
+}
+
+// ===== FERRAMENTA: LISTA DE COORDENADAS UTM (POLILINHA) =====
+
+function openPolylineCoordListDialog() {
+    openModal('modal-polyline-coord-list');
+}
+
+function createPolylineFromCoordList() {
+    const layerName = document.getElementById('polyline-coord-list-name').value.trim() || 'TT';
+    const fuso = document.getElementById('polyline-coord-list-fuso').value;
+    const coordText = document.getElementById('polyline-coord-list-input').value.trim();
+    
+    if (!coordText) {
+        showMessage('Por favor, digite as coordenadas.', 'error');
+        return;
+    }
+    
+    const lines = coordText.split('\n').filter(line => line.trim());
+    const coords = [];
+    const ids = [];
+    
+    for (let line of lines) {
+        try {
+            const parts = parseLine(line, 3);
+            const vId = parts[0];
+            const e = parseFloat_BR(parts[1]);
+            const n = parseFloat_BR(parts[2]);
+            
+            coords.push([e, n]);
+            ids.push(vId);
+        } catch (error) {
+            console.error('Erro ao processar linha:', line, error);
+        }
+    }
+    
+    if (coords.length < 2) {
+        showMessage('Polilinha precisa de pelo menos 2 coordenadas válidas', 'error');
+        return;
+    }
+    
+    // Obter cor selecionada
+    const color = document.getElementById('polyline-coord-list-color').value;
+    const colors = {
+        line: color,
+        vertex: color
+    };
+    
+    drawPolyline(coords, ids, layerName, fuso, colors);
+    closeModal('modal-polyline-coord-list');
+}
+
+// ===== FERRAMENTA: TABELA LAT/LONG (POLILINHA) =====
+
+function openPolylineTabelaLatLongDialog() {
+    openModal('modal-polyline-tabela-latlong');
+    
+    const tbody = document.getElementById('polyline-tabela-latlong-body');
+    if (tbody.rows.length === 0) {
+        for (let i = 0; i < 3; i++) {
+            addTableRow('polyline-tabela-latlong-body', 3);
+        }
+    }
+}
+
+function createPolylineFromTabelaLatLong() {
+    const layerName = document.getElementById('polyline-tabela-latlong-name').value.trim() || 'TT';
+    const fuso = document.getElementById('polyline-tabela-latlong-fuso').value;
+    const tableData = getTableData('polyline-tabela-latlong-body');
+    
+    const coords = [];
+    const ids = [];
+    
+    for (const row of tableData) {
+        if (row.length < 3) continue;
+        
+        try {
+            const vId = row[0] || `P-${String(ids.length + 1).padStart(2, '0')}`;
+            const latText = row[1];
+            const lngText = row[2];
+            
+            const lat = dmsToDecimal(latText);
+            const lng = dmsToDecimal(lngText);
+            
+            const [e, n] = latLngToUTM(lat, lng, fuso);
+            
+            coords.push([e, n]);
+            ids.push(vId);
+        } catch (error) {
+            console.error('Erro ao processar linha:', row, error);
+        }
+    }
+    
+    if (coords.length < 2) {
+        showMessage('Polilinha precisa de pelo menos 2 coordenadas válidas', 'error');
+        return;
+    }
+    
+    const color = document.getElementById('polyline-tabela-latlong-color').value;
+    const colors = {
+        line: color,
+        vertex: color
+    };
+    
+    drawPolyline(coords, ids, layerName, fuso, colors);
+    closeModal('modal-polyline-tabela-latlong');
+}
+
+// ===== FERRAMENTA: LISTA LAT/LONG (POLILINHA) =====
+
+function openPolylineListaLatLongDialog() {
+    openModal('modal-polyline-lista-latlong');
+}
+
+function createPolylineFromListaLatLong() {
+    const layerName = document.getElementById('polyline-lista-latlong-name').value.trim() || 'TT';
+    const fuso = document.getElementById('polyline-lista-latlong-fuso').value;
+    const coordText = document.getElementById('polyline-lista-latlong-input').value.trim();
+    
+    if (!coordText) {
+        showMessage('Por favor, digite as coordenadas.', 'error');
+        return;
+    }
+    
+    const lines = coordText.split('\n').filter(line => line.trim());
+    const coords = [];
+    const ids = [];
+    
+    for (let line of lines) {
+        try {
+            const parts = parseLine(line, 3);
+            const vId = parts[0];
+            const latText = parts[1];
+            const lngText = parts[2];
+            
+            const lat = dmsToDecimal(latText);
+            const lng = dmsToDecimal(lngText);
+            
+            const [e, n] = latLngToUTM(lat, lng, fuso);
+            
+            coords.push([e, n]);
+            ids.push(vId);
+        } catch (error) {
+            console.error('Erro ao processar linha:', line, error);
+        }
+    }
+    
+    if (coords.length < 2) {
+        showMessage('Polilinha precisa de pelo menos 2 coordenadas válidas', 'error');
+        return;
+    }
+    
+    const color = document.getElementById('polyline-lista-latlong-color').value;
+    const colors = {
+        line: color,
+        vertex: color
+    };
+    
+    drawPolyline(coords, ids, layerName, fuso, colors);
+    closeModal('modal-polyline-lista-latlong');
+}
+
+// ===== FERRAMENTA: AZIMUTE + DISTÂNCIA (POLILINHA) =====
+
+function openPolylineAzimuthDialog() {
+    openModal('modal-polyline-azimuth');
+}
+
+function createPolylineFromAzimuth() {
+    const layerName = document.getElementById('polyline-azimuth-name').value.trim() || 'TT';
+    const fuso = document.getElementById('polyline-azimuth-fuso').value;
+    const startE = parseFloat_BR(document.getElementById('polyline-azimuth-start-e').value);
+    const startN = parseFloat_BR(document.getElementById('polyline-azimuth-start-n').value);
+    const anglesText = document.getElementById('polyline-azimuth-input').value.trim();
+    
+    if (!anglesText) {
+        showMessage('Por favor, digite os azimutes e distâncias.', 'error');
+        return;
+    }
+    
+    const lines = anglesText.split('\n').filter(line => line.trim());
+    const coords = [[startE, startN]];
+    const ids = ['P-00'];
+    
+    let currentE = startE;
+    let currentN = startN;
+    
+    for (let i = 0; i < lines.length; i++) {
+        try {
+            const parts = parseLine(lines[i], 2);
+            const azimuthDMS = parts[0];
+            const distance = parseFloat_BR(parts[1]);
+            
+            const azimuthDec = dmsToDecimal(azimuthDMS);
+            const azimuthRad = azimuthDec * Math.PI / 180;
+            
+            const deltaE = distance * Math.sin(azimuthRad);
+            const deltaN = distance * Math.cos(azimuthRad);
+            
+            currentE += deltaE;
+            currentN += deltaN;
+            
+            coords.push([currentE, currentN]);
+            ids.push(`P-${String(i + 1).padStart(2, '0')}`);
+        } catch (error) {
+            console.error('Erro ao processar linha:', lines[i], error);
+        }
+    }
+    
+    if (coords.length < 2) {
+        showMessage('Polilinha precisa de pelo menos 2 pontos', 'error');
+        return;
+    }
+    
+    const color = document.getElementById('polyline-azimuth-color').value;
+    const colors = {
+        line: color,
+        vertex: color
+    };
+    
+    drawPolyline(coords, ids, layerName, fuso, colors);
+    closeModal('modal-polyline-azimuth');
+}
+
+// ===== FERRAMENTA: RUMO + DISTÂNCIA (POLILINHA) =====
+
+function openPolylineBearingDialog() {
+    openModal('modal-polyline-bearing');
+}
+
+function createPolylineFromBearing() {
+    const layerName = document.getElementById('polyline-bearing-name').value.trim() || 'TT';
+    const fuso = document.getElementById('polyline-bearing-fuso').value;
+    const startE = parseFloat_BR(document.getElementById('polyline-bearing-start-e').value);
+    const startN = parseFloat_BR(document.getElementById('polyline-bearing-start-n').value);
+    const bearingsText = document.getElementById('polyline-bearing-input').value.trim();
+    
+    if (!bearingsText) {
+        showMessage('Por favor, digite os rumos e distâncias.', 'error');
+        return;
+    }
+    
+    const lines = bearingsText.split('\n').filter(line => line.trim());
+    const coords = [[startE, startN]];
+    const ids = ['P-00'];
+    
+    let currentE = startE;
+    let currentN = startN;
+    
+    for (let i = 0; i < lines.length; i++) {
+        try {
+            const parts = parseLine(lines[i], 2);
+            const bearingText = parts[0];
+            const distance = parseFloat_BR(parts[1]);
+            
+            const azimuthDec = bearingToAzimuth(bearingText);
+            const azimuthRad = azimuthDec * Math.PI / 180;
+            
+            const deltaE = distance * Math.sin(azimuthRad);
+            const deltaN = distance * Math.cos(azimuthRad);
+            
+            currentE += deltaE;
+            currentN += deltaN;
+            
+            coords.push([currentE, currentN]);
+            ids.push(`P-${String(i + 1).padStart(2, '0')}`);
+        } catch (error) {
+            console.error('Erro ao processar linha:', lines[i], error);
+        }
+    }
+    
+    if (coords.length < 2) {
+        showMessage('Polilinha precisa de pelo menos 2 pontos', 'error');
+        return;
+    }
+    
+    const color = document.getElementById('polyline-bearing-color').value;
+    const colors = {
+        line: color,
+        vertex: color
+    };
+    
+    drawPolyline(coords, ids, layerName, fuso, colors);
+    closeModal('modal-polyline-bearing');
+}
+

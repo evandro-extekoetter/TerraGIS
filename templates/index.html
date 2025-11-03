@@ -1374,5 +1374,305 @@ window.desativarMoverGeometriaMapa = function() {
         </div>
     </div>
 
+
+    <!-- ===== MODAIS DE POLILINHA ===== -->
+    
+    <!-- Modal Tabela de Coordenadas UTM (POLILINHA) -->
+    <div id="modal-polyline-coord-table" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>📋 Tabela de Coordenadas UTM (Polilinha)</h2>
+                <button class="close-btn" onclick="closeModal('modal-polyline-coord-table')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="polyline-coord-table-name">Nome da camada:</label>
+                    <input type="text" id="polyline-coord-table-name" placeholder="TT" value="TT">
+                </div>
+                <div class="form-group">
+                    <label for="polyline-coord-table-fuso">Fuso UTM:</label>
+                    <select id="polyline-coord-table-fuso">
+                        <option value="18S">18S</option>
+                        <option value="19S">19S</option>
+                        <option value="20S">20S</option>
+                        <option value="21S" selected>21S</option>
+                        <option value="22S">22S</option>
+                        <option value="23S">23S</option>
+                        <option value="24S">24S</option>
+                        <option value="25S">25S</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="polyline-coord-table-color">Cor:</label>
+                    <input type="color" id="polyline-coord-table-color" value="#FF8800">
+                </div>
+                <div class="form-group">
+                    <label>Tabela de Coordenadas:</label>
+                    <div class="table-container">
+                        <table id="polyline-coord-table" class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>VÉRTICE</th>
+                                    <th>UTM(E)</th>
+                                    <th>UTM(N)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="polyline-coord-table-body">
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="table-buttons">
+                        <button class="btn-secondary" onclick="addTableRow('polyline-coord-table-body', 3)">+ Linha</button>
+                        <button class="btn-secondary" onclick="removeTableRow('polyline-coord-table-body')">- Linha</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal('modal-polyline-coord-table')">Cancelar</button>
+                <button class="btn-primary" onclick="createPolylineFromCoordTable()">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Lista de Coordenadas UTM (POLILINHA) -->
+    <div id="modal-polyline-coord-list" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📝 Lista de Coordenadas UTM (Polilinha)</h2>
+                <button class="close-btn" onclick="closeModal('modal-polyline-coord-list')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="polyline-coord-list-name">Nome da camada:</label>
+                    <input type="text" id="polyline-coord-list-name" placeholder="TT" value="TT">
+                </div>
+                <div class="form-group">
+                    <label for="polyline-coord-list-fuso">Fuso UTM:</label>
+                    <select id="polyline-coord-list-fuso">
+                        <option value="18S">18S</option>
+                        <option value="19S">19S</option>
+                        <option value="20S">20S</option>
+                        <option value="21S" selected>21S</option>
+                        <option value="22S">22S</option>
+                        <option value="23S">23S</option>
+                        <option value="24S">24S</option>
+                        <option value="25S">25S</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="polyline-coord-list-color">Cor:</label>
+                    <input type="color" id="polyline-coord-list-color" value="#FF8800">
+                </div>
+                <div class="form-group">
+                    <label for="polyline-coord-list-input">Coordenadas (id;E;N):</label>
+                    <textarea id="polyline-coord-list-input" rows="10" placeholder="P-01;752000,250;8569200,750&#10;P-02;752100,500;8569300,250"></textarea>
+                    <small>Formato: id;E;N (um por linha, separado por ponto e vírgula)</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal('modal-polyline-coord-list')">Cancelar</button>
+                <button class="btn-primary" onclick="createPolylineFromCoordList()">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Tabela Lat/Long (POLILINHA) -->
+    <div id="modal-polyline-tabela-latlong" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>🌍 Tabela de Coordenadas Geográficas (Polilinha)</h2>
+                <button class="close-btn" onclick="closeModal('modal-polyline-tabela-latlong')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="polyline-tabela-latlong-name">Nome da camada:</label>
+                    <input type="text" id="polyline-tabela-latlong-name" placeholder="TT" value="TT">
+                </div>
+                <div class="form-group">
+                    <label for="polyline-tabela-latlong-fuso">Fuso UTM de destino:</label>
+                    <select id="polyline-tabela-latlong-fuso">
+                        <option value="18S">18S</option>
+                        <option value="19S">19S</option>
+                        <option value="20S">20S</option>
+                        <option value="21S" selected>21S</option>
+                        <option value="22S">22S</option>
+                        <option value="23S">23S</option>
+                        <option value="24S">24S</option>
+                        <option value="25S">25S</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="polyline-tabela-latlong-color">Cor:</label>
+                    <input type="color" id="polyline-tabela-latlong-color" value="#FF8800">
+                </div>
+                <div class="form-group">
+                    <label>Tabela de Coordenadas:</label>
+                    <div class="table-container">
+                        <table id="polyline-tabela-latlong" class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>VÉRTICE</th>
+                                    <th>LONGITUDE</th>
+                                    <th>LATITUDE</th>
+                                </tr>
+                            </thead>
+                            <tbody id="polyline-tabela-latlong-body">
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="table-buttons">
+                        <button class="btn-secondary" onclick="addTableRow('polyline-tabela-latlong-body', 3)">+ Linha</button>
+                        <button class="btn-secondary" onclick="removeTableRow('polyline-tabela-latlong-body')">- Linha</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal('modal-polyline-tabela-latlong')">Cancelar</button>
+                <button class="btn-primary" onclick="createPolylineFromTabelaLatLong()">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Lista Lat/Long (POLILINHA) -->
+    <div id="modal-polyline-lista-latlong" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🌍 Lista de Coordenadas Geográficas (Polilinha)</h2>
+                <button class="close-btn" onclick="closeModal('modal-polyline-lista-latlong')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="polyline-lista-latlong-name">Nome da camada:</label>
+                    <input type="text" id="polyline-lista-latlong-name" placeholder="TT" value="TT">
+                </div>
+                <div class="form-group">
+                    <label for="polyline-lista-latlong-fuso">Fuso UTM de destino:</label>
+                    <select id="polyline-lista-latlong-fuso">
+                        <option value="18S">18S</option>
+                        <option value="19S">19S</option>
+                        <option value="20S">20S</option>
+                        <option value="21S" selected>21S</option>
+                        <option value="22S">22S</option>
+                        <option value="23S">23S</option>
+                        <option value="24S">24S</option>
+                        <option value="25S">25S</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="polyline-lista-latlong-color">Cor:</label>
+                    <input type="color" id="polyline-lista-latlong-color" value="#FF8800">
+                </div>
+                <div class="form-group">
+                    <label for="polyline-lista-latlong-input">Coordenadas (id;longitude;latitude):</label>
+                    <textarea id="polyline-lista-latlong-input" rows="10" placeholder='P-01;-56°23'20,828";-14°29'18,542"&#10;P-02;-56°23'25,123";-14°29'22,789"'></textarea>
+                    <small>Formato: id;longitude;latitude (um por linha)</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal('modal-polyline-lista-latlong')">Cancelar</button>
+                <button class="btn-primary" onclick="createPolylineFromListaLatLong()">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Azimute + Distância (POLILINHA) -->
+    <div id="modal-polyline-azimuth" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>🧭 Azimute + Distância (Polilinha)</h2>
+                <button class="close-btn" onclick="closeModal('modal-polyline-azimuth')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="polyline-azimuth-name">Nome da camada:</label>
+                    <input type="text" id="polyline-azimuth-name" placeholder="TT" value="TT">
+                </div>
+                <div class="form-group">
+                    <label for="polyline-azimuth-fuso">Fuso UTM:</label>
+                    <select id="polyline-azimuth-fuso">
+                        <option value="18S">18S</option>
+                        <option value="19S">19S</option>
+                        <option value="20S">20S</option>
+                        <option value="21S" selected>21S</option>
+                        <option value="22S">22S</option>
+                        <option value="23S">23S</option>
+                        <option value="24S">24S</option>
+                        <option value="25S">25S</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="polyline-azimuth-color">Cor:</label>
+                    <input type="color" id="polyline-azimuth-color" value="#FF8800">
+                </div>
+                <div class="form-group">
+                    <label for="polyline-azimuth-start-e">Ponto inicial E (UTM):</label>
+                    <input type="text" id="polyline-azimuth-start-e" placeholder="752000,250">
+                </div>
+                <div class="form-group">
+                    <label for="polyline-azimuth-start-n">Ponto inicial N (UTM):</label>
+                    <input type="text" id="polyline-azimuth-start-n" placeholder="8569200,750">
+                </div>
+                <div class="form-group">
+                    <label for="polyline-azimuth-input">Azimute e Distância (azimute;distância):</label>
+                    <textarea id="polyline-azimuth-input" rows="10" placeholder='45°30'15";100,50&#10;90°15'30";150,75'></textarea>
+                    <small>Formato: azimute;distância (um por linha)</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal('modal-polyline-azimuth')">Cancelar</button>
+                <button class="btn-primary" onclick="createPolylineFromAzimuth()">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Rumo + Distância (POLILINHA) -->
+    <div id="modal-polyline-bearing" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>↗️ Rumo + Distância (Polilinha)</h2>
+                <button class="close-btn" onclick="closeModal('modal-polyline-bearing')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="polyline-bearing-name">Nome da camada:</label>
+                    <input type="text" id="polyline-bearing-name" placeholder="TT" value="TT">
+                </div>
+                <div class="form-group">
+                    <label for="polyline-bearing-fuso">Fuso UTM:</label>
+                    <select id="polyline-bearing-fuso">
+                        <option value="18S">18S</option>
+                        <option value="19S">19S</option>
+                        <option value="20S">20S</option>
+                        <option value="21S" selected>21S</option>
+                        <option value="22S">22S</option>
+                        <option value="23S">23S</option>
+                        <option value="24S">24S</option>
+                        <option value="25S">25S</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="polyline-bearing-color">Cor:</label>
+                    <input type="color" id="polyline-bearing-color" value="#FF8800">
+                </div>
+                <div class="form-group">
+                    <label for="polyline-bearing-start-e">Ponto inicial E (UTM):</label>
+                    <input type="text" id="polyline-bearing-start-e" placeholder="752000,250">
+                </div>
+                <div class="form-group">
+                    <label for="polyline-bearing-start-n">Ponto inicial N (UTM):</label>
+                    <input type="text" id="polyline-bearing-start-n" placeholder="8569200,750">
+                </div>
+                <div class="form-group">
+                    <label for="polyline-bearing-input">Rumo e Distância (rumo;distância):</label>
+                    <textarea id="polyline-bearing-input" rows="10" placeholder='NE 45°30'15";100,50&#10;SE 30°15'45";150,75'></textarea>
+                    <small>Formato: rumo;distância (ex: NE 45°30'15";100,50)</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal('modal-polyline-bearing')">Cancelar</button>
+                <button class="btn-primary" onclick="createPolylineFromBearing()">OK</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
