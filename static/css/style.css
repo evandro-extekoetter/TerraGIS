@@ -905,6 +905,18 @@ body {
 .dropdown-item .icon {
     width: 18px;
     height: 18px;
+    max-width: 18px;
+    max-height: 18px;
+    object-fit: contain;
+}
+
+.submenu-trigger .icon,
+.submenu-item .icon {
+    width: 16px;
+    height: 16px;
+    max-width: 16px;
+    max-height: 16px;
+    object-fit: contain;
 }
 
 /* ========================================
