@@ -1270,7 +1270,9 @@ function addLayer(layerName, polygonLayer, verticesLayer) {
     };
     
     // Atualizar painel de camadas
-    updateLayersPanel();
+    if (typeof terraManager !== 'undefined') {
+        terraManager.updateLayerListUI();
+    }
 }
 
 function removeLayer(layerName) {
@@ -1284,7 +1286,9 @@ function removeLayer(layerName) {
     delete layers[layerName];
     
     // Atualizar painel
-    updateLayersPanel();
+    if (typeof terraManager !== 'undefined') {
+        terraManager.updateLayerListUI();
+    }
 }
 
 function toggleLayerVisibility(layerName) {
@@ -1301,7 +1305,9 @@ function toggleLayerVisibility(layerName) {
         if (layer.vertices) map.removeLayer(layer.vertices);
     }
     
-    updateLayersPanel();
+    if (typeof terraManager !== 'undefined') {
+        terraManager.updateLayerListUI();
+    }
 }
 
 function zoomToLayer(layerName) {
@@ -1313,47 +1319,14 @@ function zoomToLayer(layerName) {
     }
 }
 
-function updateLayersPanel() {
-    const layersList = document.getElementById('layers-list');
-    if (!layersList) {
-        console.warn('[updateLayersPanel] Elemento layers-list não encontrado');
-        return;
-    }
-    layersList.innerHTML = '';
-    
-    // Listar camadas em ordem reversa (mais recente primeiro)
-    const layerNames = Object.keys(terraManager.layers).reverse();
-    
-    if (layerNames.length === 0) {
-        layersList.innerHTML = '<div style="padding: 20px; text-align: center; color: #888;">Nenhuma camada criada</div>';
-        return;
-    }
-    
-    layerNames.forEach(layerName => {
-        const layer = terraManager.layers[layerName];
-        const layerItem = document.createElement('div');
-        layerItem.className = 'layer-item';
-        layerItem.innerHTML = `
-            <input type="checkbox" class="layer-checkbox" ${layer.visible ? 'checked' : ''} 
-                   onchange="toggleLayerVisibility('${layerName}')">
-            <span class="layer-name">${layerName}</span>
-            <div class="layer-actions">
-                <button class="layer-action-btn" onclick="zoomToLayer('${layerName}')" title="Zoom para camada">
-                    🔍
-                </button>
-                <button class="layer-action-btn" onclick="removeLayer('${layerName}')" title="Remover camada">
-                    🗑️
-                </button>
-            </div>
-        `;
-        layersList.appendChild(layerItem);
-    });
-}
+// Função updateLayersPanel removida - agora usa terraManager.updateLayerListUI()
 
 // ===== INICIALIZAÇÃO =====
 document.addEventListener('DOMContentLoaded', function() {
     initMap();
-    updateLayersPanel();
+    if (typeof terraManager !== 'undefined') {
+        terraManager.updateLayerListUI();
+    }
     console.log('TerraGIS inicializado com sucesso');
 });;
 // Adicionar animações CSS
@@ -2212,141 +2185,11 @@ function aplicarMoverGeometria() {
 }
 
 // ===== MOVER GEOMETRIA (MAPA) =====
-let moverGeometriaMapaAtivo = false;
-let geometriaSelecionada = null;
-let geometriaOriginal = null;
-let pontoInicial = null;
-let previewLayer = null;
+// Implementação movida para mover-geometria.js (usa sistema de camada ativa)
+// Código antigo desativado
 
-function ativarMoverGeometriaMapa() {
-    if (moverGeometriaMapaAtivo) {
-        desativarMoverGeometriaMapa();
-        return;
-    }
-    
-    // Verificar se há geometrias disponíveis
-    const geometriasDisponiveis = Object.keys(terraManager.layers);
-    if (geometriasDisponiveis.length === 0) {
-        showMessage('Nenhuma geometria disponível para mover.', 'warning');
-        return;
-    }
-    
-    // Desativar outras ferramentas
-    desativarTodasFerramentasEdicao();
-    
-    moverGeometriaMapaAtivo = true;
-    geometriaSelecionada = null;
-    updateToolIndicator('Mover Geometria (Mapa)');
-    
-    // Criar dropdown para seleção de geometria
-    const dropdown = document.createElement('select');
-    dropdown.id = 'moverGeometriaDropdown';
-    dropdown.style.cssText = 'position: fixed; top: 80px; left: 50%; transform: translateX(-50%); z-index: 10000; padding: 10px; font-size: 16px; background: white; border: 2px solid #007bff; border-radius: 5px;';
-    
-    const optionDefault = document.createElement('option');
-    optionDefault.value = '';
-    optionDefault.textContent = '-- Selecione a geometria para mover --';
-    dropdown.appendChild(optionDefault);
-    
-    geometriasDisponiveis.forEach(layerName => {
-        const option = document.createElement('option');
-        option.value = layerName;
-        option.textContent = layerName;
-        dropdown.appendChild(option);
-    });
-    
-    dropdown.addEventListener('change', function() {
-        if (this.value) {
-            selecionarGeometriaParaMover(this.value);
-            this.remove();
-        }
-    });
-    
-    document.body.appendChild(dropdown);
-}
-
-function selecionarGeometriaParaMover(layerName) {
-    geometriaSelecionada = terraManager.layers[layerName];
-    
-    if (!geometriaSelecionada) {
-        showMessage('Geometria não encontrada.', 'error');
-        desativarMoverGeometriaMapa();
-        return;
-    }
-    
-    // Salvar coordenadas originais
-    geometriaOriginal = geometriaSelecionada.vertices.map(v => ({e: v.e, n: v.n}));
-    
-    // Definir ponto inicial como centro da geometria
-    const primeiroVertice = geometriaSelecionada.vertices[0];
-    pontoInicial = utmToLatLng(primeiroVertice.e, primeiroVertice.n, geometriaSelecionada.fuso);
-    
-    // Desabilitar popups de todas as geometrias
-    Object.values(terraManager.layers).forEach(tl => {
-        if (tl.geometryLayer) {
-            tl.geometryLayer.closePopup();
-            tl.geometryLayer.unbindPopup();
-        }
-    });
-    
-    // Criar preview layer
-    const coordsOriginais = geometriaSelecionada.vertices.map(v => 
-        utmToLatLng(v.e, v.n, geometriaSelecionada.fuso)
-    );
-    
-    previewLayer = L.polygon(coordsOriginais, {
-        color: 'red',
-        weight: 2,
-        dashArray: '5, 5',
-        fillOpacity: 0.1
-    }).addTo(map);
-    
-    showMessage('Geometria "' + layerName + '" selecionada. Mova o mouse para posicionar. Clique para fixar. ESC para cancelar.', 'success');
-    
-    // Adicionar evento de clique no mapa
-    map.on('click', onMapClickMoverGeometria);
-    map.on('mousemove', onMapMouseMoveMoverGeometria);
-}
-
-
-
-function desativarMoverGeometriaMapa() {
-    if (!moverGeometriaMapaAtivo) return;
-    
-    moverGeometriaMapaAtivo = false;
-    geometriaSelecionada = null;
-    geometriaOriginal = null;
-    pontoInicial = null;
-    
-    // Remover preview
-    if (previewLayer) {
-        map.removeLayer(previewLayer);
-        previewLayer = null;
-    }
-    
-    // Remover eventos
-    map.off('click', onMapClickMoverGeometria);
-    map.off('mousemove', onMapMouseMoveMoverGeometria);
-    
-    Object.values(terraManager.layers).forEach(terraLayer => {
-        if (terraLayer.polygon) {
-            terraLayer.polygon.off('click', onPolygonClickMoverGeometria);
-        }
-        // Restaurar popups
-        if (terraLayer.geometryLayer) {
-            const layerName = terraLayer.type === 'polygon' ? 
-                `${terraLayer.name}_Poligono` : `${terraLayer.name}_Polilinha`;
-            terraLayer.geometryLayer.bindPopup(`<b>${layerName}</b>`);
-        }
-    });
-    
-    updateToolIndicator(null);
-}
-
-function onPolygonClickMoverGeometria(e) {
-    L.DomEvent.stopPropagation(e);
-    
-    if (!moverGeometriaMapaAtivo) return;
+if (false) {
+// Código antigo removido - ver mover-geometria.js
     
     if (!geometriaSelecionada) {
         // Primeiro clique - selecionar geometria
@@ -2437,6 +2280,7 @@ function fixarGeometriaNovaPosicao(pontoFinal) {
     // Desativar ferramenta
     desativarMoverGeometriaMapa();
 }
+} // fim if(false) - código antigo de Mover Geometria
 
 // ===== COPIAR GEOMETRIA (MAPA) =====
 function ativarCopiarGeometriaMapa() {
