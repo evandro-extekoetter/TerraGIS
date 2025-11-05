@@ -542,17 +542,11 @@ class TerraManager {
     
     // Atualizar UI do painel de camadas
     updateLayerListUI() {
-        const camadasMenu = document.getElementById('camadas-menu');
-        if (!camadasMenu) return;
+        const layersList = document.getElementById('layers-list');
+        if (!layersList) return;
         
-        // Remover lista antiga se existir
-        const oldList = camadasMenu.querySelector('.layers-list');
-        if (oldList) oldList.remove();
-        
-        // Criar nova lista
-        const layersList = document.createElement('div');
-        layersList.className = 'layers-list';
-        layersList.style.cssText = 'margin-top: 10px; max-height: 300px; overflow-y: auto;';
+        // Limpar lista antiga
+        layersList.innerHTML = '';
         
         // Adicionar cada camada
         Object.keys(this.layers).forEach(layerName => {
@@ -620,9 +614,6 @@ class TerraManager {
             
             layersList.appendChild(layerItem);
         });
-        
-        // Adicionar lista ao menu
-        camadasMenu.appendChild(layersList);
     }
 }
 
