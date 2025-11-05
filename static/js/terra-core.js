@@ -337,6 +337,7 @@ class TerraManager {
     constructor() {
         this.layers = {};           // {layerName: TerraLayer}
         this.globalVertices = {};   // {vertexId: {e, n, fuso, layers: [layerNames]}}
+        this.activeLayer = null;    // Nome da camada ativa (padrão QGIS)
     }
     
     // Obter ou criar vértice global
@@ -493,6 +494,135 @@ class TerraManager {
                 layer.disableEditing();
             }
         });
+    }
+    
+    // ===== SISTEMA DE CAMADA ATIVA (PADRÃO QGIS) =====
+    
+    // Definir camada ativa
+    setActiveLayer(layerName) {
+        // Validar se camada existe
+        if (layerName && !this.layers[layerName]) {
+            console.warn(`[TerraManager] Camada "${layerName}" não encontrada`);
+            return false;
+        }
+        
+        this.activeLayer = layerName;
+        console.log(`[TerraManager] Camada ativa: ${layerName || 'nenhuma'}`);
+        
+        // Atualizar UI do painel de camadas
+        this.updateLayerListUI();
+        
+        // Disparar evento customizado
+        if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('activeLayerChanged', {
+                detail: { layerName: layerName }
+            }));
+        }
+        
+        return true;
+    }
+    
+    // Obter camada ativa
+    getActiveLayer() {
+        if (!this.activeLayer) {
+            return null;
+        }
+        return this.layers[this.activeLayer];
+    }
+    
+    // Obter nome da camada ativa
+    getActiveLayerName() {
+        return this.activeLayer;
+    }
+    
+    // Verificar se há camada ativa
+    hasActiveLayer() {
+        return this.activeLayer !== null && this.layers[this.activeLayer] !== undefined;
+    }
+    
+    // Atualizar UI do painel de camadas
+    updateLayerListUI() {
+        const camadasMenu = document.getElementById('camadas-menu');
+        if (!camadasMenu) return;
+        
+        // Remover lista antiga se existir
+        const oldList = camadasMenu.querySelector('.layers-list');
+        if (oldList) oldList.remove();
+        
+        // Criar nova lista
+        const layersList = document.createElement('div');
+        layersList.className = 'layers-list';
+        layersList.style.cssText = 'margin-top: 10px; max-height: 300px; overflow-y: auto;';
+        
+        // Adicionar cada camada
+        Object.keys(this.layers).forEach(layerName => {
+            const layer = this.layers[layerName];
+            const isActive = layerName === this.activeLayer;
+            
+            const layerItem = document.createElement('div');
+            layerItem.className = 'layer-item';
+            layerItem.style.cssText = `
+                padding: 8px 12px;
+                margin: 2px 0;
+                cursor: pointer;
+                border-radius: 4px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                background: ${isActive ? '#ffd700' : 'transparent'};
+                border: ${isActive ? '2px solid #ff8c00' : '1px solid #ddd'};
+                font-weight: ${isActive ? 'bold' : 'normal'};
+                transition: all 0.2s;
+            `;
+            
+            // Ícone de ativo
+            if (isActive) {
+                const activeIcon = document.createElement('span');
+                activeIcon.textContent = '⭐';
+                activeIcon.title = 'Camada Ativa';
+                layerItem.appendChild(activeIcon);
+            }
+            
+            // Nome da camada
+            const nameSpan = document.createElement('span');
+            nameSpan.textContent = layerName;
+            nameSpan.style.flex = '1';
+            layerItem.appendChild(nameSpan);
+            
+            // Ícone de visibilidade
+            const visIcon = document.createElement('span');
+            visIcon.textContent = layer.visible ? '👁️' : '🚫';
+            visIcon.title = layer.visible ? 'Visível' : 'Oculta';
+            visIcon.style.cursor = 'pointer';
+            visIcon.onclick = (e) => {
+                e.stopPropagation();
+                layer.setVisible(!layer.visible);
+                this.updateLayerListUI();
+            };
+            layerItem.appendChild(visIcon);
+            
+            // Evento de clique para ativar camada
+            layerItem.onclick = () => {
+                this.setActiveLayer(layerName);
+            };
+            
+            // Hover effect
+            layerItem.onmouseenter = () => {
+                if (!isActive) {
+                    layerItem.style.background = '#f0f0f0';
+                }
+            };
+            layerItem.onmouseleave = () => {
+                if (!isActive) {
+                    layerItem.style.background = 'transparent';
+                }
+            };
+            
+            layersList.appendChild(layerItem);
+        });
+        
+        // Adicionar lista ao menu
+        camadasMenu.appendChild(layersList);
     }
 }
 

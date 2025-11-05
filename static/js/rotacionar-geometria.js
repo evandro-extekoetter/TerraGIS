@@ -11,21 +11,30 @@ var previewLayerRotacao = null;
 function openRotacionarGeometriaDialog() {
     console.log('📋 Abrindo diálogo de rotação');
     
+    // Verificar se há camada ativa
+    if (!terraManager.hasActiveLayer()) {
+        showMessage('⚠️ Selecione uma camada no painel CAMADAS primeiro!', 'warning');
+        return;
+    }
+    
+    // Obter camada ativa
+    var layerName = terraManager.getActiveLayerName();
+    console.log('[ROTACIONAR] Usando camada ativa:', layerName);
+    
     // Desativar outras ferramentas
     desativarTodasFerramentasEdicao();
     
     rotacionarAtivo = true;
     
-    // Criar modal
+    // Criar modal simplificado (sem dropdown de seleção)
     var modal = document.createElement('div');
     modal.id = 'modalRotacionar';
     modal.innerHTML = '<div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; display: flex; align-items: center; justify-content: center;">' +
         '<div style="background: white; padding: 30px; border-radius: 8px; max-width: 500px; width: 90%;">' +
         '<h3 style="margin: 0 0 20px 0; color: #333;">🔄 Rotacionar Geometria</h3>' +
-        '<label style="display: block; margin-bottom: 10px; font-weight: bold;">Selecione a geometria:</label>' +
-        '<select id="selectGeometriaRotacionar" style="width: 100%; padding: 10px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 4px;">' +
-        '<option value="">-- Selecione --</option>' +
-        '</select>' +
+        '<div style="background: #ffd700; padding: 10px; border-radius: 4px; margin-bottom: 20px; border: 2px solid #ff8c00;">' +
+        '<strong>⭐ Camada Ativa:</strong> ' + layerName +
+        '</div>' +
         '<label style="display: block; margin-bottom: 10px; font-weight: bold;">Modo de rotação:</label>' +
         '<div style="display: flex; gap: 10px; margin-bottom: 20px;">' +
         '<button id="btnRotacionarMapa" style="flex: 1; padding: 12px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">🗺️ Mapa (Livre)</button>' +
@@ -39,34 +48,15 @@ function openRotacionarGeometriaDialog() {
     
     document.body.appendChild(modal);
     
-    // Preencher dropdown com geometrias
-    var select = document.getElementById('selectGeometriaRotacionar');
-    for (var nome in terraManager.layers) {
-        var option = document.createElement('option');
-        option.value = nome;
-        option.textContent = nome;
-        select.appendChild(option);
-    }
-    
-    // Event listeners
+    // Event listeners - usar camada ativa diretamente
     document.getElementById('btnRotacionarMapa').onclick = function() {
-        var geometriaNome = document.getElementById('selectGeometriaRotacionar').value;
-        if (!geometriaNome) {
-            showMessage('Selecione uma geometria primeiro!', 'warning');
-            return;
-        }
         document.getElementById('modalRotacionar').remove();
-        iniciarRotacaoMapa(geometriaNome);
+        iniciarRotacaoMapa(layerName);
     };
     
     document.getElementById('btnRotacionarAngulo').onclick = function() {
-        var geometriaNome = document.getElementById('selectGeometriaRotacionar').value;
-        if (!geometriaNome) {
-            showMessage('Selecione uma geometria primeiro!', 'warning');
-            return;
-        }
         document.getElementById('modalRotacionar').remove();
-        abrirDialogoAnguloEspecifico(geometriaNome);
+        abrirDialogoAnguloEspecifico(layerName);
     };
     
     document.getElementById('btnCancelarRotacionar').onclick = function() {

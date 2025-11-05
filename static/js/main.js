@@ -190,6 +190,14 @@ function drawPolygon(coords, ids, layerName, fuso, colors = {}) {
     // Adicionar ao gerenciador
     const layerKey = terraManager.addLayer(terraLayer);
     
+    // Atualizar painel de camadas
+    terraManager.updateLayerListUI();
+    
+    // Definir como camada ativa se for a primeira
+    if (Object.keys(terraManager.layers).length === 1) {
+        terraManager.setActiveLayer(layerKey);
+    }
+    
     // === COMPATIBILIDADE: Manter referência no sistema antigo ===
     // Isso permite que o painel de camadas continue funcionando
     const polygon = terraLayer.geometryLayer;
@@ -1495,18 +1503,34 @@ function onVertexDragEnd(event, layerName) {
 
 // ===== MOVER VÉRTICES (COORDENADAS) =====
 function openMoverVerticesCoordenadasDialog() {
+    // Verificar se há camada ativa
+    if (!terraManager.hasActiveLayer()) {
+        showMessage('⚠️ Selecione uma camada no painel CAMADAS primeiro!', 'warning');
+        return;
+    }
+    
+    const activeLayerName = terraManager.getActiveLayerName();
+    
     // Carregar camadas no select
     const select = document.getElementById('mover-vertice-camada');
-    select.innerHTML = '<option value="">Selecione uma camada</option>';
+    select.innerHTML = '';
     
-    Object.keys(layers).forEach(layerName => {
-        const option = document.createElement('option');
-        option.value = layerName;
-        option.textContent = layerName;
-        select.appendChild(option);
-    });
+    // Adicionar apenas a camada ativa
+    const option = document.createElement('option');
+    option.value = activeLayerName;
+    option.textContent = '⭐ ' + activeLayerName + ' (Camada Ativa)';
+    option.selected = true;
+    select.appendChild(option);
+    
+    // Desabilitar seleção (forçar uso da camada ativa)
+    select.disabled = true;
+    select.style.background = '#ffd700';
+    select.style.fontWeight = 'bold';
     
     openModal('modal-mover-vertice');
+    
+    // Carregar vértices automaticamente
+    loadVerticesForMove();
 }
 
 function loadVerticesForMove() {
@@ -1685,18 +1709,34 @@ function distanceToSegment(px, py, x1, y1, x2, y2) {
 
 // ===== ADICIONAR VÉRTICES (COORDENADAS) =====
 function openAdicionarVerticesCoordenadasDialog() {
+    // Verificar se há camada ativa
+    if (!terraManager.hasActiveLayer()) {
+        showMessage('⚠️ Selecione uma camada no painel CAMADAS primeiro!', 'warning');
+        return;
+    }
+    
+    const activeLayerName = terraManager.getActiveLayerName();
+    
     // Carregar camadas no select
     const select = document.getElementById('adicionar-vertice-camada');
-    select.innerHTML = '<option value="">Selecione uma camada</option>';
+    select.innerHTML = '';
     
-    Object.keys(layers).forEach(layerName => {
-        const option = document.createElement('option');
-        option.value = layerName;
-        option.textContent = layerName;
-        select.appendChild(option);
-    });
+    // Adicionar apenas a camada ativa
+    const option = document.createElement('option');
+    option.value = activeLayerName;
+    option.textContent = '⭐ ' + activeLayerName + ' (Camada Ativa)';
+    option.selected = true;
+    select.appendChild(option);
+    
+    // Desabilitar seleção (forçar uso da camada ativa)
+    select.disabled = true;
+    select.style.background = '#ffd700';
+    select.style.fontWeight = 'bold';
     
     openModal('modal-adicionar-vertice');
+    
+    // Carregar vértices automaticamente
+    loadVerticesForAdd();
 }
 
 function loadVerticesForAdd() {
@@ -2611,6 +2651,14 @@ function drawPolyline(coords, ids, layerName, fuso, colors = {}) {
     // Adicionar ao gerenciador
     const layerKey = terraManager.addLayer(terraLayer);
     
+    // Atualizar painel de camadas
+    terraManager.updateLayerListUI();
+    
+    // Definir como camada ativa se for a primeira
+    if (Object.keys(terraManager.layers).length === 1) {
+        terraManager.setActiveLayer(layerKey);
+    }
+    
     // === COMPATIBILIDADE: Manter referência no sistema antigo ===
     // Isso permite que o painel de camadas continue funcionando
     const polyline = terraLayer.geometryLayer;
@@ -3224,4 +3272,444 @@ function createFreehandPolyline() {
     console.log(`Polilinha criada: ${layerName} com ${coords.length} vértices`);
 }
 
+
+
+
+
+
+// ========================================
+// MOVER GEOMETRIA (MAPA)
+// ========================================
+
+let moveGeometryState = {
+    active: false,
+    selectedLayer: null,
+    selectedFeature: null,
+    originalGeometry: null,
+    tempLayer: null,
+    isMoving: false
+};
+
+function openMoverGeometriaMapaDialog() {
+    // Verificar se há camadas disponíveis
+    const layers = getAllTerraLayers();
+    if (layers.length === 0) {
+        alert('Nenhuma camada TERRATools encontrada. Crie uma geometria primeiro.');
+        return;
+    }
+    
+    // Ativar ferramenta diretamente
+    ativarMoverGeometriaMapa();
+}
+
+function ativarMoverGeometriaMapa() {
+    // Desativar outras ferramentas
+    desativarTodasFerramentas();
+    
+    // Ativar ferramenta de mover geometria
+    moveGeometryState.active = true;
+    updateToolIndicator('MOVER GEOMETRIA (MAPA)');
+    
+    // Adicionar listener de clique no mapa
+    map.on('click', handleMoverGeometriaClick);
+    map.on('mousemove', handleMoverGeometriaMove);
+    
+    alert('Clique em uma geometria para selecioná-la e movê-la.\\nClique novamente para fixar na nova posição.\\nPressione ESC para cancelar.');
+}
+
+function handleMoverGeometriaClick(e) {
+    if (!moveGeometryState.active) return;
+    
+    if (!moveGeometryState.isMoving) {
+        // Primeiro clique - selecionar geometria
+        selectGeometryForMove(e.latlng);
+    } else {
+        // Segundo clique - fixar geometria
+        fixGeometryPosition(e.latlng);
+    }
+}
+
+function selectGeometryForMove(latlng) {
+    // Buscar geometria próxima ao clique
+    let found = false;
+    
+    map.eachLayer((layer) => {
+        if (found) return; // Já encontrou, sair do loop
+        
+        // Verificar se é um polígono ou polilinha TerraTools
+        if ((layer instanceof L.Polygon || layer instanceof L.Polyline) && layer.options && layer.options.layerName) {
+            // Para polígonos, verificar se o clique está dentro ou próximo
+            if (layer instanceof L.Polygon) {
+                // Verificar se o ponto está dentro do polígono
+                const bounds = layer.getBounds();
+                if (bounds.contains(latlng)) {
+                    // Geometria encontrada
+                    moveGeometryState.selectedLayer = layer;
+                    moveGeometryState.originalGeometry = layer.getLatLngs();
+                    moveGeometryState.isMoving = true;
+                    
+                    // Criar camada temporária para visualização
+                    const style = {
+                        color: '#ff7800',
+                        weight: 3,
+                        opacity: 0.6,
+                        fillOpacity: 0.2,
+                        dashArray: '5, 5'
+                    };
+                    
+                    moveGeometryState.tempLayer = L.polygon(layer.getLatLngs(), style).addTo(map);
+                    
+                    found = true;
+                    updateToolIndicator('MOVER GEOMETRIA (MAPA) - Mova o mouse e clique para fixar');
+                }
+            } else if (layer instanceof L.Polyline) {
+                // Para polilinhas, verificar proximidade
+                const point = map.latLngToContainerPoint(latlng);
+                const coords = layer.getLatLngs();
+                
+                for (let i = 0; i < coords.length; i++) {
+                    const vertexPoint = map.latLngToContainerPoint(coords[i]);
+                    const distance = point.distanceTo(vertexPoint);
+                    
+                    if (distance < 20) {
+                        moveGeometryState.selectedLayer = layer;
+                        moveGeometryState.originalGeometry = layer.getLatLngs();
+                        moveGeometryState.isMoving = true;
+                        
+                        const style = {
+                            color: '#ff7800',
+                            weight: 3,
+                            opacity: 0.6,
+                            dashArray: '5, 5'
+                        };
+                        
+                        moveGeometryState.tempLayer = L.polyline(layer.getLatLngs(), style).addTo(map);
+                        
+                        found = true;
+                        updateToolIndicator('MOVER GEOMETRIA (MAPA) - Mova o mouse e clique para fixar');
+                        break;
+                    }
+                }
+            }
+        }
+    });
+    
+    if (!found) {
+        alert('Nenhuma geometria encontrada no local clicado. Clique dentro de um polígono ou próximo a uma polilinha.');
+    }
+}
+
+function handleMoverGeometriaMove(e) {
+    if (!moveGeometryState.isMoving || !moveGeometryState.tempLayer) return;
+    
+    // Calcular deslocamento do mouse
+    const originalCenter = getGeometryCenter(moveGeometryState.originalGeometry);
+    const dx = e.latlng.lat - originalCenter.lat;
+    const dy = e.latlng.lng - originalCenter.lng;
+    
+    // Mover geometria temporária
+    const movedCoords = moveCoordinates(moveGeometryState.originalGeometry, dx, dy);
+    moveGeometryState.tempLayer.setLatLngs(movedCoords);
+}
+
+function fixGeometryPosition(latlng) {
+    // Calcular deslocamento final
+    const originalCenter = getGeometryCenter(moveGeometryState.originalGeometry);
+    const dx = latlng.lat - originalCenter.lat;
+    const dy = latlng.lng - originalCenter.lng;
+    
+    // Mover geometria definitivamente
+    const movedCoords = moveCoordinates(moveGeometryState.originalGeometry, dx, dy);
+    moveGeometryState.selectedLayer.setLatLngs(movedCoords);
+    
+    // Atualizar coordenadas dos vértices no TerraLayer
+    const layerName = moveGeometryState.selectedLayer.options.layerName;
+    if (layerName && currentProject && currentProject.layers) {
+        const terraLayer = currentProject.layers.find(l => l.name === layerName);
+        if (terraLayer && terraLayer.vertices) {
+            // Converter lat/lng para UTM
+            const fuso = currentProject.fuso || 21;
+            const flatCoords = movedCoords[0] || movedCoords;
+            
+            flatCoords.forEach((coord, i) => {
+                if (terraLayer.vertices[i]) {
+                    const utm = latLngToUTM(coord.lat, coord.lng, fuso);
+                    terraLayer.vertices[i].e = utm.e;
+                    terraLayer.vertices[i].n = utm.n;
+                }
+            });
+            
+            // Atualizar marcadores de vértices no mapa
+            updateVertexMarkers(terraLayer);
+        }
+    }
+    
+    // Remover camada temporária
+    if (moveGeometryState.tempLayer) {
+        map.removeLayer(moveGeometryState.tempLayer);
+    }
+    
+    // Resetar estado
+    moveGeometryState.isMoving = false;
+    moveGeometryState.selectedLayer = null;
+    moveGeometryState.tempLayer = null;
+    
+    updateToolIndicator('MOVER GEOMETRIA (MAPA) - Geometria movida');
+    alert('Geometria movida com sucesso!');
+}
+
+function getGeometryCenter(coords) {
+    // Calcular centro da geometria
+    let latSum = 0, lngSum = 0, count = 0;
+    
+    const flatCoords = coords[0] || coords;
+    flatCoords.forEach(coord => {
+        latSum += coord.lat;
+        lngSum += coord.lng;
+        count++;
+    });
+    
+    return {
+        lat: latSum / count,
+        lng: lngSum / count
+    };
+}
+
+function moveCoordinates(coords, dx, dy) {
+    // Mover coordenadas
+    const isPolygon = Array.isArray(coords[0]);
+    
+    const movePoint = (coord) => ({
+        lat: coord.lat + dx,
+        lng: coord.lng + dy
+    });
+    
+    if (isPolygon) {
+        return coords.map(ring => ring.map(movePoint));
+    } else {
+        return coords.map(movePoint);
+    }
+}
+
+function getAllTerraLayers() {
+    const layers = [];
+    map.eachLayer((layer) => {
+        if (layer instanceof L.Polygon || layer instanceof L.Polyline) {
+            if (layer.options.layerName) {
+                layers.push({
+                    name: layer.options.layerName,
+                    layer: layer
+                });
+            }
+        }
+    });
+    return layers;
+}
+
+
+// ========================================
+// ROTACIONAR GEOMETRIA (LIVRE)
+// ========================================
+
+let rotateGeometryState = {
+    active: false,
+    selectedLayer: null,
+    originalGeometry: null,
+    centroid: null,
+    tempLayer: null,
+    isRotating: false,
+    initialAngle: 0
+};
+
+function openRotacionarGeometriaDialog() {
+    // Verificar se há camadas disponíveis
+    const layers = getAllTerraLayers();
+    if (layers.length === 0) {
+        alert('Nenhuma camada TERRATools encontrada. Crie uma geometria primeiro.');
+        return;
+    }
+    
+    // Ativar ferramenta de rotação livre diretamente
+    ativarRotacionarGeometriaLivre();
+}
+
+function ativarRotacionarGeometriaLivre() {
+    // Desativar outras ferramentas
+    desativarTodasFerramentas();
+    
+    // Ativar ferramenta de rotacionar
+    rotateGeometryState.active = true;
+    updateToolIndicator('ROTACIONAR GEOMETRIA (LIVRE)');
+    
+    // Adicionar listeners
+    map.on('click', handleRotacionarGeometriaClick);
+    map.on('mousemove', handleRotacionarGeometriaMove);
+    
+    alert('Clique em uma geometria para selecioná-la e rotacioná-la.\\nMova o mouse para rotacionar.\\nClique novamente para fixar.\\nPressione ESC para cancelar.');
+}
+
+function handleRotacionarGeometriaClick(e) {
+    if (!rotateGeometryState.active) return;
+    
+    if (!rotateGeometryState.isRotating) {
+        // Primeiro clique - selecionar geometria
+        selectGeometryForRotate(e.latlng);
+    } else {
+        // Segundo clique - fixar rotação
+        fixRotationPosition();
+    }
+}
+
+function selectGeometryForRotate(latlng) {
+    // Buscar geometria próxima ao clique
+    const tolerance = 10;
+    const point = map.latLngToContainerPoint(latlng);
+    
+    let found = false;
+    
+    map.eachLayer((layer) => {
+        if (layer instanceof L.Polygon || layer instanceof L.Polyline) {
+            // Verificar se o clique está próximo da geometria
+            const layerPoint = map.latLngToContainerPoint(layer.getLatLngs()[0][0] || layer.getLatLngs()[0]);
+            const distance = point.distanceTo(layerPoint);
+            
+            if (distance < tolerance * 10) {
+                // Geometria encontrada
+                rotateGeometryState.selectedLayer = layer;
+                rotateGeometryState.originalGeometry = layer.getLatLngs();
+                rotateGeometryState.centroid = getGeometryCenter(layer.getLatLngs());
+                rotateGeometryState.isRotating = true;
+                
+                // Armazenar ângulo inicial do mouse
+                rotateGeometryState.initialAngle = Math.atan2(
+                    latlng.lng - rotateGeometryState.centroid.lng,
+                    latlng.lat - rotateGeometryState.centroid.lat
+                );
+                
+                // Criar camada temporária
+                const style = {
+                    color: '#ff00ff',
+                    weight: 3,
+                    opacity: 0.6,
+                    fillOpacity: 0.2,
+                    dashArray: '5, 5'
+                };
+                
+                if (layer instanceof L.Polygon) {
+                    rotateGeometryState.tempLayer = L.polygon(layer.getLatLngs(), style).addTo(map);
+                } else {
+                    rotateGeometryState.tempLayer = L.polyline(layer.getLatLngs(), style).addTo(map);
+                }
+                
+                // Adicionar marcador no centroid
+                L.circleMarker(rotateGeometryState.centroid, {
+                    color: '#ff00ff',
+                    radius: 5,
+                    fillOpacity: 0.8
+                }).addTo(map);
+                
+                found = true;
+                updateToolIndicator('ROTACIONAR GEOMETRIA (LIVRE) - Mova o mouse para rotacionar');
+            }
+        }
+    });
+    
+    if (!found) {
+        alert('Nenhuma geometria encontrada no local clicado.');
+    }
+}
+
+function handleRotacionarGeometriaMove(e) {
+    if (!rotateGeometryState.isRotating || !rotateGeometryState.tempLayer) return;
+    
+    // Calcular ângulo atual do mouse
+    const centroid = rotateGeometryState.centroid;
+    const currentAngle = Math.atan2(
+        e.latlng.lng - centroid.lng,
+        e.latlng.lat - centroid.lat
+    );
+    
+    // Calcular ângulo de rotação relativo
+    const angle = currentAngle - rotateGeometryState.initialAngle;
+    
+    // Rotacionar geometria temporária
+    const rotatedCoords = rotateCoordinates(rotateGeometryState.originalGeometry, centroid, angle);
+    rotateGeometryState.tempLayer.setLatLngs(rotatedCoords);
+}
+
+function fixRotationPosition() {
+    // Aplicar rotação final
+    rotateGeometryState.selectedLayer.setLatLngs(rotateGeometryState.tempLayer.getLatLngs());
+    
+    // Remover camada temporária
+    if (rotateGeometryState.tempLayer) {
+        map.removeLayer(rotateGeometryState.tempLayer);
+    }
+    
+    // Resetar estado
+    rotateGeometryState.isRotating = false;
+    rotateGeometryState.selectedLayer = null;
+    rotateGeometryState.tempLayer = null;
+    
+    updateToolIndicator('ROTACIONAR GEOMETRIA (LIVRE) - Geometria rotacionada');
+    alert('Geometria rotacionada com sucesso!');
+}
+
+function rotateCoordinates(coords, centroid, angle) {
+    // Rotacionar coordenadas em torno do centroid
+    const isPolygon = Array.isArray(coords[0]);
+    
+    const rotatePoint = (coord) => {
+        const dx = coord.lat - centroid.lat;
+        const dy = coord.lng - centroid.lng;
+        
+        return {
+            lat: centroid.lat + dx * Math.cos(angle) - dy * Math.sin(angle),
+            lng: centroid.lng + dx * Math.sin(angle) + dy * Math.cos(angle)
+        };
+    };
+    
+    if (isPolygon) {
+        return coords.map(ring => ring.map(rotatePoint));
+    } else {
+        return coords.map(rotatePoint);
+    }
+}
+
+function desativarTodasFerramentas() {
+    // Desativar mover geometria
+    if (moveGeometryState.active) {
+        map.off('click', handleMoverGeometriaClick);
+        map.off('mousemove', handleMoverGeometriaMove);
+        if (moveGeometryState.tempLayer) {
+            map.removeLayer(moveGeometryState.tempLayer);
+        }
+        moveGeometryState = {
+            active: false,
+            selectedLayer: null,
+            selectedFeature: null,
+            originalGeometry: null,
+            tempLayer: null,
+            isMoving: false
+        };
+    }
+    
+    // Desativar rotacionar geometria
+    if (rotateGeometryState.active) {
+        map.off('click', handleRotacionarGeometriaClick);
+        map.off('mousemove', handleRotacionarGeometriaMove);
+        if (rotateGeometryState.tempLayer) {
+            map.removeLayer(rotateGeometryState.tempLayer);
+        }
+        rotateGeometryState = {
+            active: false,
+            selectedLayer: null,
+            originalGeometry: null,
+            centroid: null,
+            tempLayer: null,
+            isRotating: false,
+            initialAngle: 0
+        };
+    }
+}
 

@@ -1103,23 +1103,14 @@
 
     <!-- Main JavaScript -->
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <!-- Ferramenta Mover Geometria (Mapa) - Usa sistema de camada ativa -->
+    <script src="{{ url_for('static', filename='js/mover-geometria.js') }}?v={{ range(1, 999999999) | random }}"></script>
+
     <script>
-try {
-// Correção para Mover Geometria (Mapa) - usando eventos DOM
-console.log('✅ Correção Mover Geometria (Mapa) carregada!');
-
-// Variáveis globais
-var moverGeometriaMapaAtivo = false;
-var geometriaSelecionada = null;
-var geometriaOriginal = null;
-var pontoInicial = null;
-var previewLayer = null;
-var mapContainer = null;
-var mouseMoveHandler = null;
-var clickHandler = null;
-
-// Sobrescrever função original
-window.openMoverGeometriaMapaDialog = function() {
+// Código legado removido - agora usa mover-geometria.js com sistema de camada ativa
+// Manter apenas para compatibilidade se necessário
+if (false) {
+window.openMoverGeometriaMapaDialog_OLD = function() {
     console.log('[MOVER] Abrindo dropdown');
     
     // Desativar outras ferramentas
@@ -1342,9 +1333,7 @@ window.desativarMoverGeometriaMapa = function() {
     
     showMessage('Ferramenta Mover Geometria desativada.', 'info');
 };
-} catch(e) {
-    console.error('Erro ao carregar Mover Geometria (Mapa):', e);
-}
+} // fim if(false)
     </script>
 
     <script src="{{ url_for('static', filename='js/rotacionar-geometria.js') }}?v=1760488647"></script>
