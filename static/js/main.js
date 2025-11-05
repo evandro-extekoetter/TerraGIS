@@ -1315,10 +1315,14 @@ function zoomToLayer(layerName) {
 
 function updateLayersPanel() {
     const layersList = document.getElementById('layers-list');
+    if (!layersList) {
+        console.warn('[updateLayersPanel] Elemento layers-list não encontrado');
+        return;
+    }
     layersList.innerHTML = '';
     
     // Listar camadas em ordem reversa (mais recente primeiro)
-    const layerNames = Object.keys(layers).reverse();
+    const layerNames = Object.keys(terraManager.layers).reverse();
     
     if (layerNames.length === 0) {
         layersList.innerHTML = '<div style="padding: 20px; text-align: center; color: #888;">Nenhuma camada criada</div>';
@@ -1326,7 +1330,7 @@ function updateLayersPanel() {
     }
     
     layerNames.forEach(layerName => {
-        const layer = layers[layerName];
+        const layer = terraManager.layers[layerName];
         const layerItem = document.createElement('div');
         layerItem.className = 'layer-item';
         layerItem.innerHTML = `
