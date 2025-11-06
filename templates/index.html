@@ -1104,10 +1104,10 @@
     <!-- Main JavaScript -->
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     <!-- Ferramenta Mover Geometria (Mapa) - Usa sistema de camada ativa -->
-    <script src="{{ url_for('static', filename='js/mover-geometria.js') }}?v={{ range(1, 999999999) | random }}"></script>
+    <script src="{{ url_for('static', filename='js/mover-geometria-v2.js') }}?v={{ range(1, 999999999) | random }}"></script>
 
     <script>
-// Código legado removido - agora usa mover-geometria.js com sistema de camada ativa
+// Código legado removido - agora usa mover-geometria-v2.js com sistema de camada ativa
     </script>
 
     <script src="{{ url_for('static', filename='js/rotacionar-geometria.js') }}?v=1760488647"></script>
@@ -1564,5 +1564,6 @@
         </div>
     </div>
 
+    <div style="position: fixed; bottom: 10px; right: 10px; background: rgba(255,255,255,0.9); padding: 5px 10px; border-radius: 5px; font-size: 12px; z-index: 10000;">TerraGIS v2.03</div>
 </body>
 </html>
