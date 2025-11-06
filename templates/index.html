@@ -256,6 +256,11 @@
                                     </div>
                                 </div>
                                 
+                                <!-- Copiar -->
+                                <button class="dropdown-item" onclick="openCopiarGeometriaDialog(); closeAllMenus();">
+                                    <img src="{{ url_for('static', filename='icons/copy_icon.png') }}" class="icon" alt=""> Copiar
+                                </button>
+                                
                                 <button class="dropdown-item" onclick="openRotacionarGeometriaDialog(); closeAllMenus();">
                                     <img src="{{ url_for('static', filename='icons/rotate_icon.png') }}" class="icon" alt=""> Rotacionar
                                 </button>
@@ -1105,6 +1110,8 @@
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     <!-- Ferramenta Mover Geometria (Mapa) - Usa sistema de camada ativa -->
     <script src="{{ url_for('static', filename='js/mover-geometria-v2.js') }}?v={{ range(1, 999999999) | random }}"></script>
+    <!-- Ferramenta Copiar Geometria - Baseada em mover-geometria-v2.js -->
+    <script src="{{ url_for('static', filename='js/copiar-geometria.js') }}?v={{ range(1, 999999999) | random }}"></script>
 
     <script>
 // Código legado removido - agora usa mover-geometria-v2.js com sistema de camada ativa
@@ -1564,6 +1571,6 @@
         </div>
     </div>
 
-    <div style="position: fixed; bottom: 10px; right: 10px; background: rgba(255,255,255,0.9); padding: 5px 10px; border-radius: 5px; font-size: 12px; z-index: 10000;">TerraGIS v2.09</div>
+    <div style="position: fixed; bottom: 10px; right: 10px; background: rgba(255,255,255,0.9); padding: 5px 10px; border-radius: 5px; font-size: 12px; z-index: 10000;">TerraGIS v2.10</div>
 </body>
 </html>
