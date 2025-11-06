@@ -2240,6 +2240,7 @@ function desativarTodasFerramentasEdicao() {
     if (renomearVerticeMapaAtivo) desativarRenomearVerticeMapa();
     if (copiarGeometriaMapaAtivo) desativarCopiarGeometriaMapa();
     if (fecharPoligonoAtivo) desativarFecharPoligono();
+    if (typeof moverGeometriaMapaAtivo !== 'undefined' && moverGeometriaMapaAtivo) desativarMoverGeometriaMapa();
 }
 
 // Listener para ESC desativar ferramentas
@@ -2290,10 +2291,13 @@ function closeAllMenus() {
         m.style.display = 'none';
     });
     
-    // Fechar todos os submenus
+    // Fechar todos os submenus EXCETO o painel de camadas
     const allSubmenus = document.querySelectorAll('.submenu');
     allSubmenus.forEach(s => {
-        s.style.display = 'none';
+        // NÃO fechar o painel de camadas
+        if (s.id !== 'camadas-menu') {
+            s.style.display = 'none';
+        }
     });
 }
 
@@ -3465,4 +3469,21 @@ function desativarTodasFerramentas() {
         };
     }
 }
+
+
+
+/**
+ * Proteger painel de camadas de fechar ao clicar nele
+ * v2.06 - Correção para manter painel visível durante edição
+ */
+document.addEventListener('DOMContentLoaded', function() {
+    const camadasMenu = document.getElementById('camadas-menu');
+    if (camadasMenu) {
+        camadasMenu.addEventListener('click', function(e) {
+            // Impedir que cliques no painel de camadas se propaguem para o documento
+            e.stopPropagation();
+        });
+        console.log('[v2.06] Proteção do painel de camadas ativada');
+    }
+});
 
