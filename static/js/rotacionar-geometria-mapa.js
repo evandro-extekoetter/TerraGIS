@@ -192,9 +192,22 @@ function onMouseUpRotacionar(e) {
         console.log('[ROTACIONAR v1.00] Rotação final:', anguloRotacao.toFixed(2), 'graus');
         
         // Aplicar rotação aos vértices reais
+        console.log('[ROTACIONAR v1.00] Aplicando rotação aos vértices...');
+        console.log('[ROTACIONAR v1.00] Eixo:', verticeEixo);
+        console.log('[ROTACIONAR v1.00] Ângulo de rotação:', anguloRotacao);
+        
         geometriaParaRotacionar.vertices.forEach(function(v, index) {
             var vOriginal = geometriaOriginalRotacao[index];
+            console.log('[ROTACIONAR v1.00] Vértice original', index, ':', vOriginal);
             var rotacionado = rotacionarPonto(vOriginal.e, vOriginal.n, verticeEixo.e, verticeEixo.n, anguloRotacao);
+            console.log('[ROTACIONAR v1.00] Vértice rotacionado', index, ':', rotacionado);
+            
+            // Validar coordenadas
+            if (!isFinite(rotacionado.e) || !isFinite(rotacionado.n)) {
+                console.error('[ROTACIONAR v1.00] Coordenada inválida gerada!');
+                throw new Error('Coordenada inválida: E=' + rotacionado.e + ', N=' + rotacionado.n);
+            }
+            
             v.e = rotacionado.e;
             v.n = rotacionado.n;
         });
