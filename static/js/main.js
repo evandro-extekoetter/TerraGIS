@@ -2671,6 +2671,7 @@ function openPolylineAzimuthDialog() {
 
 function createPolylineFromAzimuth() {
     const layerName = document.getElementById('polyline-azimuth-name').value.trim() || 'TT';
+    const fuso = terraManager.currentProject ? terraManager.currentProject.fuso : '21S';
     const startE = parseFloat_BR(document.getElementById('polyline-azimuth-start-e').value);
     const startN = parseFloat_BR(document.getElementById('polyline-azimuth-start-n').value);
     
@@ -2739,6 +2740,7 @@ function openPolylineBearingDialog() {
 
 function createPolylineFromBearing() {
     const layerName = document.getElementById('polyline-bearing-name').value.trim() || 'TT';
+    const fuso = terraManager.currentProject ? terraManager.currentProject.fuso : '21S';
     const startE = parseFloat_BR(document.getElementById('polyline-bearing-start-e').value);
     const startN = parseFloat_BR(document.getElementById('polyline-bearing-start-n').value);
     
