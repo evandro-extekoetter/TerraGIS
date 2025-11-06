@@ -2458,7 +2458,7 @@ function createPolylineFromCoordTable() {
     console.log('[v2.07] createPolylineFromCoordTable - INÍCIO');
     try {
     const layerName = document.getElementById('polyline-coord-table-name').value.trim() || 'TT';
-    const fuso = document.getElementById('polyline-coord-table-fuso').value;
+    const fuso = terraManager.currentProject ? terraManager.currentProject.fuso : '21S';
     const tableData = getTableData('polyline-coord-table-body');
     
     const coords = [];
@@ -2511,7 +2511,7 @@ function openPolylineCoordListDialog() {
 
 function createPolylineFromCoordList() {
     const layerName = document.getElementById('polyline-coord-list-name').value.trim() || 'TT';
-    const fuso = document.getElementById('polyline-coord-list-fuso').value;
+    const fuso = terraManager.currentProject ? terraManager.currentProject.fuso : '21S';
     const coordText = document.getElementById('polyline-coord-list-input').value.trim();
     
     if (!coordText) {
@@ -2568,7 +2568,7 @@ function openPolylineTabelaLatLongDialog() {
 
 function createPolylineFromTabelaLatLong() {
     const layerName = document.getElementById('polyline-tabela-latlong-name').value.trim() || 'TT';
-    const fuso = document.getElementById('polyline-tabela-latlong-fuso').value;
+    const fuso = terraManager.currentProject ? terraManager.currentProject.fuso : '21S';
     const tableData = getTableData('polyline-tabela-latlong-body');
     
     const coords = [];
@@ -2617,7 +2617,7 @@ function openPolylineListaLatLongDialog() {
 
 function createPolylineFromListaLatLong() {
     const layerName = document.getElementById('polyline-lista-latlong-name').value.trim() || 'TT';
-    const fuso = document.getElementById('polyline-lista-latlong-fuso').value;
+    const fuso = terraManager.currentProject ? terraManager.currentProject.fuso : '21S';
     const coordText = document.getElementById('polyline-lista-latlong-input').value.trim();
     
     if (!coordText) {
