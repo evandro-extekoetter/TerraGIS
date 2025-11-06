@@ -2455,6 +2455,8 @@ function openPolylineCoordTableDialog() {
 }
 
 function createPolylineFromCoordTable() {
+    console.log('[v2.07] createPolylineFromCoordTable - INÍCIO');
+    try {
     const layerName = document.getElementById('polyline-coord-table-name').value.trim() || 'TT';
     const fuso = document.getElementById('polyline-coord-table-fuso').value;
     const tableData = getTableData('polyline-coord-table-body');
@@ -2489,8 +2491,16 @@ function createPolylineFromCoordTable() {
         vertex: color
     };
     
+    console.log('[v2.07] Chamando drawPolyline com', coords.length, 'coordenadas');
     drawPolyline(coords, ids, layerName, fuso, colors);
+    console.log('[v2.07] Fechando modal...');
     closeModal('modal-polyline-coord-table');
+    console.log('[v2.07] createPolylineFromCoordTable - FIM');
+    } catch (error) {
+        console.error('[v2.07] ERRO em createPolylineFromCoordTable:', error);
+        console.error('[v2.07] Stack:', error.stack);
+        showMessage('❌ Erro ao criar polilinha: ' + error.message, 'error');
+    }
 }
 
 // ===== FERRAMENTA: LISTA DE COORDENADAS UTM (POLILINHA) =====
