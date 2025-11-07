@@ -1,256 +1,248 @@
-console.log('🔄 [v2.13] Iniciando carregamento de Rotacionar Geometria (Mapa)...');
+// Ferramenta Rotacionar Geometria (Mapa) - TerraGIS v2.14
+console.log('🔄 [v2.14] Iniciando carregamento de Rotacionar Geometria (Mapa)...');
 
-// Variáveis globais para rotação
+var rotacionarGeometriaMapaAtivo = false;
 var geometriaParaRotacionar = null;
 var geometriaOriginalRotacao = null;
 var verticeEixo = null;
+var anguloInicial = null;  // Azimute do 1º clique
 var previewLayerRotacao = null;
-var arrastandoRotacao = false;
-var mapContainerRotacao = null;
 
+// Função principal: ativar ferramenta
 function ativarRotacionarGeometriaMapa() {
-    console.log('[ROTACIONAR v2.13] Ativando ferramenta Rotacionar Geometria (Mapa)');
+    console.log('[ROTACIONAR v2.14] Ativando ferramenta Rotacionar Geometria (Mapa)');
     
-    try {
-        console.log('[DEBUG] Passo 1: Verificando camada ativa');
-        // Verificar se há camada ativa
-        if (!terraManager.hasActiveLayer()) {
-            showMessage('⚠️ Selecione uma camada no painel CAMADAS primeiro!', 'warning');
-            return;
-        }
-        
-        console.log('[DEBUG] Passo 2: Obtendo camada ativa');
-        geometriaParaRotacionar = terraManager.getActiveLayer();
-        var layerName = terraManager.getActiveLayerName();
-        console.log('[DEBUG] Passo 3: geometriaParaRotacionar=', geometriaParaRotacionar);
-        
-        if (!geometriaParaRotacionar) {
-            alert('Camada ativa não encontrada!');
-            return;
-        }
-        
-        if (!geometriaParaRotacionar.vertices || geometriaParaRotacionar.vertices.length < 3) {
-            alert('A geometria precisa ter pelo menos 3 vértices!');
-            return;
-        }
-        
-        console.log('[ROTACIONAR v2.13] Usando camada ativa:', layerName);
-        console.log('[ROTACIONAR v2.13] geometriaParaRotacionar:', geometriaParaRotacionar);
-        
-        console.log('[DEBUG] Passo 4: Guardando cópia dos vértices');
-        // Guardar cópia dos vértices originais
-        geometriaOriginalRotacao = geometriaParaRotacionar.vertices.map(function(v) {
-            return {name: v.name, e: parseFloat(v.e), n: parseFloat(v.n)};
-        });
-        
-        // Encontrar vértice mais ao NORTE (maior N)
-        verticeEixo = geometriaOriginalRotacao[0];
-        for (var i = 1; i < geometriaOriginalRotacao.length; i++) {
-            if (geometriaOriginalRotacao[i].n > verticeEixo.n) {
-                verticeEixo = geometriaOriginalRotacao[i];
-            }
-        }
-        
-        console.log('[ROTACIONAR v2.13] Vértice eixo (mais ao norte): E=' + verticeEixo.e + ', N=' + verticeEixo.n);
-        
-        // Fechar popups
-        Object.values(terraManager.layers).forEach(function(tl) {
-            if (tl.verticesLayer) {
-                tl.verticesLayer.eachLayer(function(marker) {
-                    if (marker.getPopup()) marker.closePopup();
-                });
-            }
-        });
-        
-        // Criar layer de preview (laranja)
-        var coordsOriginais = geometriaOriginalRotacao.map(function(v) {
-            return utmToLatLng(v.e, v.n, geometriaParaRotacionar.fuso);
-        });
-        
-        previewLayerRotacao = L.polygon(coordsOriginais, {
-            color: '#ff8800',
-            weight: 2,
-            fillOpacity: 0.2,
-            interactive: false
-        }).addTo(map);
-        
-        // Anexar eventos ao mapa
-        mapContainerRotacao = document.getElementById('map');
-        map.on('mousedown', onMouseDownRotacionar);
-        map.on('mousemove', onMouseMoveRotacionar);
-        map.on('mouseup', onMouseUpRotacionar);
-        
-        // Cursor
-        mapContainerRotacao.style.cursor = 'crosshair';
-        
-        console.log('[ROTACIONAR v2.13] Ferramenta ativada! Clique e arraste para rotacionar.');
-        
-    } catch (error) {
-        console.error('[ROTACIONAR v2.13] ❌ ERRO ao ativar:', error);
-        finalizarRotacionarGeometriaMapa();
-    }
-}
-
-function onMouseDownRotacionar(e) {
-    if (!geometriaParaRotacionar) return;
-    
-    arrastandoRotacao = true;
-    mapContainerRotacao.style.cursor = 'grabbing';
-}
-
-function onMouseMoveRotacionar(e) {
-    if (!arrastandoRotacao || !geometriaParaRotacionar) return;
-    
-    try {
-        var pontoAtual = e.latlng;
-        
-        // Converter eixo para LatLng
-        var eixoLatLng = utmToLatLng(verticeEixo.e, verticeEixo.n, geometriaParaRotacionar.fuso);
-        
-        // Calcular ângulo ABSOLUTO do mouse em relação ao eixo (padrão CAD)
-        var dx = pontoAtual.lng - eixoLatLng[1];
-        var dy = pontoAtual.lat - eixoLatLng[0];
-        var anguloAbsoluto = Math.atan2(dy, dx) * (180 / Math.PI);
-        
-        // Rotacionar todos os vértices para o ângulo absoluto
-        var novasCoords = [];
-        for (var i = 0; i < geometriaOriginalRotacao.length; i++) {
-            var v = geometriaOriginalRotacao[i];
-            var rotacionado = rotacionarPonto(v.e, v.n, verticeEixo.e, verticeEixo.n, anguloAbsoluto);
-            
-            // Validar coordenadas rotacionadas
-            if (!isFinite(rotacionado.e) || !isFinite(rotacionado.n)) {
-                console.error('[ROTACIONAR v2.13] Coordenada inválida no vértice ' + i + ': E=' + rotacionado.e + ', N=' + rotacionado.n);
-                return; // Abortar preview
-            }
-            
-            var coord = utmToLatLng(rotacionado.e, rotacionado.n, geometriaParaRotacionar.fuso);
-            novasCoords.push(coord);
-        }
-        
-        previewLayerRotacao.setLatLngs(novasCoords);
-        previewLayerRotacao.bringToFront();
-        
-    } catch (error) {
-        console.error('[ROTACIONAR v2.13] ❌ Erro no mousemove:', error);
-    }
-}
-
-function onMouseUpRotacionar(e) {
-    if (!arrastandoRotacao || !geometriaParaRotacionar) return;
-    
-    arrastandoRotacao = false;
-    mapContainerRotacao.style.cursor = 'crosshair';
-    
-    if (!e || !e.latlng) {
-        console.log('[ROTACIONAR v2.13] MouseUp sem posição válida');
-        finalizarRotacionarGeometriaMapa();
+    // Verificar se há camada ativa
+    if (!terraManager.hasActiveLayer()) {
+        showMessage('Nenhuma camada ativa! Selecione uma camada primeiro.', 'warning');
         return;
     }
     
-    try {
-        var pontoFinal = e.latlng;
-        
-        // Converter eixo para LatLng
-        var eixoLatLng = utmToLatLng(verticeEixo.e, verticeEixo.n, geometriaParaRotacionar.fuso);
-        
-        // Calcular ângulo ABSOLUTO final
-        var dx = pontoFinal.lng - eixoLatLng[1];
-        var dy = pontoFinal.lat - eixoLatLng[0];
-        var anguloFinal = Math.atan2(dy, dx) * (180 / Math.PI);
-        
-        console.log('[ROTACIONAR v2.13] Rotação final: ' + anguloFinal.toFixed(2) + ' graus');
-        
-        // Rotacionar todos os vértices
-        var verticesRotacionados = [];
-        for (var i = 0; i < geometriaOriginalRotacao.length; i++) {
-            var v = geometriaOriginalRotacao[i];
-            var rotacionado = rotacionarPonto(v.e, v.n, verticeEixo.e, verticeEixo.n, anguloFinal);
-            
-            // Validar coordenadas
-            if (!isFinite(rotacionado.e) || !isFinite(rotacionado.n)) {
-                alert('Erro: Coordenadas inválidas geradas durante a rotação!');
-                finalizarRotacionarGeometriaMapa();
-                return;
-            }
-            
-            verticesRotacionados.push({
-                name: v.name,
-                e: rotacionado.e,
-                n: rotacionado.n
-            });
+    // Obter camada ativa
+    geometriaParaRotacionar = terraManager.getActiveLayer();
+    var layerName = terraManager.getActiveLayerName();
+    
+    if (!geometriaParaRotacionar || !geometriaParaRotacionar.vertices || geometriaParaRotacionar.vertices.length < 3) {
+        showMessage('A camada selecionada não possui geometria válida!', 'error');
+        return;
+    }
+    
+    console.log('[ROTACIONAR v2.14] Usando camada ativa:', layerName);
+    
+    // Desativar outras ferramentas
+    desativarTodasFerramentasEdicao();
+    
+    // Guardar cópia dos vértices originais
+    geometriaOriginalRotacao = geometriaParaRotacionar.vertices.map(function(v) {
+        return {
+            name: v.name,
+            e: parseFloat(v.e),
+            n: parseFloat(v.n)
+        };
+    });
+    
+    // Encontrar vértice mais ao norte (maior N)
+    verticeEixo = geometriaOriginalRotacao[0];
+    for (var i = 1; i < geometriaOriginalRotacao.length; i++) {
+        if (geometriaOriginalRotacao[i].n > verticeEixo.n) {
+            verticeEixo = geometriaOriginalRotacao[i];
         }
-        
-        // Atualizar geometria
-        geometriaParaRotacionar.vertices = verticesRotacionados;
-        geometriaParaRotacionar.syncGeometry();
-        
-        console.log('[ROTACIONAR v2.13] ✅ Rotação aplicada com sucesso!');
-        finalizarRotacionarGeometriaMapa();
-        
-    } catch (error) {
-        console.error('[ROTACIONAR v2.13] ❌ ERRO ao rotacionar:', error);
-        alert('Erro ao aplicar rotação: ' + error.message);
-        finalizarRotacionarGeometriaMapa();
+    }
+    
+    console.log('[ROTACIONAR v2.14] Vértice eixo (mais ao norte): E=' + verticeEixo.e.toFixed(2) + ', N=' + verticeEixo.n.toFixed(2));
+    
+    // Ativar ferramenta
+    rotacionarGeometriaMapaAtivo = true;
+    anguloInicial = null;  // Será definido no mousedown
+    
+    // Desabilitar dragging do mapa
+    map.dragging.disable();
+    
+    // Anexar eventos ao mapa
+    map.on('mousedown', onMouseDownRotacionar);
+    map.on('mousemove', onMouseMoveRotacionar);
+    map.on('mouseup', onMouseUpRotacionar);
+    
+    // ESC para cancelar
+    document.addEventListener('keydown', onKeyDownRotacionar);
+    
+    // Criar preview layer inicial (laranja)
+    criarPreviewRotacao();
+    
+    // Mudar cursor
+    map.getContainer().style.cursor = 'crosshair';
+    
+    console.log('[ROTACIONAR v2.14] Ferramenta ativada! Clique e arraste para rotacionar.');
+    showMessage('🔄 Clique e arraste para rotacionar. ESC para cancelar.', 'info');
+}
+
+// Criar preview layer (laranja)
+function criarPreviewRotacao() {
+    if (previewLayerRotacao) {
+        map.removeLayer(previewLayerRotacao);
+    }
+    
+    // Converter vértices originais para LatLng
+    var latlngs = geometriaOriginalRotacao.map(function(v) {
+        return utmToLatLng(v.e, v.n, geometriaParaRotacionar.fuso);
+    });
+    
+    // Criar preview laranja
+    previewLayerRotacao = L.polygon(latlngs, {
+        color: '#ff8800',
+        weight: 3,
+        fillOpacity: 0.3,
+        fillColor: '#ff8800'
+    }).addTo(map);
+}
+
+// MouseDown: Salvar ângulo inicial
+function onMouseDownRotacionar(e) {
+    if (!rotacionarGeometriaMapaAtivo) return;
+    
+    L.DomEvent.stopPropagation(e);
+    
+    // Converter posição do mouse para UTM
+    var mouseUTM = latLngToUtm(e.latlng.lat, e.latlng.lng, geometriaParaRotacionar.fuso);
+    
+    // Calcular azimute entre eixo e ponto do 1º clique
+    var dx = mouseUTM.e - verticeEixo.e;
+    var dy = mouseUTM.n - verticeEixo.n;
+    
+    // Azimute topográfico: atan2(dx, dy) em graus
+    anguloInicial = Math.atan2(dx, dy) * (180 / Math.PI);
+    
+    console.log('[ROTACIONAR v2.14] 🖱️ MouseDown - Ângulo inicial: ' + anguloInicial.toFixed(2) + '°');
+}
+
+// MouseMove: Atualizar preview com rotação
+function onMouseMoveRotacionar(e) {
+    if (!rotacionarGeometriaMapaAtivo || anguloInicial === null) return;
+    
+    L.DomEvent.stopPropagation(e);
+    
+    // Converter posição do mouse para UTM
+    var mouseUTM = latLngToUtm(e.latlng.lat, e.latlng.lng, geometriaParaRotacionar.fuso);
+    
+    // Calcular azimute atual entre eixo e posição do mouse
+    var dx = mouseUTM.e - verticeEixo.e;
+    var dy = mouseUTM.n - verticeEixo.n;
+    var anguloAtual = Math.atan2(dx, dy) * (180 / Math.PI);
+    
+    // Calcular diferença angular (deltaAngulo)
+    var deltaAngulo = anguloAtual - anguloInicial;
+    
+    // Rotacionar vértices originais pela diferença
+    var verticesRotacionados = geometriaOriginalRotacao.map(function(v) {
+        return rotacionarPonto(v, verticeEixo, deltaAngulo);
+    });
+    
+    // Atualizar preview
+    var latlngs = verticesRotacionados.map(function(v) {
+        return utmToLatLng(v.e, v.n, geometriaParaRotacionar.fuso);
+    });
+    
+    if (previewLayerRotacao) {
+        previewLayerRotacao.setLatLngs(latlngs);
     }
 }
 
-function finalizarRotacionarGeometriaMapa() {
-    // Remover eventos
-    if (map) {
-        map.off('mousedown', onMouseDownRotacionar);
-        map.off('mousemove', onMouseMoveRotacionar);
-        map.off('mouseup', onMouseUpRotacionar);
+// MouseUp: Aplicar rotação final
+function onMouseUpRotacionar(e) {
+    if (!rotacionarGeometriaMapaAtivo || anguloInicial === null) return;
+    
+    L.DomEvent.stopPropagation(e);
+    L.DomEvent.preventDefault(e);
+    
+    console.log('[ROTACIONAR v2.14] 🖱️ MouseUp - finalizando rotação');
+    
+    // Converter posição do mouse para UTM
+    var mouseUTM = latLngToUtm(e.latlng.lat, e.latlng.lng, geometriaParaRotacionar.fuso);
+    
+    // Calcular azimute final
+    var dx = mouseUTM.e - verticeEixo.e;
+    var dy = mouseUTM.n - verticeEixo.n;
+    var anguloFinal = Math.atan2(dx, dy) * (180 / Math.PI);
+    
+    // Calcular diferença angular
+    var deltaAngulo = anguloFinal - anguloInicial;
+    
+    console.log('[ROTACIONAR v2.14] Rotação final: ' + deltaAngulo.toFixed(2) + '° (de ' + anguloInicial.toFixed(2) + '° para ' + anguloFinal.toFixed(2) + '°)');
+    
+    // Aplicar rotação aos vértices originais
+    geometriaParaRotacionar.vertices = geometriaOriginalRotacao.map(function(v) {
+        return rotacionarPonto(v, verticeEixo, deltaAngulo);
+    });
+    
+    // Atualizar geometria no mapa
+    geometriaParaRotacionar.syncGeometry();
+    
+    // Finalizar ferramenta
+    finalizarRotacionarGeometriaMapa();
+    
+    showMessage('✅ Geometria rotacionada ' + deltaAngulo.toFixed(2) + '° com sucesso!', 'success');
+}
+
+// Função auxiliar: rotacionar um ponto (E, N) em torno de um eixo por um ângulo (diferença angular)
+function rotacionarPonto(ponto, eixo, anguloGraus) {
+    var anguloRad = anguloGraus * (Math.PI / 180);
+    
+    // Transladar para origem
+    var dx = ponto.e - eixo.e;
+    var dy = ponto.n - eixo.n;
+    
+    // Rotacionar (fórmula padrão)
+    var cosA = Math.cos(anguloRad);
+    var sinA = Math.sin(anguloRad);
+    
+    var novoE = eixo.e + (dx * cosA - dy * sinA);
+    var novoN = eixo.n + (dx * sinA + dy * cosA);
+    
+    return {
+        name: ponto.name,
+        e: novoE,
+        n: novoN
+    };
+}
+
+// ESC para cancelar
+function onKeyDownRotacionar(e) {
+    if (e.key === 'Escape' && rotacionarGeometriaMapaAtivo) {
+        finalizarRotacionarGeometriaMapa();
+        showMessage('Rotação cancelada.', 'info');
     }
+}
+
+// Finalizar ferramenta
+function finalizarRotacionarGeometriaMapa() {
+    console.log('[ROTACIONAR v2.14] Finalizando ferramenta');
+    
+    rotacionarGeometriaMapaAtivo = false;
+    geometriaParaRotacionar = null;
+    geometriaOriginalRotacao = null;
+    verticeEixo = null;
+    anguloInicial = null;
     
     // Remover preview
-    if (previewLayerRotacao && map) {
+    if (previewLayerRotacao) {
         map.removeLayer(previewLayerRotacao);
         previewLayerRotacao = null;
     }
     
+    // Remover eventos
+    map.off('mousedown', onMouseDownRotacionar);
+    map.off('mousemove', onMouseMoveRotacionar);
+    map.off('mouseup', onMouseUpRotacionar);
+    document.removeEventListener('keydown', onKeyDownRotacionar);
+    
     // Restaurar cursor
-    if (mapContainerRotacao) {
-        mapContainerRotacao.style.cursor = '';
-    }
+    map.getContainer().style.cursor = '';
     
-    // Limpar variáveis
-    geometriaParaRotacionar = null;
-    geometriaOriginalRotacao = null;
-    verticeEixo = null;
-    arrastandoRotacao = false;
-    mapContainerRotacao = null;
+    // Reabilitar dragging do mapa
+    map.dragging.enable();
     
-    console.log('[ROTACIONAR v2.13] Ferramenta finalizada');
+    console.log('[ROTACIONAR v2.14] Ferramenta finalizada');
 }
 
-function desativarRotacionarGeometriaMapa() {
-    finalizarRotacionarGeometriaMapa();
-}
-
-// Função auxiliar: rotacionar um ponto (E, N) em torno de um eixo (eixoE, eixoN) por um ângulo ABSOLUTO em graus
-function rotacionarPonto(e, n, eixoE, eixoN, anguloAbsolutoGraus) {
-    // Validar entradas
-    if (!isFinite(e) || !isFinite(n) || !isFinite(eixoE) || !isFinite(eixoN) || !isFinite(anguloAbsolutoGraus)) {
-        console.error('[rotacionarPonto] Entrada inválida: e=' + e + ', n=' + n + ', eixoE=' + eixoE + ', eixoN=' + eixoN + ', ângulo=' + anguloAbsolutoGraus);
-        return {e: NaN, n: NaN};
-    }
-    
-    var anguloRad = anguloAbsolutoGraus * (Math.PI / 180);
-    
-    // Transladar para origem
-    var dx = e - eixoE;
-    var dy = n - eixoN;
-    
-    // Rotacionar (fórmula padrão CAD)
-    var cosA = Math.cos(anguloRad);
-    var sinA = Math.sin(anguloRad);
-    
-    var novoE = eixoE + (dx * cosA - dy * sinA);
-    var novoN = eixoN + (dx * sinA + dy * cosA);
-    
-    return {e: novoE, n: novoN};
-}
-
-console.log('✅ [v2.13] Ferramenta Rotacionar Geometria (Mapa) carregada!');
+console.log('✅ [v2.14] Ferramenta Rotacionar Geometria (Mapa) carregada!');
 
