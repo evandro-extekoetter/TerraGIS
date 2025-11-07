@@ -173,6 +173,7 @@ function onMouseUpCopiar(e) {
         geometriaSelecionadaCopiar.vertices.forEach(function(v) {
             var novoE = v.e + dx;
             var novoN = v.n + dy;
+            console.log('[COPIAR DEBUG] Copiando vértice:', v.name, 'E:', v.e, 'N:', v.n);
             novaTerraLayer.addVertex(v.name, novoE, novoN);
         });
         
