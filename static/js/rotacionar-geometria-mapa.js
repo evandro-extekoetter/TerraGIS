@@ -169,12 +169,14 @@ function onMouseUpRotacionar(e) {
     
     console.log('[ROTACIONAR v2.14] Rotação final: ' + deltaAngulo.toFixed(2) + '° (de ' + anguloInicial.toFixed(2) + '° para ' + anguloFinal.toFixed(2) + '°)');
     
-    // Aplicar rotação aos vértices originais
-    console.log('[DEBUG] Antes da rotação:', geometriaOriginalRotacao.map(function(v) { return v.name; }));
-    geometriaParaRotacionar.vertices = geometriaOriginalRotacao.map(function(v) {
-        return rotacionarPonto(v, verticeEixo, deltaAngulo);
+    // Aplicar rotação aos vértices originais (modificar in-place para preservar nomes)
+    geometriaParaRotacionar.vertices.forEach(function(v, i) {
+        var vOriginal = geometriaOriginalRotacao[i];
+        var vRotacionado = rotacionarPonto(vOriginal, verticeEixo, deltaAngulo);
+        v.e = vRotacionado.e;
+        v.n = vRotacionado.n;
+        // v.name permanece intacto
     });
-    console.log('[DEBUG] Depois da rotação:', geometriaParaRotacionar.vertices.map(function(v) { return v.name; }));
     
     // Atualizar geometria no mapa
     geometriaParaRotacionar.syncGeometry();
