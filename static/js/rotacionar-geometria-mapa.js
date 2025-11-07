@@ -130,7 +130,7 @@ function onMouseMoveRotacionar(e) {
     var anguloAtual = Math.atan2(dx, dy) * (180 / Math.PI);
     
     // Calcular diferença angular (deltaAngulo)
-    var deltaAngulo = anguloAtual - anguloInicial;
+    var deltaAngulo = -(anguloAtual - anguloInicial); // Invertido para rotação seguir mouse
     
     // Rotacionar vértices originais pela diferença
     var verticesRotacionados = geometriaOriginalRotacao.map(function(v) {
@@ -165,7 +165,7 @@ function onMouseUpRotacionar(e) {
     var anguloFinal = Math.atan2(dx, dy) * (180 / Math.PI);
     
     // Calcular diferença angular
-    var deltaAngulo = anguloFinal - anguloInicial;
+    var deltaAngulo = -(anguloFinal - anguloInicial); // Invertido para rotação seguir mouse
     
     console.log('[ROTACIONAR v2.14] Rotação final: ' + deltaAngulo.toFixed(2) + '° (de ' + anguloInicial.toFixed(2) + '° para ' + anguloFinal.toFixed(2) + '°)');
     
