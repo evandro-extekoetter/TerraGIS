@@ -352,13 +352,16 @@ function desenharLinhaTemporaria() {
         return [p.lat, p.lng];
     });
     
-    // Criar polyline temporária
-    medicaoState.layer = L.polyline(latlngs, {
+    // Criar layerGroup para agrupar polyline + marcadores
+    medicaoState.layer = L.layerGroup().addTo(map);
+    
+    // Adicionar polyline ao grupo
+    L.polyline(latlngs, {
         color: '#ff0000',
         weight: 3,
         opacity: 0.7,
         dashArray: '5, 5'
-    }).addTo(map);
+    }).addTo(medicaoState.layer);
     
     // Adicionar marcadores nos pontos
     medicaoState.pontos.forEach(function(p, i) {
@@ -488,15 +491,18 @@ function desenharAreaTemporaria() {
         return [p.lat, p.lng];
     });
     
-    // Criar polígono temporário
-    medicaoState.layer = L.polygon(latlngs, {
+    // Criar layerGroup para agrupar polígono + marcadores
+    medicaoState.layer = L.layerGroup().addTo(map);
+    
+    // Adicionar polígono ao grupo
+    L.polygon(latlngs, {
         color: '#ff6600',
         weight: 3,
         opacity: 0.7,
         fillColor: '#ff6600',
         fillOpacity: 0.2,
         dashArray: '5, 5'
-    }).addTo(map);
+    }).addTo(medicaoState.layer);
     
     // Adicionar marcadores nos pontos
     medicaoState.pontos.forEach(function(p, i) {
