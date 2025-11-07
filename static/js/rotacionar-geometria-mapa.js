@@ -1,5 +1,5 @@
-// Ferramenta Rotacionar Geometria (Mapa) - TerraGIS v2.14
-console.log('🔄 [v2.14] Iniciando carregamento de Rotacionar Geometria (Mapa)...');
+// Ferramenta Rotacionar Geometria (Mapa) - TerraGIS v2.15
+console.log('🔄 [v2.15] Iniciando carregamento de Rotacionar Geometria (Mapa)...');
 
 var rotacionarGeometriaMapaAtivo = false;
 var geometriaParaRotacionar = null;
@@ -10,7 +10,7 @@ var previewLayerRotacao = null;
 
 // Função principal: ativar ferramenta
 function ativarRotacionarGeometriaMapa() {
-    console.log('[ROTACIONAR v2.14] Ativando ferramenta Rotacionar Geometria (Mapa)');
+    console.log('[ROTACIONAR v2.15] Ativando ferramenta Rotacionar Geometria (Mapa)');
     
     // Verificar se há camada ativa
     if (!terraManager.hasActiveLayer()) {
@@ -27,7 +27,7 @@ function ativarRotacionarGeometriaMapa() {
         return;
     }
     
-    console.log('[ROTACIONAR v2.14] Usando camada ativa:', layerName);
+    console.log('[ROTACIONAR v2.15] Usando camada ativa:', layerName);
     
     // Desativar outras ferramentas
     desativarTodasFerramentasEdicao();
@@ -49,7 +49,7 @@ function ativarRotacionarGeometriaMapa() {
         }
     }
     
-    console.log('[ROTACIONAR v2.14] Vértice eixo (mais ao norte): E=' + verticeEixo.e.toFixed(2) + ', N=' + verticeEixo.n.toFixed(2));
+    console.log('[ROTACIONAR v2.15] Vértice eixo (mais ao norte): E=' + verticeEixo.e.toFixed(2) + ', N=' + verticeEixo.n.toFixed(2));
     
     // Ativar ferramenta
     rotacionarGeometriaMapaAtivo = true;
@@ -72,7 +72,7 @@ function ativarRotacionarGeometriaMapa() {
     // Mudar cursor
     map.getContainer().style.cursor = 'crosshair';
     
-    console.log('[ROTACIONAR v2.14] Ferramenta ativada! Clique e arraste para rotacionar.');
+    console.log('[ROTACIONAR v2.15] Ferramenta ativada! Clique e arraste para rotacionar.');
     showMessage('🔄 Clique e arraste para rotacionar. ESC para cancelar.', 'info');
 }
 
@@ -112,7 +112,7 @@ function onMouseDownRotacionar(e) {
     // Azimute topográfico: atan2(dx, dy) em graus
     anguloInicial = Math.atan2(dx, dy) * (180 / Math.PI);
     
-    console.log('[ROTACIONAR v2.14] 🖱️ MouseDown - Ângulo inicial: ' + anguloInicial.toFixed(2) + '°');
+    // Ângulo inicial calculado
 }
 
 // MouseMove: Atualizar preview com rotação
@@ -154,7 +154,7 @@ function onMouseUpRotacionar(e) {
     L.DomEvent.stopPropagation(e);
     L.DomEvent.preventDefault(e);
     
-    console.log('[ROTACIONAR v2.14] 🖱️ MouseUp - finalizando rotação');
+    console.log('[ROTACIONAR v2.15] 🖱️ MouseUp - finalizando rotação');
     
     // Converter posição do mouse para UTM
     var mouseUTM = latLongToUTM(e.latlng.lat, e.latlng.lng, geometriaParaRotacionar.fuso);
@@ -167,7 +167,7 @@ function onMouseUpRotacionar(e) {
     // Calcular diferença angular
     var deltaAngulo = -(anguloFinal - anguloInicial); // Invertido para rotação seguir mouse
     
-    console.log('[ROTACIONAR v2.14] Rotação final: ' + deltaAngulo.toFixed(2) + '° (de ' + anguloInicial.toFixed(2) + '° para ' + anguloFinal.toFixed(2) + '°)');
+    console.log('[ROTACIONAR v2.15] Rotação final: ' + deltaAngulo.toFixed(2) + '° (de ' + anguloInicial.toFixed(2) + '° para ' + anguloFinal.toFixed(2) + '°)');
     
     // Aplicar rotação aos vértices originais (modificar in-place para preservar nomes)
     geometriaParaRotacionar.vertices.forEach(function(v, i) {
@@ -219,7 +219,7 @@ function onKeyDownRotacionar(e) {
 
 // Finalizar ferramenta
 function finalizarRotacionarGeometriaMapa() {
-    console.log('[ROTACIONAR v2.14] Finalizando ferramenta');
+    console.log('[ROTACIONAR v2.15] Finalizando ferramenta');
     
     rotacionarGeometriaMapaAtivo = false;
     geometriaParaRotacionar = null;
@@ -245,8 +245,8 @@ function finalizarRotacionarGeometriaMapa() {
     // Reabilitar dragging do mapa
     map.dragging.enable();
     
-    console.log('[ROTACIONAR v2.14] Ferramenta finalizada');
+    console.log('[ROTACIONAR v2.15] Ferramenta finalizada');
 }
 
-console.log('✅ [v2.14] Ferramenta Rotacionar Geometria (Mapa) carregada!');
+console.log('✅ [v2.15] Ferramenta Rotacionar Geometria (Mapa) carregada!');
 
