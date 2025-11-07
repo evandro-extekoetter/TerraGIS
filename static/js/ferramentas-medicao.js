@@ -27,9 +27,9 @@ function criarPainelMedicao() {
         right: 20px;
         width: 320px;
         background: white;
-        border: 2px solid #3388ff;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        border: 2px solid #2c3e50;
+        border-radius: 4px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         z-index: 9999;
         display: none;
         font-family: Arial, sans-serif;
@@ -38,14 +38,15 @@ function criarPainelMedicao() {
     // Cabeçalho
     var header = document.createElement('div');
     header.style.cssText = `
-        background: #3388ff;
+        background: #2c3e50;
         color: white;
         padding: 10px 15px;
         font-weight: bold;
-        border-radius: 6px 6px 0 0;
+        border-radius: 2px 2px 0 0;
         display: flex;
         justify-content: space-between;
         align-items: center;
+        font-size: 14px;
     `;
     
     var titulo = document.createElement('span');
@@ -215,6 +216,16 @@ function onMapClickMedicao(e) {
 
 // ===== FUNÇÕES UTILITÁRIAS =====
 
+// Converter graus decimais para sexagesimais (GG°MM'SS")
+function grausParaSexagesimal(grausDecimais) {
+    var graus = Math.floor(grausDecimais);
+    var minutosDecimais = (grausDecimais - graus) * 60;
+    var minutos = Math.floor(minutosDecimais);
+    var segundos = (minutosDecimais - minutos) * 60;
+    
+    return graus + '°' + String(minutos).padStart(2, '0') + "'" + segundos.toFixed(2).padStart(5, '0') + '"';
+}
+
 // Calcular distância entre dois pontos (Haversine)
 function calcularDistancia(lat1, lon1, lat2, lon2) {
     var R = 6371000; // Raio da Terra em metros
@@ -311,6 +322,8 @@ function onMapClickLinha(e) {
     // Converter LatLng para UTM
     var utm = latLngToUTM(e.latlng.lat, e.latlng.lng, '21S');
     
+    console.log('[MEDIR LINHA] UTM:', utm);
+    
     // Adicionar ponto
     medicaoState.pontos.push({
         lat: e.latlng.lat,
@@ -318,6 +331,8 @@ function onMapClickLinha(e) {
         e: utm.e,
         n: utm.n
     });
+    
+    console.log('[MEDIR LINHA] Pontos:', medicaoState.pontos.length);
     
     // Atualizar desenho
     desenharLinhaTemporaria();
@@ -358,7 +373,12 @@ function desenharLinhaTemporaria() {
 
 function atualizarConteudoPainelLinha() {
     var conteudo = document.getElementById('painel-medicao-conteudo');
-    if (!conteudo) return;
+    if (!conteudo) {
+        console.error('[MEDIR LINHA] Painel não encontrado!');
+        return;
+    }
+    
+    console.log('[MEDIR LINHA] Atualizando painel, pontos:', medicaoState.pontos.length);
     
     var html = [];
     
@@ -659,6 +679,7 @@ function atualizarConteudoPainelAzimute() {
         
         // Calcular azimute
         var azimute = calcularAzimute(p1.e, p1.n, p2.e, p2.n);
+        var azimuteSexagesimal = grausParaSexagesimal(azimute);
         
         // Calcular distância
         var distancia = calcularDistanciaCartesiana(p1.e, p1.n, p2.e, p2.n);
@@ -667,7 +688,8 @@ function atualizarConteudoPainelAzimute() {
         html.push('<div style="padding: 15px; background: #f3e5f5; border-radius: 4px; margin-bottom: 15px;">');
         html.push('<div style="text-align: center;">');
         html.push('<div style="font-size: 14px; color: #666; margin-bottom: 8px;">Azimute</div>');
-        html.push('<div style="font-size: 32px; font-weight: bold; color: #9c27b0;">' + azimute.toFixed(4) + '°</div>');
+        html.push('<div style="font-size: 28px; font-weight: bold; color: #9c27b0;">' + azimuteSexagesimal + '</div>');
+        html.push('<div style="font-size: 12px; color: #999; margin-top: 4px;">(' + azimute.toFixed(4) + '°)</div>');
         html.push('</div>');
         html.push('</div>');
         
@@ -809,12 +831,14 @@ function atualizarConteudoPainelAngulo() {
         
         // Calcular ângulo
         var angulo = calcularAngulo(p1, p2, p3);
+        var anguloSexagesimal = grausParaSexagesimal(angulo);
         
         // Ângulo
         html.push('<div style="padding: 15px; background: #fbe9e7; border-radius: 4px; margin-bottom: 15px;">');
         html.push('<div style="text-align: center;">');
         html.push('<div style="font-size: 14px; color: #666; margin-bottom: 8px;">Ângulo</div>');
-        html.push('<div style="font-size: 32px; font-weight: bold; color: #ff5722;">' + angulo.toFixed(4) + '°</div>');
+        html.push('<div style="font-size: 28px; font-weight: bold; color: #ff5722;">' + anguloSexagesimal + '</div>');
+        html.push('<div style="font-size: 12px; color: #999; margin-top: 4px;">(' + angulo.toFixed(4) + '°)</div>');
         html.push('</div>');
         html.push('</div>');
         
