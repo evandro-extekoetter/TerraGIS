@@ -297,6 +297,12 @@ function calcularAngulo(centro, ponto) {
 
 // Função auxiliar: rotacionar um ponto (E, N) em torno de um eixo (eixoE, eixoN) por um ângulo em graus
 function rotacionarPonto(e, n, eixoE, eixoN, anguloGraus) {
+    // Log de entrada (apenas primeira vez para não poluir console)
+    if (!window._rotacionarPontoLogado) {
+        console.log('[rotacionarPonto] Primeira chamada - e=', e, 'n=', n, 'eixoE=', eixoE, 'eixoN=', eixoN, 'ângulo=', anguloGraus);
+        window._rotacionarPontoLogado = true;
+    }
+    
     // Validar entradas
     if (!isFinite(e) || !isFinite(n) || !isFinite(eixoE) || !isFinite(eixoN) || !isFinite(anguloGraus)) {
         console.error('[rotacionarPonto] Entrada inválida: e=', e, 'n=', n, 'eixoE=', eixoE, 'eixoN=', eixoN, 'ângulo=', anguloGraus);
