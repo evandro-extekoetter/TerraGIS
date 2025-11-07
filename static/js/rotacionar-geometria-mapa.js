@@ -12,14 +12,17 @@ function ativarRotacionarGeometriaMapa() {
     console.log('[ROTACIONAR v2.13] Ativando ferramenta Rotacionar Geometria (Mapa)');
     
     try {
+        console.log('[DEBUG] Passo 1: Verificando camada ativa');
         // Verificar se há camada ativa
         if (!terraManager.hasActiveLayer()) {
             showMessage('⚠️ Selecione uma camada no painel CAMADAS primeiro!', 'warning');
             return;
         }
         
+        console.log('[DEBUG] Passo 2: Obtendo camada ativa');
         geometriaParaRotacionar = terraManager.getActiveLayer();
         var layerName = terraManager.getActiveLayerName();
+        console.log('[DEBUG] Passo 3: geometriaParaRotacionar=', geometriaParaRotacionar);
         
         if (!geometriaParaRotacionar) {
             alert('Camada ativa não encontrada!');
@@ -34,6 +37,7 @@ function ativarRotacionarGeometriaMapa() {
         console.log('[ROTACIONAR v2.13] Usando camada ativa:', layerName);
         console.log('[ROTACIONAR v2.13] geometriaParaRotacionar:', geometriaParaRotacionar);
         
+        console.log('[DEBUG] Passo 4: Guardando cópia dos vértices');
         // Guardar cópia dos vértices originais
         geometriaOriginalRotacao = geometriaParaRotacionar.vertices.map(function(v) {
             return {name: v.name, e: parseFloat(v.e), n: parseFloat(v.n)};
