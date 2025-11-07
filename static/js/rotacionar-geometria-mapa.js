@@ -296,41 +296,33 @@ function desativarRotacionarGeometriaMapa() {
 
 // Função auxiliar: calcular ângulo entre dois pontos LatLng (em graus, sentido horário a partir do norte)
 function calcularAngulo(centro, ponto) {
-    console.log('[calcularAngulo] centro=', centro, 'ponto=', ponto);
-    console.log('[calcularAngulo] centro[0]=', centro[0], 'centro[1]=', centro[1]);
-    console.log('[calcularAngulo] ponto.lat=', ponto.lat, 'ponto.lng=', ponto.lng);
-    
     var dy = ponto.lat - centro[0];
     var dx = ponto.lng - centro[1];
-    console.log('[calcularAngulo] dx=', dx, 'dy=', dy);
-    
-    var anguloRad = Math.atan2(dx, dy); // atan2(dx, dy) para medir a partir do norte
+    var anguloRad = Math.atan2(dx, dy);
     var anguloGraus = anguloRad * (180 / Math.PI);
-    console.log('[calcularAngulo] ângulo=', anguloGraus, 'graus');
-    
     return anguloGraus;
 }
 
 // Função auxiliar: rotacionar um ponto (E, N) em torno de um eixo (eixoE, eixoN) por um ângulo em graus
 function rotacionarPonto(e, n, eixoE, eixoN, anguloGraus) {
-    console.log('[rotacionarPonto] Entrada: e=', e, 'n=', n, 'eixoE=', eixoE, 'eixoN=', eixoN, 'ângulo=', anguloGraus);
+    // Validar entradas
+    if (!isFinite(e) || !isFinite(n) || !isFinite(eixoE) || !isFinite(eixoN) || !isFinite(anguloGraus)) {
+        console.error('[rotacionarPonto] Entrada inválida: e=', e, 'n=', n, 'eixoE=', eixoE, 'eixoN=', eixoN, 'ângulo=', anguloGraus);
+        return {e: NaN, n: NaN};
+    }
     
     var anguloRad = anguloGraus * (Math.PI / 180);
-    console.log('[rotacionarPonto] anguloRad=', anguloRad);
     
     // Transladar para origem
     var dx = e - eixoE;
     var dy = n - eixoN;
-    console.log('[rotacionarPonto] dx=', dx, 'dy=', dy);
     
     // Rotacionar
     var cosA = Math.cos(anguloRad);
     var sinA = Math.sin(anguloRad);
-    console.log('[rotacionarPonto] cos=', cosA, 'sin=', sinA);
     
     var novoE = eixoE + (dx * cosA - dy * sinA);
     var novoN = eixoN + (dx * sinA + dy * cosA);
-    console.log('[rotacionarPonto] Saída: novoE=', novoE, 'novoN=', novoN);
     
     return {e: novoE, n: novoN};
 }
