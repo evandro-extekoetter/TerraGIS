@@ -156,8 +156,18 @@ function onMouseMoveRotacionar(e) {
         var deltaAngulo = anguloAtual - anguloInicial;
         
         // Rotacionar todos os vértices em torno do eixo
-        var novasCoords = geometriaOriginalRotacao.map(function(v) {
+        var novasCoords = geometriaOriginalRotacao.map(function(v, index) {
+            if (!window._mouseMove1stLog) {
+                console.log('[onMouseMove] Primeiro vértice:', index, 'v.e=', v.e, 'v.n=', v.n);
+                console.log('[onMouseMove] verticeEixo.e=', verticeEixo.e, 'verticeEixo.n=', verticeEixo.n);
+                console.log('[onMouseMove] deltaAngulo=', deltaAngulo);
+                window._mouseMove1stLog = true;
+            }
             var rotacionado = rotacionarPonto(v.e, v.n, verticeEixo.e, verticeEixo.n, deltaAngulo);
+            if (!window._mouseMove2ndLog) {
+                console.log('[onMouseMove] rotacionado.e=', rotacionado.e, 'rotacionado.n=', rotacionado.n);
+                window._mouseMove2ndLog = true;
+            }
             return utmToLatLng(rotacionado.e, rotacionado.n, geometriaParaRotacionar.fuso);
         });
         
