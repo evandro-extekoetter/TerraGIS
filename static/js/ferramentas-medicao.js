@@ -232,9 +232,20 @@ function copiarTodosMedicao() {
 
 // Limpar desenho temporário do mapa
 function limparDesenhoTemporario() {
+    console.log('[LIMPAR] Tentando limpar desenho temporário');
+    console.log('[LIMPAR] medicaoState.layer:', medicaoState.layer);
+    
     if (medicaoState.layer && map) {
-        map.removeLayer(medicaoState.layer);
+        console.log('[LIMPAR] Removendo layer do mapa...');
+        try {
+            map.removeLayer(medicaoState.layer);
+            console.log('[LIMPAR] Layer removido com sucesso');
+        } catch (e) {
+            console.error('[LIMPAR] Erro ao remover layer:', e);
+        }
         medicaoState.layer = null;
+    } else {
+        console.log('[LIMPAR] Não há layer para remover');
     }
 }
 
@@ -259,18 +270,9 @@ function desabilitarInteracoesLayers() {
         var layer = terraManager.layers[layerKey];
         if (!layer || !layer.group) return;
         
-        // Desabilitar interação do grupo inteiro
-        if (layer.group._map) {
-            layer.group.off();
-            layer._medicaoInteractive = layer.group.options.interactive;
-            if (layer.group.setStyle) {
-                layer.group.setStyle({ interactive: false });
-            }
-        }
-        
         // Desabilitar eventos de cada elemento da camada
         layer.group.eachLayer(function(l) {
-            // Desabilitar todos os eventos
+            // Desabilitar TODOS os eventos
             if (l.off) {
                 l.off();
             }
@@ -279,18 +281,26 @@ function desabilitarInteracoesLayers() {
                 l._medicaoInteractive = l.options.interactive;
                 l.options.interactive = false;
             }
-            // Desabilitar pointer events via CSS e forçar cursor
+            // Desabilitar pointer events via CSS (MAIS AGRESSIVO)
             if (l._path) {
-                l._path.style.pointerEvents = 'none';
-                l._path.style.cursor = 'default';
+                l._medicaoOriginalPointerEvents = l._path.style.pointerEvents;
+                l._medicaoOriginalCursor = l._path.style.cursor;
+                l._path.style.pointerEvents = 'none !important';
+                l._path.style.cursor = 'default !important';
+                l._path.setAttribute('style', l._path.getAttribute('style') + '; pointer-events: none !important; cursor: default !important;');
             }
-            // Forçar cursor em elementos DOM
+            // Forçar cursor em elementos DOM (vértices)
             if (l._icon) {
-                l._icon.style.cursor = 'default';
-                l._icon.style.pointerEvents = 'none';
+                l._medicaoOriginalIconPointerEvents = l._icon.style.pointerEvents;
+                l._medicaoOriginalIconCursor = l._icon.style.cursor;
+                l._icon.style.pointerEvents = 'none !important';
+                l._icon.style.cursor = 'default !important';
+                l._icon.setAttribute('style', l._icon.getAttribute('style') + '; pointer-events: none !important; cursor: default !important;');
             }
         });
     });
+    
+    console.log('[MEDIÇÃO] Interações desabilitadas');
 }
 
 // Reabilitar interações com camadas existentes
@@ -328,15 +338,29 @@ function reabilitarInteracoesLayers() {
                 }
                 delete l._medicaoInteractive;
             }
-            // Reabilitar pointer events via CSS e restaurar cursor
+            // Restaurar pointer events e cursor (MAIS AGRESSIVO)
             if (l._path) {
-                l._path.style.pointerEvents = '';
-                l._path.style.cursor = '';
+                l._path.style.pointerEvents = l._medicaoOriginalPointerEvents || '';
+                l._path.style.cursor = l._medicaoOriginalCursor || '';
+                // Remover atributos inline forçados
+                var style = l._path.getAttribute('style') || '';
+                style = style.replace(/pointer-events:\s*none\s*!important;?/gi, '');
+                style = style.replace(/cursor:\s*default\s*!important;?/gi, '');
+                l._path.setAttribute('style', style);
+                delete l._medicaoOriginalPointerEvents;
+                delete l._medicaoOriginalCursor;
             }
-            // Restaurar cursor em elementos DOM
+            // Restaurar cursor em elementos DOM (vértices)
             if (l._icon) {
-                l._icon.style.cursor = '';
-                l._icon.style.pointerEvents = '';
+                l._icon.style.pointerEvents = l._medicaoOriginalIconPointerEvents || '';
+                l._icon.style.cursor = l._medicaoOriginalIconCursor || '';
+                // Remover atributos inline forçados
+                var iconStyle = l._icon.getAttribute('style') || '';
+                iconStyle = iconStyle.replace(/pointer-events:\s*none\s*!important;?/gi, '');
+                iconStyle = iconStyle.replace(/cursor:\s*default\s*!important;?/gi, '');
+                l._icon.setAttribute('style', iconStyle);
+                delete l._medicaoOriginalIconPointerEvents;
+                delete l._medicaoOriginalIconCursor;
             }
         });
     });
@@ -865,8 +889,7 @@ function atualizarConteudoPainelAzimute() {
         html.push('<div style="padding: 15px; background: #f3e5f5; border-radius: 4px; margin-bottom: 15px;">');
         html.push('<div style="text-align: center;">');
         html.push('<div style="font-size: 14px; color: #666; margin-bottom: 8px;">Azimute</div>');
-        html.push('<div style="font-size: 28px; font-weight: bold; color: #9c27b0;">' + azimuteSexagesimal + '</div>');
-        html.push('<div style="font-size: 12px; color: #999; margin-top: 4px;">(' + azimute.toFixed(4) + '°)</div>');
+        html.push('<div style="font-size: 16px; font-weight: bold; color: #333;">' + azimuteSexagesimal + '</div>');
         html.push('</div>');
         html.push('</div>');
         
@@ -1014,8 +1037,7 @@ function atualizarConteudoPainelAngulo() {
         html.push('<div style="padding: 15px; background: #fbe9e7; border-radius: 4px; margin-bottom: 15px;">');
         html.push('<div style="text-align: center;">');
         html.push('<div style="font-size: 14px; color: #666; margin-bottom: 8px;">Ângulo</div>');
-        html.push('<div style="font-size: 28px; font-weight: bold; color: #ff5722;">' + anguloSexagesimal + '</div>');
-        html.push('<div style="font-size: 12px; color: #999; margin-top: 4px;">(' + angulo.toFixed(4) + '°)</div>');
+        html.push('<div style="font-size: 16px; font-weight: bold; color: #333;">' + anguloSexagesimal + '</div>');
         html.push('</div>');
         html.push('</div>');
         
@@ -1137,13 +1159,11 @@ function atualizarConteudoPainelCoordenada() {
         html.push('<div style="margin-bottom: 10px;">');
         html.push('<div style="font-size: 12px; color: #666; margin-bottom: 4px;">Latitude</div>');
         html.push('<div style="font-size: 16px; font-weight: bold; color: #333;">' + latSexagesimal + '</div>');
-        html.push('<div style="font-size: 11px; color: #999; margin-top: 2px;">(' + p.lat.toFixed(6) + '°)</div>');
         html.push('</div>');
         
         html.push('<div>');
         html.push('<div style="font-size: 12px; color: #666; margin-bottom: 4px;">Longitude</div>');
         html.push('<div style="font-size: 16px; font-weight: bold; color: #333;">' + lonSexagesimal + '</div>');
-        html.push('<div style="font-size: 11px; color: #999; margin-top: 2px;">(' + p.lng.toFixed(6) + '°)</div>');
         html.push('</div>');
         html.push('</div>');
         
