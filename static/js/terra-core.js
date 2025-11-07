@@ -325,6 +325,19 @@ class TerraLayer {
         }
     }
     
+    // Zoom para a camada
+    zoomToLayer() {
+        if (!this.geometryLayer || !map) return;
+        
+        try {
+            const bounds = this.geometryLayer.getBounds();
+            map.fitBounds(bounds, { padding: [50, 50] });
+            console.log('[ZOOM] Aproximou da camada:', this.name);
+        } catch (error) {
+            console.error('[ZOOM] Erro ao aproximar da camada:', error);
+        }
+    }
+    
     // Remover do mapa
     remove() {
         if (this.geometryLayer && map) map.removeLayer(this.geometryLayer);
@@ -535,6 +548,92 @@ class TerraManager {
         return this.activeLayer;
     }
     
+    // Renomear camada
+    renameLayer(oldName) {
+        if (!this.layers[oldName]) {
+            console.error('[TerraManager] Camada não encontrada:', oldName);
+            return;
+        }
+        
+        const newName = prompt('Digite o novo nome da camada:', oldName);
+        if (!newName || newName.trim() === '') {
+            return; // Cancelou ou nome vazio
+        }
+        
+        const trimmedName = newName.trim();
+        
+        // Verificar se já existe camada com este nome
+        if (this.layers[trimmedName] && trimmedName !== oldName) {
+            alert('Já existe uma camada com este nome!');
+            return;
+        }
+        
+        // Renomear camada
+        const layer = this.layers[oldName];
+        layer.name = trimmedName;
+        
+        // Atualizar chave no objeto layers
+        this.layers[trimmedName] = layer;
+        delete this.layers[oldName];
+        
+        // Atualizar camada ativa se necessário
+        if (this.activeLayer === oldName) {
+            this.activeLayer = trimmedName;
+        }
+        
+        // Atualizar registro de vértices globais
+        const oldLayerKey = `${oldName}_${layer.type === 'polygon' ? 'Poligono' : 'Polilinha'}`;
+        const newLayerKey = `${trimmedName}_${layer.type === 'polygon' ? 'Poligono' : 'Polilinha'}`;
+        
+        Object.values(this.globalVertices).forEach(vertex => {
+            const index = vertex.layers.indexOf(oldLayerKey);
+            if (index !== -1) {
+                vertex.layers[index] = newLayerKey;
+            }
+        });
+        
+        this.updateLayerListUI();
+        console.log(`[TerraManager] Camada renomeada: ${oldName} -> ${trimmedName}`);
+        showMessage(`Camada renomeada para "${trimmedName}"`, 'success');
+    }
+    
+    // Deletar camada
+    deleteLayer(layerName) {
+        if (!this.layers[layerName]) {
+            console.error('[TerraManager] Camada não encontrada:', layerName);
+            return;
+        }
+        
+        // Confirmação
+        const confirmacao = confirm(`Tem certeza que deseja deletar a camada "${layerName}"?\n\nEsta ação não pode ser desfeita!`);
+        if (!confirmacao) {
+            return;
+        }
+        
+        const layer = this.layers[layerName];
+        const layerKey = `${layerName}_${layer.type === 'polygon' ? 'Poligono' : 'Polilinha'}`;
+        
+        // Remover do mapa
+        layer.remove();
+        
+        // Desregistrar todos os vértices desta camada
+        layer.vertices.forEach(vertex => {
+            this.unregisterVertexUsage(vertex.id, layerKey);
+        });
+        
+        // Remover camada do gerenciador
+        delete this.layers[layerName];
+        
+        // Se era a camada ativa, desativar
+        if (this.activeLayer === layerName) {
+            this.activeLayer = null;
+        }
+        
+        this.updateLayerListUI();
+        console.log(`[TerraManager] Camada deletada: ${layerName}`);
+        showMessage(`Camada "${layerName}" deletada com sucesso`, 'success');
+    }
+    
     // Verificar se há camada ativa
     hasActiveLayer() {
         return this.activeLayer !== null && this.layers[this.activeLayer] !== undefined;
@@ -553,20 +652,25 @@ class TerraManager {
             const layer = this.layers[layerName];
             const isActive = layerName === this.activeLayer;
             
-            const layerItem = document.createElement('div');
-            layerItem.className = 'layer-item';
-            layerItem.style.cssText = `
-                padding: 8px 12px;
-                margin: 2px 0;
-                cursor: pointer;
+            // Container da camada
+            const layerContainer = document.createElement('div');
+            layerContainer.style.cssText = `
+                margin: 4px 0;
+                padding: 4px;
                 border-radius: 4px;
+                background: ${isActive ? '#fff8dc' : 'transparent'};
+                border: ${isActive ? '2px solid #ff8c00' : '1px solid #ddd'};
+            `;
+            
+            // Linha 1: Nome da camada (clicável para ativar)
+            const nameRow = document.createElement('div');
+            nameRow.style.cssText = `
+                padding: 6px 8px;
+                cursor: pointer;
                 display: flex;
                 align-items: center;
-                gap: 8px;
-                background: ${isActive ? '#ffd700' : 'transparent'};
-                border: ${isActive ? '2px solid #ff8c00' : '1px solid #ddd'};
+                gap: 6px;
                 font-weight: ${isActive ? 'bold' : 'normal'};
-                transition: all 0.2s;
             `;
             
             // Ícone de ativo
@@ -574,45 +678,123 @@ class TerraManager {
                 const activeIcon = document.createElement('span');
                 activeIcon.textContent = '⭐';
                 activeIcon.title = 'Camada Ativa';
-                layerItem.appendChild(activeIcon);
+                nameRow.appendChild(activeIcon);
             }
             
             // Nome da camada
             const nameSpan = document.createElement('span');
             nameSpan.textContent = layerName;
             nameSpan.style.flex = '1';
-            layerItem.appendChild(nameSpan);
+            nameRow.appendChild(nameSpan);
             
-            // Ícone de visibilidade
-            const visIcon = document.createElement('span');
-            visIcon.textContent = layer.visible ? '👁️' : '🚫';
-            visIcon.title = layer.visible ? 'Visível' : 'Oculta';
-            visIcon.style.cursor = 'pointer';
-            visIcon.onclick = (e) => {
+            // Evento de clique para ativar camada
+            nameRow.onclick = () => {
+                this.setActiveLayer(layerName);
+            };
+            
+            // Hover effect no nome
+            nameRow.onmouseenter = () => {
+                if (!isActive) {
+                    nameRow.style.background = '#f0f0f0';
+                }
+            };
+            nameRow.onmouseleave = () => {
+                if (!isActive) {
+                    nameRow.style.background = 'transparent';
+                }
+            };
+            
+            layerContainer.appendChild(nameRow);
+            
+            // Linha 2: Botões de ação
+            const actionsRow = document.createElement('div');
+            actionsRow.style.cssText = `
+                display: flex;
+                gap: 4px;
+                padding: 4px;
+                border-top: 1px solid #e0e0e0;
+            `;
+            
+            // Botão Visível
+            const visBtn = document.createElement('button');
+            visBtn.textContent = layer.visible ? '👁️ Visível' : '🚫 Oculta';
+            visBtn.title = layer.visible ? 'Ocultar camada' : 'Mostrar camada';
+            visBtn.style.cssText = `
+                flex: 1;
+                padding: 4px 6px;
+                font-size: 11px;
+                cursor: pointer;
+                border: 1px solid #ccc;
+                border-radius: 3px;
+                background: white;
+            `;
+            visBtn.onclick = (e) => {
                 e.stopPropagation();
                 layer.setVisible(!layer.visible);
                 this.updateLayerListUI();
             };
-            layerItem.appendChild(visIcon);
+            actionsRow.appendChild(visBtn);
             
-            // Evento de clique para ativar camada
-            layerItem.onclick = () => {
-                this.setActiveLayer(layerName);
+            // Botão Zoom
+            const zoomBtn = document.createElement('button');
+            zoomBtn.textContent = '🔍 Zoom';
+            zoomBtn.title = 'Aproximar da camada';
+            zoomBtn.style.cssText = `
+                flex: 1;
+                padding: 4px 6px;
+                font-size: 11px;
+                cursor: pointer;
+                border: 1px solid #ccc;
+                border-radius: 3px;
+                background: white;
+            `;
+            zoomBtn.onclick = (e) => {
+                e.stopPropagation();
+                layer.zoomToLayer();
             };
+            actionsRow.appendChild(zoomBtn);
             
-            // Hover effect
-            layerItem.onmouseenter = () => {
-                if (!isActive) {
-                    layerItem.style.background = '#f0f0f0';
-                }
+            // Botão Renomear
+            const renameBtn = document.createElement('button');
+            renameBtn.textContent = '✏️ Renomear';
+            renameBtn.title = 'Renomear camada';
+            renameBtn.style.cssText = `
+                flex: 1;
+                padding: 4px 6px;
+                font-size: 11px;
+                cursor: pointer;
+                border: 1px solid #ccc;
+                border-radius: 3px;
+                background: white;
+            `;
+            renameBtn.onclick = (e) => {
+                e.stopPropagation();
+                this.renameLayer(layerName);
             };
-            layerItem.onmouseleave = () => {
-                if (!isActive) {
-                    layerItem.style.background = 'transparent';
-                }
-            };
+            actionsRow.appendChild(renameBtn);
             
-            layersList.appendChild(layerItem);
+            // Botão Deletar
+            const deleteBtn = document.createElement('button');
+            deleteBtn.textContent = '🗑️ Deletar';
+            deleteBtn.title = 'Deletar camada';
+            deleteBtn.style.cssText = `
+                flex: 1;
+                padding: 4px 6px;
+                font-size: 11px;
+                cursor: pointer;
+                border: 1px solid #ccc;
+                border-radius: 3px;
+                background: white;
+                color: #cc0000;
+            `;
+            deleteBtn.onclick = (e) => {
+                e.stopPropagation();
+                this.deleteLayer(layerName);
+            };
+            actionsRow.appendChild(deleteBtn);
+            
+            layerContainer.appendChild(actionsRow);
+            layersList.appendChild(layerContainer);
         });
     }
 }
