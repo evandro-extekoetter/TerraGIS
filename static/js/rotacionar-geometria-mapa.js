@@ -319,6 +319,11 @@ function rotacionarPonto(e, n, eixoE, eixoN, anguloGraus) {
         return {e: NaN, n: NaN};
     }
     
+    // Caso especial: se o ponto é o próprio eixo, retornar sem rotacionar
+    if (e === eixoE && n === eixoN) {
+        return {e: e, n: n};
+    }
+    
     var anguloRad = anguloGraus * (Math.PI / 180);
     
     // Transladar para origem
