@@ -1176,15 +1176,17 @@ function copiarCoordenadaUTM() {
     });
 }
 
-// Copiar coordenada geográfica
+// Copiar coordenada geográfica (formato sexagesimal)
 function copiarCoordenadaGeo() {
     if (medicaoState.pontos.length === 0) return;
     
     var p = medicaoState.pontos[0];
-    var texto = 'Lat: ' + p.lat.toFixed(6) + '°, Lon: ' + p.lng.toFixed(6) + '°';
+    var latSexagesimal = latLonParaSexagesimal(p.lat, 'lat');
+    var lonSexagesimal = latLonParaSexagesimal(p.lng, 'lon');
+    var texto = 'Latitude: ' + latSexagesimal + '\nLongitude: ' + lonSexagesimal;
     
     navigator.clipboard.writeText(texto).then(function() {
-        showMessage('Coordenadas geográficas copiadas!', 'success');
+        showMessage('Coordenadas geográficas copiadas (sexagesimal)!', 'success');
     }).catch(function(err) {
         console.error('Erro ao copiar:', err);
         showMessage('Erro ao copiar coordenadas', 'error');
