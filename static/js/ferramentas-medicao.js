@@ -150,6 +150,14 @@ function abrirPainelMedicao(titulo) {
     painel.style.display = 'block';
     tituloEl.textContent = titulo;
     medicaoState.painelAberto = true;
+    
+    // Mudar cursor para crosshair (cruz)
+    if (map) {
+        map.getContainer().style.cursor = 'crosshair';
+    }
+    
+    // Desabilitar interações com camadas existentes (tooltips/popups)
+    desabilitarInteracoesLayers();
 }
 
 // Fechar painel de medição
@@ -170,7 +178,12 @@ function fecharPainelMedicao() {
     // Remover event listener do mapa
     if (map) {
         map.off('click', onMapClickMedicao);
+        // Restaurar cursor padrão
+        map.getContainer().style.cursor = '';
     }
+    
+    // Reabilitar interações com camadas existentes
+    reabilitarInteracoesLayers();
 }
 
 // Novo medição (limpar e recomeçar)
@@ -214,6 +227,70 @@ function onMapClickMedicao(e) {
     // Implementado por cada ferramenta específica
 }
 
+// Desabilitar interações com camadas existentes (tooltips/popups)
+function desabilitarInteracoesLayers() {
+    if (!terraManager || !terraManager.layers) return;
+    
+    console.log('[MEDIÇÃO] Desabilitando interações com layers');
+    
+    // Desabilitar tooltips e popups de todas as camadas
+    Object.keys(terraManager.layers).forEach(function(layerKey) {
+        var layer = terraManager.layers[layerKey];
+        if (!layer || !layer.group) return;
+        
+        // Desabilitar eventos de cada elemento da camada
+        layer.group.eachLayer(function(l) {
+            if (l._events && l._events.click) {
+                l._medicaoClickBackup = l._events.click;
+                l.off('click');
+            }
+            if (l._events && l._events.mouseover) {
+                l._medicaoMouseoverBackup = l._events.mouseover;
+                l.off('mouseover');
+            }
+            if (l._events && l._events.mouseout) {
+                l._medicaoMouseoutBackup = l._events.mouseout;
+                l.off('mouseout');
+            }
+        });
+    });
+}
+
+// Reabilitar interações com camadas existentes
+function reabilitarInteracoesLayers() {
+    if (!terraManager || !terraManager.layers) return;
+    
+    console.log('[MEDIÇÃO] Reabilitando interações com layers');
+    
+    // Reabilitar tooltips e popups de todas as camadas
+    Object.keys(terraManager.layers).forEach(function(layerKey) {
+        var layer = terraManager.layers[layerKey];
+        if (!layer || !layer.group) return;
+        
+        // Reabilitar eventos de cada elemento da camada
+        layer.group.eachLayer(function(l) {
+            if (l._medicaoClickBackup) {
+                l._medicaoClickBackup.forEach(function(handler) {
+                    l.on('click', handler.fn, handler.ctx);
+                });
+                delete l._medicaoClickBackup;
+            }
+            if (l._medicaoMouseoverBackup) {
+                l._medicaoMouseoverBackup.forEach(function(handler) {
+                    l.on('mouseover', handler.fn, handler.ctx);
+                });
+                delete l._medicaoMouseoverBackup;
+            }
+            if (l._medicaoMouseoutBackup) {
+                l._medicaoMouseoutBackup.forEach(function(handler) {
+                    l.on('mouseout', handler.fn, handler.ctx);
+                });
+                delete l._medicaoMouseoutBackup;
+            }
+        });
+    });
+}
+
 // ===== FUNÇÕES UTILITÁRIAS =====
 
 // Converter graus decimais para sexagesimais (GG°MM'SS")
@@ -221,9 +298,19 @@ function grausParaSexagesimal(grausDecimais) {
     var graus = Math.floor(grausDecimais);
     var minutosDecimais = (grausDecimais - graus) * 60;
     var minutos = Math.floor(minutosDecimais);
-    var segundos = (minutosDecimais - minutos) * 60;
+    var segundos = Math.round((minutosDecimais - minutos) * 60);  // Arredondar sem decimais
     
-    return graus + '°' + String(minutos).padStart(2, '0') + "'" + segundos.toFixed(2).padStart(5, '0') + '"';
+    // Ajustar se segundos = 60
+    if (segundos === 60) {
+        segundos = 0;
+        minutos++;
+        if (minutos === 60) {
+            minutos = 0;
+            graus++;
+        }
+    }
+    
+    return graus + '°' + String(minutos).padStart(2, '0') + "'" + String(segundos).padStart(2, '0') + '"';
 }
 
 // Calcular distância entre dois pontos (Haversine)
