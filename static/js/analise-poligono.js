@@ -190,7 +190,9 @@ function calcularToleranciaNBR13133(verticesInfo) {
         var dy = verticesInfo[j].n - verticesInfo[i].n;
         var distancia = Math.sqrt(dx * dx + dy * dy);
         
-        somaQuadrados += distancia * distancia;
+        // NBR 13.133: distâncias devem estar em QUILÔMETROS
+        var distanciaKm = distancia / 1000.0;
+        somaQuadrados += distanciaKm * distanciaKm;
     }
     
     // Fórmula NBR 13.133: Th = 0,05 × √(Σd²)
@@ -289,7 +291,7 @@ function exibirRelatorioAnalise(nomeGeometria, area, perimetro, verticesInfo, er
     
     var corpo = document.createElement('div');
     corpo.innerHTML = htmlRelatorio;
-    corpo.style.cssText = 'margin: 20px 0; font-size: 13px; line-height: 1.6;';
+    corpo.style.cssText = 'margin: 20px 0; font-size: 13px; line-height: 1.6; color: #000000;';
     
     var botaoFechar = document.createElement('button');
     botaoFechar.textContent = 'Fechar';
