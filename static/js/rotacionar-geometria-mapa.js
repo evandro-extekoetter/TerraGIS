@@ -103,7 +103,7 @@ function onMouseDownRotacionar(e) {
     L.DomEvent.stopPropagation(e);
     
     // Converter posição do mouse para UTM
-    var mouseUTM = latLngToUtm(e.latlng.lat, e.latlng.lng, geometriaParaRotacionar.fuso);
+    var mouseUTM = latLongToUTM(e.latlng.lat, e.latlng.lng, geometriaParaRotacionar.fuso);
     
     // Calcular azimute entre eixo e ponto do 1º clique
     var dx = mouseUTM.e - verticeEixo.e;
@@ -122,7 +122,7 @@ function onMouseMoveRotacionar(e) {
     L.DomEvent.stopPropagation(e);
     
     // Converter posição do mouse para UTM
-    var mouseUTM = latLngToUtm(e.latlng.lat, e.latlng.lng, geometriaParaRotacionar.fuso);
+    var mouseUTM = latLongToUTM(e.latlng.lat, e.latlng.lng, geometriaParaRotacionar.fuso);
     
     // Calcular azimute atual entre eixo e posição do mouse
     var dx = mouseUTM.e - verticeEixo.e;
@@ -157,7 +157,7 @@ function onMouseUpRotacionar(e) {
     console.log('[ROTACIONAR v2.14] 🖱️ MouseUp - finalizando rotação');
     
     // Converter posição do mouse para UTM
-    var mouseUTM = latLngToUtm(e.latlng.lat, e.latlng.lng, geometriaParaRotacionar.fuso);
+    var mouseUTM = latLongToUTM(e.latlng.lat, e.latlng.lng, geometriaParaRotacionar.fuso);
     
     // Calcular azimute final
     var dx = mouseUTM.e - verticeEixo.e;
