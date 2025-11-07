@@ -199,6 +199,8 @@ function onMouseUpRotacionar(e) {
         geometriaParaRotacionar.vertices.forEach(function(v, index) {
             var vOriginal = geometriaOriginalRotacao[index];
             console.log('[ROTACIONAR v1.00] Vértice original', index, ':', vOriginal);
+            console.log('[ROTACIONAR v1.00] vOriginal.e=', vOriginal.e, 'vOriginal.n=', vOriginal.n);
+            console.log('[ROTACIONAR v1.00] verticeEixo.e=', verticeEixo.e, 'verticeEixo.n=', verticeEixo.n);
             var rotacionado = rotacionarPonto(vOriginal.e, vOriginal.n, verticeEixo.e, verticeEixo.n, anguloRotacao);
             console.log('[ROTACIONAR v1.00] Vértice rotacionado', index, ':', rotacionado);
             
