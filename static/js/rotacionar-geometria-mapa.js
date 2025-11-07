@@ -170,9 +170,11 @@ function onMouseUpRotacionar(e) {
     console.log('[ROTACIONAR v2.14] Rotação final: ' + deltaAngulo.toFixed(2) + '° (de ' + anguloInicial.toFixed(2) + '° para ' + anguloFinal.toFixed(2) + '°)');
     
     // Aplicar rotação aos vértices originais
+    console.log('[DEBUG] Antes da rotação:', geometriaOriginalRotacao.map(function(v) { return v.name; }));
     geometriaParaRotacionar.vertices = geometriaOriginalRotacao.map(function(v) {
         return rotacionarPonto(v, verticeEixo, deltaAngulo);
     });
+    console.log('[DEBUG] Depois da rotação:', geometriaParaRotacionar.vertices.map(function(v) { return v.name; }));
     
     // Atualizar geometria no mapa
     geometriaParaRotacionar.syncGeometry();
