@@ -319,8 +319,9 @@ function rotacionarPonto(e, n, eixoE, eixoN, anguloGraus) {
         return {e: NaN, n: NaN};
     }
     
-    // Caso especial: se o ponto é o próprio eixo, retornar sem rotacionar
-    if (e === eixoE && n === eixoN) {
+    // Caso especial: se o ponto é o próprio eixo (com tolerância), retornar sem rotacionar
+    var tolerancia = 0.0001;
+    if (Math.abs(e - eixoE) < tolerancia && Math.abs(n - eixoN) < tolerancia) {
         return {e: e, n: n};
     }
     
