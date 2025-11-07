@@ -43,7 +43,7 @@ function converterPolilinhaEmPoligono() {
         }
         
         // Criar nova camada (polígono)
-        var novaLayer = terraManager.createLayer(novoNome, 'polygon');
+        var novaLayer = new TerraLayer(novoNome, 'polygon');
         
         // Copiar propriedades da polilinha
         novaLayer.fuso = layer.fuso;
@@ -59,8 +59,14 @@ function converterPolilinhaEmPoligono() {
         novaLayer.syncGeometry();
         novaLayer.updateVerticesLayer();
         
+        // Adicionar ao gerenciador
+        var layerKey = terraManager.addLayer(novaLayer);
+        
+        // Atualizar painel de camadas
+        terraManager.updateLayerListUI();
+        
         // Ativar nova camada
-        terraManager.setActiveLayer(novoNome);
+        terraManager.setActiveLayer(layerKey);
         
         // Zoom para a nova camada
         novaLayer.zoomToLayer();
