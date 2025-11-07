@@ -157,6 +157,13 @@ function onMouseMoveRotacionar(e) {
         // Rotacionar todos os vértices em torno do eixo
         var novasCoords = geometriaOriginalRotacao.map(function(v) {
             var rotacionado = rotacionarPonto(v.e, v.n, verticeEixo.e, verticeEixo.n, deltaAngulo);
+            console.log('[onMouseMove] Antes utmToLatLng: rotacionado.e=', rotacionado.e, 'rotacionado.n=', rotacionado.n, 'fuso=', geometriaParaRotacionar.fuso);
+            
+            if (!isFinite(rotacionado.e) || !isFinite(rotacionado.n)) {
+                console.error('[onMouseMove] Coordenada rotacionada inválida!');
+                return null;
+            }
+            
             return utmToLatLng(rotacionado.e, rotacionado.n, geometriaParaRotacionar.fuso);
         });
         
