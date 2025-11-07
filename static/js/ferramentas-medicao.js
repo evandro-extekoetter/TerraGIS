@@ -12,6 +12,16 @@ var medicaoState = {
     painelAberto: false
 };
 
+// Criar pane customizado para medição (z-index alto)
+setTimeout(function() {
+    if (typeof map !== 'undefined' && map && !map.getPane('medicaoPane')) {
+        var medicaoPane = map.createPane('medicaoPane');
+        medicaoPane.style.zIndex = 9999;
+        medicaoPane.style.pointerEvents = 'none';  // Não interceptar cliques
+        console.log('[MEDIÇÃO] Pane customizado criado com z-index 9999');
+    }
+}, 1000);  // Aguardar mapa ser inicializado
+
 // Criar painel lateral de medição
 function criarPainelMedicao() {
     // Verificar se já existe
@@ -502,21 +512,28 @@ function desenharLinhaTemporaria() {
     // Criar layerGroup para agrupar polyline + marcadores
     medicaoState.layer = L.layerGroup().addTo(map);
     
-    // Adicionar polyline ao grupo
+    // Definir z-index alto para ficar acima de tudo
+    if (medicaoState.layer._container) {
+        medicaoState.layer._container.style.zIndex = 9999;
+    }
+    
+    // Adicionar polyline ao grupo (no pane customizado)
     L.polyline(latlngs, {
         color: '#ff0000',
         weight: 3,
         opacity: 0.7,
-        dashArray: '5, 5'
+        dashArray: '5, 5',
+        pane: 'medicaoPane'
     }).addTo(medicaoState.layer);
     
-    // Adicionar marcadores nos pontos
+    // Adicionar marcadores nos pontos (no pane customizado)
     medicaoState.pontos.forEach(function(p, i) {
         L.circleMarker([p.lat, p.lng], {
             radius: 5,
             color: '#ff0000',
             fillColor: '#ff0000',
-            fillOpacity: 1
+            fillOpacity: 1,
+            pane: 'medicaoPane'
         }).addTo(medicaoState.layer);
     });
 }
@@ -641,23 +658,30 @@ function desenharAreaTemporaria() {
     // Criar layerGroup para agrupar polígono + marcadores
     medicaoState.layer = L.layerGroup().addTo(map);
     
-    // Adicionar polígono ao grupo
+    // Definir z-index alto para ficar acima de tudo
+    if (medicaoState.layer._container) {
+        medicaoState.layer._container.style.zIndex = 9999;
+    }
+    
+    // Adicionar polígono ao grupo (no pane customizado)
     L.polygon(latlngs, {
         color: '#ff6600',
         weight: 3,
         opacity: 0.7,
         fillColor: '#ff6600',
         fillOpacity: 0.2,
-        dashArray: '5, 5'
+        dashArray: '5, 5',
+        pane: 'medicaoPane'
     }).addTo(medicaoState.layer);
     
-    // Adicionar marcadores nos pontos
+    // Adicionar marcadores nos pontos (no pane customizado)
     medicaoState.pontos.forEach(function(p, i) {
         L.circleMarker([p.lat, p.lng], {
             radius: 5,
             color: '#ff6600',
             fillColor: '#ff6600',
-            fillOpacity: 1
+            fillOpacity: 1,
+            pane: 'medicaoPane'
         }).addTo(medicaoState.layer);
     });
 }
