@@ -3,6 +3,7 @@ let map;
 let drawnItems;
 let currentProject = null;
 let currentTool = null;
+let ferramentaAtiva = false;  // Flag global para controlar cursor
 let vertexLayers = {}; // Armazena camadas de vértices por nome
 let baseLayers = {}; // Armazena camadas base
 let currentBaseLayer = null;
@@ -63,6 +64,26 @@ function initMap() {
         }
     });
     map.addControl(drawControl);
+}
+
+// ===== FUNÇÕES GLOBAIS DE CURSOR =====
+
+// Ativar cursor de ferramenta (seta)
+function ativarCursorFerramenta() {
+    ferramentaAtiva = true;
+    if (map) {
+        map.getContainer().style.cursor = 'default';
+    }
+    console.log('[CURSOR] Ferramenta ativada - cursor: default (seta)');
+}
+
+// Desativar cursor de ferramenta (volta para mãozinha)
+function desativarCursorFerramenta() {
+    ferramentaAtiva = false;
+    if (map) {
+        map.getContainer().style.cursor = '';
+    }
+    console.log('[CURSOR] Ferramenta desativada - cursor: grab (mãozinha)');
 }
 
 // ===== FUNÇÕES DE UTILIDADE =====

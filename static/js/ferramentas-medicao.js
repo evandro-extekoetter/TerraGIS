@@ -151,9 +151,13 @@ function abrirPainelMedicao(titulo) {
     tituloEl.textContent = titulo;
     medicaoState.painelAberto = true;
     
-    // Mudar cursor para crosshair (cruz)
-    if (map) {
-        map.getContainer().style.cursor = 'crosshair';
+    // Ativar cursor de ferramenta (seta)
+    if (typeof ativarCursorFerramenta === 'function') {
+        ativarCursorFerramenta();
+    } else {
+        if (map) {
+            map.getContainer().style.cursor = 'default';
+        }
     }
     
     // Desabilitar interações com camadas existentes (tooltips/popups)
@@ -178,8 +182,15 @@ function fecharPainelMedicao() {
     // Remover event listener do mapa
     if (map) {
         map.off('click', onMapClickMedicao);
-        // Restaurar cursor padrão
-        map.getContainer().style.cursor = '';
+    }
+    
+    // Desativar cursor de ferramenta (volta para mãozinha)
+    if (typeof desativarCursorFerramenta === 'function') {
+        desativarCursorFerramenta();
+    } else {
+        if (map) {
+            map.getContainer().style.cursor = '';
+        }
     }
     
     // Reabilitar interações com camadas existentes
@@ -258,9 +269,15 @@ function desabilitarInteracoesLayers() {
                 l._medicaoInteractive = l.options.interactive;
                 l.options.interactive = false;
             }
-            // Desabilitar pointer events via CSS
+            // Desabilitar pointer events via CSS e forçar cursor
             if (l._path) {
                 l._path.style.pointerEvents = 'none';
+                l._path.style.cursor = 'default';
+            }
+            // Forçar cursor em elementos DOM
+            if (l._icon) {
+                l._icon.style.cursor = 'default';
+                l._icon.style.pointerEvents = 'none';
             }
         });
     });
@@ -301,9 +318,15 @@ function reabilitarInteracoesLayers() {
                 }
                 delete l._medicaoInteractive;
             }
-            // Reabilitar pointer events via CSS
+            // Reabilitar pointer events via CSS e restaurar cursor
             if (l._path) {
                 l._path.style.pointerEvents = '';
+                l._path.style.cursor = '';
+            }
+            // Restaurar cursor em elementos DOM
+            if (l._icon) {
+                l._icon.style.cursor = '';
+                l._icon.style.pointerEvents = '';
             }
         });
     });
