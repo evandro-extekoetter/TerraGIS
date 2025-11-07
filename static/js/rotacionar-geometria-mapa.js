@@ -40,9 +40,12 @@ window.openRotacionarGeometriaMapaDialog = function() {
         });
         
         // Encontrar vértice mais ao NORTE (maior N)
-        verticeEixo = geometriaOriginalRotacao.reduce(function(max, v) {
-            return v.n > max.n ? v : max;
-        });
+        verticeEixo = geometriaOriginalRotacao[0];
+        for (var i = 1; i < geometriaOriginalRotacao.length; i++) {
+            if (geometriaOriginalRotacao[i].n > verticeEixo.n) {
+                verticeEixo = geometriaOriginalRotacao[i];
+            }
+        }
         
         console.log('[ROTACIONAR v1.00] Vértice eixo (mais ao norte):', verticeEixo);
         
@@ -152,18 +155,9 @@ function onMouseMoveRotacionar(e) {
         // Calcular diferença de ângulo (rotação)
         var deltaAngulo = anguloAtual - anguloInicial;
         
-        console.log('[ROTACIONAR v1.00] 🔄 Rotação:', deltaAngulo.toFixed(2), 'graus');
-        
         // Rotacionar todos os vértices em torno do eixo
         var novasCoords = geometriaOriginalRotacao.map(function(v) {
             var rotacionado = rotacionarPonto(v.e, v.n, verticeEixo.e, verticeEixo.n, deltaAngulo);
-            console.log('[onMouseMove] Antes utmToLatLng: rotacionado.e=', rotacionado.e, 'rotacionado.n=', rotacionado.n, 'fuso=', geometriaParaRotacionar.fuso);
-            
-            if (!isFinite(rotacionado.e) || !isFinite(rotacionado.n)) {
-                console.error('[onMouseMove] Coordenada rotacionada inválida!');
-                return null;
-            }
-            
             return utmToLatLng(rotacionado.e, rotacionado.n, geometriaParaRotacionar.fuso);
         });
         
@@ -199,24 +193,9 @@ function onMouseUpRotacionar(e) {
         console.log('[ROTACIONAR v1.00] Rotação final:', anguloRotacao.toFixed(2), 'graus');
         
         // Aplicar rotação aos vértices reais
-        console.log('[ROTACIONAR v1.00] Aplicando rotação aos vértices...');
-        console.log('[ROTACIONAR v1.00] Eixo:', verticeEixo);
-        console.log('[ROTACIONAR v1.00] Ângulo de rotação:', anguloRotacao);
-        
         geometriaParaRotacionar.vertices.forEach(function(v, index) {
             var vOriginal = geometriaOriginalRotacao[index];
-            console.log('[ROTACIONAR v1.00] Vértice original', index, ':', vOriginal);
-            console.log('[ROTACIONAR v1.00] vOriginal.e=', vOriginal.e, 'vOriginal.n=', vOriginal.n);
-            console.log('[ROTACIONAR v1.00] verticeEixo.e=', verticeEixo.e, 'verticeEixo.n=', verticeEixo.n);
             var rotacionado = rotacionarPonto(vOriginal.e, vOriginal.n, verticeEixo.e, verticeEixo.n, anguloRotacao);
-            console.log('[ROTACIONAR v1.00] Vértice rotacionado', index, ':', rotacionado);
-            
-            // Validar coordenadas
-            if (!isFinite(rotacionado.e) || !isFinite(rotacionado.n)) {
-                console.error('[ROTACIONAR v1.00] Coordenada inválida gerada!');
-                throw new Error('Coordenada inválida: E=' + rotacionado.e + ', N=' + rotacionado.n);
-            }
-            
             v.e = rotacionado.e;
             v.n = rotacionado.n;
         });
