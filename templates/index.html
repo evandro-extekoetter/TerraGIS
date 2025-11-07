@@ -288,7 +288,7 @@
                         <button class="dropdown-item" onclick="executarAnalisePoligono()">
                             <img src="{{ url_for('static', filename='icons/analysis_icon.png') }}" class="icon" alt=""> Análise de Polígono
                         </button>
-                        <button class="dropdown-item" onclick="alert('Análise de Polilinha em desenvolvimento')">
+                        <button class="dropdown-item" onclick="executarAnalisePolilinha()">
                             <img src="{{ url_for('static', filename='icons/analysis_icon.png') }}" class="icon" alt=""> Análise de Polilinha
                         </button>
                         <button class="dropdown-item" onclick="alert('Comparação de Perímetro em desenvolvimento')">
@@ -1133,6 +1133,8 @@
     <script src="{{ url_for('static', filename='js/rotacionar-geometria-mapa.js') }}?v={{ range(1, 999999999) | random }}"></script>
     <!-- Ferramenta Análise de Polígono - Calcula área, perímetro, erro de fechamento e tolerância NBR 13.133 -->
     <script src="{{ url_for('static', filename='js/analise-poligono.js') }}?v={{ range(1, 999999999) | random }}"></script>
+    <!-- Ferramenta Análise de Polilinha - Calcula área (simulada) e perímetro de polilinhas abertas -->
+    <script src="{{ url_for('static', filename='js/analise-polilinha.js') }}?v={{ range(1, 999999999) | random }}"></script>
 
     <script>
 // Código legado removido - agora usa mover-geometria-v2.js com sistema de camada ativa
