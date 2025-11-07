@@ -296,15 +296,24 @@ function calcularAngulo(centro, ponto) {
 
 // Função auxiliar: rotacionar um ponto (E, N) em torno de um eixo (eixoE, eixoN) por um ângulo em graus
 function rotacionarPonto(e, n, eixoE, eixoN, anguloGraus) {
+    console.log('[rotacionarPonto] Entrada: e=', e, 'n=', n, 'eixoE=', eixoE, 'eixoN=', eixoN, 'ângulo=', anguloGraus);
+    
     var anguloRad = anguloGraus * (Math.PI / 180);
+    console.log('[rotacionarPonto] anguloRad=', anguloRad);
     
     // Transladar para origem
     var dx = e - eixoE;
     var dy = n - eixoN;
+    console.log('[rotacionarPonto] dx=', dx, 'dy=', dy);
     
     // Rotacionar
-    var novoE = eixoE + (dx * Math.cos(anguloRad) - dy * Math.sin(anguloRad));
-    var novoN = eixoN + (dx * Math.sin(anguloRad) + dy * Math.cos(anguloRad));
+    var cosA = Math.cos(anguloRad);
+    var sinA = Math.sin(anguloRad);
+    console.log('[rotacionarPonto] cos=', cosA, 'sin=', sinA);
+    
+    var novoE = eixoE + (dx * cosA - dy * sinA);
+    var novoN = eixoN + (dx * sinA + dy * cosA);
+    console.log('[rotacionarPonto] Saída: novoE=', novoE, 'novoN=', novoN);
     
     return {e: novoE, n: novoN};
 }
