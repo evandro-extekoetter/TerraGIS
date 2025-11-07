@@ -307,16 +307,19 @@
                         <img src="{{ url_for('static', filename='icons/measure_icon.png') }}" class="icon" alt=""> MEDIDAS ▼
                     </button>
                     <div id="medidas-top-menu" class="top-dropdown" style="display: none;">
-                        <button class="dropdown-item" onclick="alert('Medir Distância em desenvolvimento')">
-                            <img src="{{ url_for('static', filename='icons/measure_icon.png') }}" class="icon" alt=""> Medir Distância
+                        <button class="dropdown-item" onclick="ativarMedirLinha(); closeAllMenus();">
+                            <img src="{{ url_for('static', filename='icons/measure_icon.png') }}" class="icon" alt=""> Medir Linha
                         </button>
-                        <button class="dropdown-item" onclick="alert('Medir Caminho em desenvolvimento')">
-                            <img src="{{ url_for('static', filename='icons/measure_icon.png') }}" class="icon" alt=""> Medir Caminho
-                        </button>
-                        <button class="dropdown-item" onclick="alert('Medir Área em desenvolvimento')">
+                        <button class="dropdown-item" onclick="ativarMedirArea(); closeAllMenus();">
                             <img src="{{ url_for('static', filename='icons/measure_icon.png') }}" class="icon" alt=""> Medir Área
                         </button>
-                        <button class="dropdown-item" onclick="alert('Coordenada do Vértice em desenvolvimento')">
+                        <button class="dropdown-item" onclick="ativarMedirAzimute(); closeAllMenus();">
+                            <img src="{{ url_for('static', filename='icons/measure_icon.png') }}" class="icon" alt=""> Medir Azimute
+                        </button>
+                        <button class="dropdown-item" onclick="ativarMedirAngulo(); closeAllMenus();">
+                            <img src="{{ url_for('static', filename='icons/measure_icon.png') }}" class="icon" alt=""> Medir Ângulo
+                        </button>
+                        <button class="dropdown-item" onclick="ativarCoordenadaVertice(); closeAllMenus();">
                             <img src="{{ url_for('static', filename='icons/coordinates_icon.png') }}" class="icon" alt=""> Coordenada do Vértice
                         </button>
                     </div>
@@ -1142,6 +1145,8 @@
     <script src="{{ url_for('static', filename='js/analise-polilinha.js') }}?v={{ range(1, 999999999) | random }}"></script>
     <!-- Ferramenta Converter Polilinha em Polígono - Cria novo polígono a partir de polilinha -->
     <script src="{{ url_for('static', filename='js/converter-polilinha-poligono.js') }}?v={{ range(1, 999999999) | random }}"></script>
+    <!-- Ferramentas de Medição - Medir Linha, Área, Azimute, Ângulo e Coordenada (estilo QGIS) -->
+    <script src="{{ url_for('static', filename='js/ferramentas-medicao.js') }}?v={{ range(1, 999999999) | random }}"></script>
 
     <script>
 // Código legado removido - agora usa mover-geometria-v2.js com sistema de camada ativa
@@ -1601,6 +1606,6 @@
         </div>
     </div>
 
-    <div style="position: fixed; bottom: 10px; right: 10px; background: rgba(255,255,255,0.9); padding: 5px 10px; border-radius: 5px; font-size: 12px; z-index: 10000;">TerraGIS v2.17</div>
+    <div style="position: fixed; bottom: 10px; right: 10px; background: rgba(255,255,255,0.9); padding: 5px 10px; border-radius: 5px; font-size: 12px; z-index: 10000;">TerraGIS v2.18</div>
 </body>
 </html>
