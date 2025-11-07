@@ -238,19 +238,29 @@ function desabilitarInteracoesLayers() {
         var layer = terraManager.layers[layerKey];
         if (!layer || !layer.group) return;
         
+        // Desabilitar interação do grupo inteiro
+        if (layer.group._map) {
+            layer.group.off();
+            layer._medicaoInteractive = layer.group.options.interactive;
+            if (layer.group.setStyle) {
+                layer.group.setStyle({ interactive: false });
+            }
+        }
+        
         // Desabilitar eventos de cada elemento da camada
         layer.group.eachLayer(function(l) {
-            if (l._events && l._events.click) {
-                l._medicaoClickBackup = l._events.click;
-                l.off('click');
+            // Desabilitar todos os eventos
+            if (l.off) {
+                l.off();
             }
-            if (l._events && l._events.mouseover) {
-                l._medicaoMouseoverBackup = l._events.mouseover;
-                l.off('mouseover');
+            // Marcar como não interativo
+            if (l.options) {
+                l._medicaoInteractive = l.options.interactive;
+                l.options.interactive = false;
             }
-            if (l._events && l._events.mouseout) {
-                l._medicaoMouseoutBackup = l._events.mouseout;
-                l.off('mouseout');
+            // Desabilitar pointer events via CSS
+            if (l._path) {
+                l._path.style.pointerEvents = 'none';
             }
         });
     });
@@ -262,30 +272,38 @@ function reabilitarInteracoesLayers() {
     
     console.log('[MEDIÇÃO] Reabilitando interações com layers');
     
+    // Forçar recriação dos event listeners
+    setTimeout(function() {
+        if (terraManager && terraManager.updateLayerListUI) {
+            terraManager.updateLayerListUI();
+        }
+    }, 100);
+    
     // Reabilitar tooltips e popups de todas as camadas
     Object.keys(terraManager.layers).forEach(function(layerKey) {
         var layer = terraManager.layers[layerKey];
         if (!layer || !layer.group) return;
         
+        // Restaurar interatividade do grupo
+        if (layer._medicaoInteractive !== undefined) {
+            if (layer.group.setStyle) {
+                layer.group.setStyle({ interactive: layer._medicaoInteractive });
+            }
+            delete layer._medicaoInteractive;
+        }
+        
         // Reabilitar eventos de cada elemento da camada
         layer.group.eachLayer(function(l) {
-            if (l._medicaoClickBackup) {
-                l._medicaoClickBackup.forEach(function(handler) {
-                    l.on('click', handler.fn, handler.ctx);
-                });
-                delete l._medicaoClickBackup;
+            // Restaurar interatividade
+            if (l._medicaoInteractive !== undefined) {
+                if (l.options) {
+                    l.options.interactive = l._medicaoInteractive;
+                }
+                delete l._medicaoInteractive;
             }
-            if (l._medicaoMouseoverBackup) {
-                l._medicaoMouseoverBackup.forEach(function(handler) {
-                    l.on('mouseover', handler.fn, handler.ctx);
-                });
-                delete l._medicaoMouseoverBackup;
-            }
-            if (l._medicaoMouseoutBackup) {
-                l._medicaoMouseoutBackup.forEach(function(handler) {
-                    l.on('mouseout', handler.fn, handler.ctx);
-                });
-                delete l._medicaoMouseoutBackup;
+            // Reabilitar pointer events via CSS
+            if (l._path) {
+                l._path.style.pointerEvents = '';
             }
         });
     });
@@ -311,6 +329,25 @@ function grausParaSexagesimal(grausDecimais) {
     }
     
     return graus + '°' + String(minutos).padStart(2, '0') + "'" + String(segundos).padStart(2, '0') + '"';
+}
+
+// Converter Lat/Lon para sexagesimal com 3 decimais (GG°MM'SS.SSS")
+function latLonParaSexagesimal(grausDecimais, tipo) {
+    var abs = Math.abs(grausDecimais);
+    var graus = Math.floor(abs);
+    var minutosDecimais = (abs - graus) * 60;
+    var minutos = Math.floor(minutosDecimais);
+    var segundos = (minutosDecimais - minutos) * 60;
+    
+    // Determinar sufixo (N/S para latitude, E/W para longitude)
+    var sufixo = '';
+    if (tipo === 'lat') {
+        sufixo = grausDecimais >= 0 ? 'N' : 'S';
+    } else if (tipo === 'lon') {
+        sufixo = grausDecimais >= 0 ? 'E' : 'W';
+    }
+    
+    return graus + '°' + String(minutos).padStart(2, '0') + "'" + segundos.toFixed(3).padStart(6, '0') + '"' + sufixo;
 }
 
 // Calcular distância entre dois pontos (Haversine)
@@ -1047,14 +1084,19 @@ function atualizarConteudoPainelCoordenada() {
         html.push('<div style="padding: 15px; background: #f5f5f5; border-radius: 4px; margin-bottom: 15px;">');
         html.push('<div style="font-size: 14px; font-weight: bold; color: #555; margin-bottom: 12px;">Coordenadas Geográficas</div>');
         
+        var latSexagesimal = latLonParaSexagesimal(p.lat, 'lat');
+        var lonSexagesimal = latLonParaSexagesimal(p.lng, 'lon');
+        
         html.push('<div style="margin-bottom: 10px;">');
         html.push('<div style="font-size: 12px; color: #666; margin-bottom: 4px;">Latitude</div>');
-        html.push('<div style="font-size: 16px; font-weight: bold; color: #333;">' + p.lat.toFixed(6) + '°</div>');
+        html.push('<div style="font-size: 16px; font-weight: bold; color: #333;">' + latSexagesimal + '</div>');
+        html.push('<div style="font-size: 11px; color: #999; margin-top: 2px;">(' + p.lat.toFixed(6) + '°)</div>');
         html.push('</div>');
         
         html.push('<div>');
         html.push('<div style="font-size: 12px; color: #666; margin-bottom: 4px;">Longitude</div>');
-        html.push('<div style="font-size: 16px; font-weight: bold; color: #333;">' + p.lng.toFixed(6) + '°</div>');
+        html.push('<div style="font-size: 16px; font-weight: bold; color: #333;">' + lonSexagesimal + '</div>');
+        html.push('<div style="font-size: 11px; color: #999; margin-top: 2px;">(' + p.lng.toFixed(6) + '°)</div>');
         html.push('</div>');
         html.push('</div>');
         
