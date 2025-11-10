@@ -259,58 +259,41 @@ function onMapClickMedicao(e) {
     // Implementado por cada ferramenta específica
 }
 
-// Forçar cursor default em TODOS os elementos interativos
+// Forçar cursor default via CSS global (SOLUÇÃO DEFINITIVA)
 function desabilitarInteracoesLayers() {
     if (!map) return;
     
-    console.log('[MEDIÇÃO] Forçando cursor default');
+    console.log('[MEDIÇÃO] Injetando CSS global para cursor default');
     
-    // Forçar cursor default em TODOS os elementos .leaflet-interactive
-    var elementos = document.querySelectorAll('.leaflet-interactive');
-    elementos.forEach(function(el) {
-        el._medicaoCursorBackup = el.style.cursor;
-        el.style.setProperty('cursor', 'default', 'important');
-    });
+    // Criar tag <style> com regras CSS !important
+    var styleTag = document.createElement('style');
+    styleTag.id = 'medicao-cursor-override';
+    styleTag.innerHTML = `
+        .leaflet-interactive,
+        .leaflet-marker-icon,
+        .leaflet-marker-icon * {
+            cursor: default !important;
+        }
+    `;
+    document.head.appendChild(styleTag);
     
-    // Forçar cursor default em marcadores (vértices)
-    var marcadores = document.querySelectorAll('.leaflet-marker-icon');
-    marcadores.forEach(function(el) {
-        el._medicaoCursorBackup = el.style.cursor;
-        el.style.setProperty('cursor', 'default', 'important');
-    });
-    
-    console.log('[MEDIÇÃO] Cursor default forçado em ' + (elementos.length + marcadores.length) + ' elementos');
+    console.log('[MEDIÇÃO] CSS global injetado (cursor default forçado)');
 }
 
-// Restaurar cursor original dos elementos
+// Remover CSS global e restaurar cursor original
 function reabilitarInteracoesLayers() {
     if (!map) return;
     
-    console.log('[MEDIÇÃO] Restaurando cursor original');
+    console.log('[MEDIÇÃO] Removendo CSS global');
     
-    // Restaurar cursor em elementos .leaflet-interactive
-    var elementos = document.querySelectorAll('.leaflet-interactive');
-    elementos.forEach(function(el) {
-        if (el._medicaoCursorBackup !== undefined) {
-            el.style.cursor = el._medicaoCursorBackup;
-            delete el._medicaoCursorBackup;
-        } else {
-            el.style.cursor = '';  // Remove inline style
-        }
-    });
-    
-    // Restaurar cursor em marcadores
-    var marcadores = document.querySelectorAll('.leaflet-marker-icon');
-    marcadores.forEach(function(el) {
-        if (el._medicaoCursorBackup !== undefined) {
-            el.style.cursor = el._medicaoCursorBackup;
-            delete el._medicaoCursorBackup;
-        } else {
-            el.style.cursor = '';  // Remove inline style
-        }
-    });
-    
-    console.log('[MEDIÇÃO] Cursor original restaurado em ' + (elementos.length + marcadores.length) + ' elementos');
+    // Remover tag <style> criada
+    var styleTag = document.getElementById('medicao-cursor-override');
+    if (styleTag) {
+        styleTag.remove();
+        console.log('[MEDIÇÃO] CSS global removido (cursor restaurado)');
+    } else {
+        console.log('[MEDIÇÃO] CSS global não encontrado');
+    }
 }
 
 // ===== FUNÇÕES UTILITÁRIAS =====
