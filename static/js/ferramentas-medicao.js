@@ -273,6 +273,7 @@ function desabilitarInteracoesLayers() {
         .leaflet-marker-icon,
         .leaflet-marker-icon * {
             cursor: default !important;
+            pointer-events: none !important;
         }
     `;
     document.head.appendChild(styleTag);
