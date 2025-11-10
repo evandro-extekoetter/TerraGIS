@@ -260,47 +260,52 @@ function onMapClickMedicao(e) {
 }
 
 // Desabilitar interações com camadas existentes (tooltips/popups)
+// SOLUÇÃO CORRETA: unbindPopup() remove eventos do Leaflet
 function desabilitarInteracoesLayers() {
     if (!terraManager || !terraManager.layers) return;
     
     console.log('[MEDIÇÃO] Desabilitando interações com layers');
     
-    // Desabilitar tooltips e popups de todas as camadas
+    // Desabilitar popups/tooltips de todas as camadas
     Object.keys(terraManager.layers).forEach(function(layerKey) {
         var layer = terraManager.layers[layerKey];
         if (!layer || !layer.group) return;
         
-        // Desabilitar eventos de cada elemento da camada
+        // Desabilitar popups de cada elemento da camada
         layer.group.eachLayer(function(l) {
-            // Desabilitar TODOS os eventos
-            if (l.off) {
-                l.off();
+            // Fazer backup e remover popup (SOLUÇÃO CORRETA)
+            if (l._popup) {
+                l._medicaoPopupBackup = l._popup;
+                l.unbindPopup();
+                console.log('[MEDIÇÃO] Popup desabilitado:', l);
             }
-            // Marcar como não interativo
-            if (l.options) {
-                l._medicaoInteractive = l.options.interactive;
-                l.options.interactive = false;
+            
+            // Fazer backup e remover tooltip
+            if (l._tooltip) {
+                l._medicaoTooltipBackup = l._tooltip;
+                l.unbindTooltip();
+                console.log('[MEDIÇÃO] Tooltip desabilitado:', l);
             }
-            // Desabilitar pointer events via CSS (MAIS AGRESSIVO)
-            if (l._path) {
-                l._medicaoOriginalPointerEvents = l._path.style.pointerEvents;
-                l._medicaoOriginalCursor = l._path.style.cursor;
-                l._path.style.pointerEvents = 'none !important';
-                l._path.style.cursor = 'default !important';
-                l._path.setAttribute('style', l._path.getAttribute('style') + '; pointer-events: none !important; cursor: default !important;');
+            
+            // Desabilitar eventos de clique (backup)
+            if (l._events && l._events.click) {
+                l._medicaoClickBackup = l._events.click;
+                l.off('click');
             }
-            // Forçar cursor em elementos DOM (vértices)
-            if (l._icon) {
-                l._medicaoOriginalIconPointerEvents = l._icon.style.pointerEvents;
-                l._medicaoOriginalIconCursor = l._icon.style.cursor;
-                l._icon.style.pointerEvents = 'none !important';
-                l._icon.style.cursor = 'default !important';
-                l._icon.setAttribute('style', l._icon.getAttribute('style') + '; pointer-events: none !important; cursor: default !important;');
+            
+            // Desabilitar eventos de mouseover/mouseout
+            if (l._events && l._events.mouseover) {
+                l._medicaoMouseoverBackup = l._events.mouseover;
+                l.off('mouseover');
+            }
+            if (l._events && l._events.mouseout) {
+                l._medicaoMouseoutBackup = l._events.mouseout;
+                l.off('mouseout');
             }
         });
     });
     
-    console.log('[MEDIÇÃO] Interações desabilitadas');
+    console.log('[MEDIÇÃO] Interações desabilitadas (popups removidos)');
 }
 
 // Reabilitar interações com camadas existentes
@@ -309,61 +314,53 @@ function reabilitarInteracoesLayers() {
     
     console.log('[MEDIÇÃO] Reabilitando interações com layers');
     
-    // Forçar recriação dos event listeners
-    setTimeout(function() {
-        if (terraManager && terraManager.updateLayerListUI) {
-            terraManager.updateLayerListUI();
-        }
-    }, 100);
-    
-    // Reabilitar tooltips e popups de todas as camadas
+    // Restaurar popups/tooltips de todas as camadas
     Object.keys(terraManager.layers).forEach(function(layerKey) {
         var layer = terraManager.layers[layerKey];
         if (!layer || !layer.group) return;
         
-        // Restaurar interatividade do grupo
-        if (layer._medicaoInteractive !== undefined) {
-            if (layer.group.setStyle) {
-                layer.group.setStyle({ interactive: layer._medicaoInteractive });
-            }
-            delete layer._medicaoInteractive;
-        }
-        
-        // Reabilitar eventos de cada elemento da camada
         layer.group.eachLayer(function(l) {
-            // Restaurar interatividade
-            if (l._medicaoInteractive !== undefined) {
-                if (l.options) {
-                    l.options.interactive = l._medicaoInteractive;
-                }
-                delete l._medicaoInteractive;
+            // Restaurar popup
+            if (l._medicaoPopupBackup) {
+                l.bindPopup(l._medicaoPopupBackup);
+                delete l._medicaoPopupBackup;
+                console.log('[MEDIÇÃO] Popup restaurado:', l);
             }
-            // Restaurar pointer events e cursor (MAIS AGRESSIVO)
-            if (l._path) {
-                l._path.style.pointerEvents = l._medicaoOriginalPointerEvents || '';
-                l._path.style.cursor = l._medicaoOriginalCursor || '';
-                // Remover atributos inline forçados
-                var style = l._path.getAttribute('style') || '';
-                style = style.replace(/pointer-events:\s*none\s*!important;?/gi, '');
-                style = style.replace(/cursor:\s*default\s*!important;?/gi, '');
-                l._path.setAttribute('style', style);
-                delete l._medicaoOriginalPointerEvents;
-                delete l._medicaoOriginalCursor;
+            
+            // Restaurar tooltip
+            if (l._medicaoTooltipBackup) {
+                l.bindTooltip(l._medicaoTooltipBackup);
+                delete l._medicaoTooltipBackup;
+                console.log('[MEDIÇÃO] Tooltip restaurado:', l);
             }
-            // Restaurar cursor em elementos DOM (vértices)
-            if (l._icon) {
-                l._icon.style.pointerEvents = l._medicaoOriginalIconPointerEvents || '';
-                l._icon.style.cursor = l._medicaoOriginalIconCursor || '';
-                // Remover atributos inline forçados
-                var iconStyle = l._icon.getAttribute('style') || '';
-                iconStyle = iconStyle.replace(/pointer-events:\s*none\s*!important;?/gi, '');
-                iconStyle = iconStyle.replace(/cursor:\s*default\s*!important;?/gi, '');
-                l._icon.setAttribute('style', iconStyle);
-                delete l._medicaoOriginalIconPointerEvents;
-                delete l._medicaoOriginalIconCursor;
+            
+            // Restaurar eventos de clique
+            if (l._medicaoClickBackup) {
+                l._medicaoClickBackup.forEach(function(handler) {
+                    l.on('click', handler.fn, handler.ctx);
+                });
+                delete l._medicaoClickBackup;
+            }
+            
+            // Restaurar eventos de mouseover
+            if (l._medicaoMouseoverBackup) {
+                l._medicaoMouseoverBackup.forEach(function(handler) {
+                    l.on('mouseover', handler.fn, handler.ctx);
+                });
+                delete l._medicaoMouseoverBackup;
+            }
+            
+            // Restaurar eventos de mouseout
+            if (l._medicaoMouseoutBackup) {
+                l._medicaoMouseoutBackup.forEach(function(handler) {
+                    l.on('mouseout', handler.fn, handler.ctx);
+                });
+                delete l._medicaoMouseoutBackup;
             }
         });
     });
+    
+    console.log('[MEDIÇÃO] Interações reabilitadas (popups restaurados)');
 }
 
 // ===== FUNÇÕES UTILITÁRIAS =====
