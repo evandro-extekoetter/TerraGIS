@@ -259,108 +259,58 @@ function onMapClickMedicao(e) {
     // Implementado por cada ferramenta específica
 }
 
-// Desabilitar interações com camadas existentes (tooltips/popups)
-// SOLUÇÃO CORRETA: unbindPopup() remove eventos do Leaflet
+// Forçar cursor default em TODOS os elementos interativos
 function desabilitarInteracoesLayers() {
-    if (!terraManager || !terraManager.layers) return;
+    if (!map) return;
     
-    console.log('[MEDIÇÃO] Desabilitando interações com layers');
+    console.log('[MEDIÇÃO] Forçando cursor default');
     
-    // Desabilitar popups/tooltips de todas as camadas
-    Object.keys(terraManager.layers).forEach(function(layerKey) {
-        var layer = terraManager.layers[layerKey];
-        if (!layer || !layer.group) return;
-        
-        // Desabilitar popups de cada elemento da camada
-        layer.group.eachLayer(function(l) {
-            // Fazer backup e remover popup (SOLUÇÃO CORRETA)
-            if (l._popup) {
-                l._medicaoPopupBackup = l._popup;
-                l.unbindPopup();
-                console.log('[MEDIÇÃO] Popup desabilitado:', l);
-            }
-            
-            // Fazer backup e remover tooltip
-            if (l._tooltip) {
-                l._medicaoTooltipBackup = l._tooltip;
-                l.unbindTooltip();
-                console.log('[MEDIÇÃO] Tooltip desabilitado:', l);
-            }
-            
-            // Desabilitar eventos de clique (backup)
-            if (l._events && l._events.click) {
-                l._medicaoClickBackup = l._events.click;
-                l.off('click');
-            }
-            
-            // Desabilitar eventos de mouseover/mouseout
-            if (l._events && l._events.mouseover) {
-                l._medicaoMouseoverBackup = l._events.mouseover;
-                l.off('mouseover');
-            }
-            if (l._events && l._events.mouseout) {
-                l._medicaoMouseoutBackup = l._events.mouseout;
-                l.off('mouseout');
-            }
-        });
+    // Forçar cursor default em TODOS os elementos .leaflet-interactive
+    var elementos = document.querySelectorAll('.leaflet-interactive');
+    elementos.forEach(function(el) {
+        el._medicaoCursorBackup = el.style.cursor;
+        el.style.setProperty('cursor', 'default', 'important');
     });
     
-    console.log('[MEDIÇÃO] Interações desabilitadas (popups removidos)');
+    // Forçar cursor default em marcadores (vértices)
+    var marcadores = document.querySelectorAll('.leaflet-marker-icon');
+    marcadores.forEach(function(el) {
+        el._medicaoCursorBackup = el.style.cursor;
+        el.style.setProperty('cursor', 'default', 'important');
+    });
+    
+    console.log('[MEDIÇÃO] Cursor default forçado em ' + (elementos.length + marcadores.length) + ' elementos');
 }
 
-// Reabilitar interações com camadas existentes
+// Restaurar cursor original dos elementos
 function reabilitarInteracoesLayers() {
-    if (!terraManager || !terraManager.layers) return;
+    if (!map) return;
     
-    console.log('[MEDIÇÃO] Reabilitando interações com layers');
+    console.log('[MEDIÇÃO] Restaurando cursor original');
     
-    // Restaurar popups/tooltips de todas as camadas
-    Object.keys(terraManager.layers).forEach(function(layerKey) {
-        var layer = terraManager.layers[layerKey];
-        if (!layer || !layer.group) return;
-        
-        layer.group.eachLayer(function(l) {
-            // Restaurar popup
-            if (l._medicaoPopupBackup) {
-                l.bindPopup(l._medicaoPopupBackup);
-                delete l._medicaoPopupBackup;
-                console.log('[MEDIÇÃO] Popup restaurado:', l);
-            }
-            
-            // Restaurar tooltip
-            if (l._medicaoTooltipBackup) {
-                l.bindTooltip(l._medicaoTooltipBackup);
-                delete l._medicaoTooltipBackup;
-                console.log('[MEDIÇÃO] Tooltip restaurado:', l);
-            }
-            
-            // Restaurar eventos de clique
-            if (l._medicaoClickBackup) {
-                l._medicaoClickBackup.forEach(function(handler) {
-                    l.on('click', handler.fn, handler.ctx);
-                });
-                delete l._medicaoClickBackup;
-            }
-            
-            // Restaurar eventos de mouseover
-            if (l._medicaoMouseoverBackup) {
-                l._medicaoMouseoverBackup.forEach(function(handler) {
-                    l.on('mouseover', handler.fn, handler.ctx);
-                });
-                delete l._medicaoMouseoverBackup;
-            }
-            
-            // Restaurar eventos de mouseout
-            if (l._medicaoMouseoutBackup) {
-                l._medicaoMouseoutBackup.forEach(function(handler) {
-                    l.on('mouseout', handler.fn, handler.ctx);
-                });
-                delete l._medicaoMouseoutBackup;
-            }
-        });
+    // Restaurar cursor em elementos .leaflet-interactive
+    var elementos = document.querySelectorAll('.leaflet-interactive');
+    elementos.forEach(function(el) {
+        if (el._medicaoCursorBackup !== undefined) {
+            el.style.cursor = el._medicaoCursorBackup;
+            delete el._medicaoCursorBackup;
+        } else {
+            el.style.cursor = '';  // Remove inline style
+        }
     });
     
-    console.log('[MEDIÇÃO] Interações reabilitadas (popups restaurados)');
+    // Restaurar cursor em marcadores
+    var marcadores = document.querySelectorAll('.leaflet-marker-icon');
+    marcadores.forEach(function(el) {
+        if (el._medicaoCursorBackup !== undefined) {
+            el.style.cursor = el._medicaoCursorBackup;
+            delete el._medicaoCursorBackup;
+        } else {
+            el.style.cursor = '';  // Remove inline style
+        }
+    });
+    
+    console.log('[MEDIÇÃO] Cursor original restaurado em ' + (elementos.length + marcadores.length) + ' elementos');
 }
 
 // ===== FUNÇÕES UTILITÁRIAS =====
