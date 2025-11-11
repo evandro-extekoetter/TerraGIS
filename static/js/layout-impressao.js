@@ -633,42 +633,41 @@ function zoomOutViewport() {
 function enquadrarGeometriaViewport() {
     console.log('[LAYOUT] Enquadrando todas as geometrias visíveis');
     
-    if (!layoutImpressao.mapaViewport || !terraManager) {
+    if (!layoutImpressao.mapaViewport) {
         alert('Viewport não inicializado');
         return;
     }
     
-    // Calcular bounds de TODAS as camadas visíveis (como botão Zoom do painel)
+    // Calcular bounds de TODAS as camadas do viewport (geometrias já copiadas)
     var bounds = null;
     var encontrouGeometria = false;
     
-    for (var key in terraManager.layers) {
-        var layer = terraManager.layers[key];
-        
-        // Processar apenas camadas visíveis
-        if (!layer.visible || !layer.group) {
-            continue;
+    layoutImpressao.mapaViewport.eachLayer(function(layer) {
+        // Pular camada base (TileLayer)
+        if (layer instanceof L.TileLayer) {
+            return;
         }
         
-        layer.group.eachLayer(function(l) {
-            encontrouGeometria = true;
-            
-            if (l instanceof L.Polygon || l instanceof L.Polyline) {
-                if (!bounds) {
-                    bounds = l.getBounds();
-                } else {
-                    bounds.extend(l.getBounds());
-                }
-            } else if (l instanceof L.CircleMarker || l instanceof L.Marker) {
-                var latlng = l.getLatLng();
-                if (!bounds) {
-                    bounds = L.latLngBounds([latlng, latlng]);
-                } else {
-                    bounds.extend(latlng);
-                }
+        encontrouGeometria = true;
+        
+        // Polígonos e Polilinhas
+        if (layer instanceof L.Polygon || layer instanceof L.Polyline) {
+            if (!bounds) {
+                bounds = layer.getBounds();
+            } else {
+                bounds.extend(layer.getBounds());
             }
-        });
-    }
+        }
+        // Marcadores
+        else if (layer instanceof L.CircleMarker || layer instanceof L.Marker) {
+            var latlng = layer.getLatLng();
+            if (!bounds) {
+                bounds = L.latLngBounds([latlng, latlng]);
+            } else {
+                bounds.extend(latlng);
+            }
+        }
+    });
     
     if (bounds) {
         layoutImpressao.mapaViewport.fitBounds(bounds, {padding: [20, 20]});
