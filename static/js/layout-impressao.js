@@ -219,7 +219,7 @@ function criarModalLayoutImpressao() {
                             </div>
                             
                             <!-- Controles do Viewport -->
-                            <div style="
+                            <div id="viewport-controles" style="
                                 position: absolute;
                                 top: 15mm;
                                 left: 15mm;
@@ -296,6 +296,22 @@ function criarModalLayoutImpressao() {
                             ">
                                 <div style="font-size: 8px; font-weight: bold; color: black;">título:</div>
                                 <div id="preview-titulo" style="font-size: 24px; font-weight: bold; text-align: center; flex: 1; display: flex; align-items: center; justify-content: center; color: black;">TITULO (EDITAVEL)</div>
+                                
+                                <!-- Logo TerraCerta -->
+                                <div style="
+                                    position: absolute;
+                                    top: 2mm;
+                                    right: 2mm;
+                                    text-align: center;
+                                    font-size: 8px;
+                                    color: black;
+                                ">
+                                    <div style="margin-bottom: 2px; font-weight: normal;">Produzido por:</div>
+                                    <img src="https://terracerta.com.br/wp-content/uploads/2024/01/logo-terracerta-horizontal.png" 
+                                         alt="TerraCerta" 
+                                         style="height: 12mm; width: auto;" 
+                                         onerror="this.style.display='none'">
+                                </div>
                             </div>
                             
                             <!-- Rodapé: Responsável e Observações -->
@@ -564,6 +580,13 @@ function gerarPDFLayout() {
     
     console.log('[LAYOUT] Preparando para captura...');
     
+    // Ocultar controles de zoom durante captura
+    var controles = document.getElementById('viewport-controles');
+    if (controles) {
+        controles.style.display = 'none';
+        console.log('[LAYOUT] Controles ocultados');
+    }
+    
     // Forçar Leaflet a recalcular tamanho e posição
     if (layoutImpressao.mapaViewport) {
         console.log('[LAYOUT] Forçando invalidateSize(true)...');
@@ -602,9 +625,13 @@ function gerarPDFLayout() {
                 format: 'a4'
             });
             
-            // Adicionar imagem ao PDF
+            // Adicionar imagem ao PDF (sem esticar)
             var imgData = canvas.toDataURL('image/png');
-            pdf.addImage(imgData, 'PNG', 0, 0, 210, 297);
+            var imgWidth = 210; // A4 width in mm
+            var imgHeight = (canvas.height * imgWidth) / canvas.width;
+            pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+            
+            console.log('[LAYOUT] Imagem adicionada ao PDF:', imgWidth, 'x', imgHeight, 'mm');
             
             // Gerar nome do arquivo
             var titulo = layoutImpressao.configuracao.titulo || 'mapa';
@@ -615,6 +642,11 @@ function gerarPDFLayout() {
             
             console.log('[LAYOUT] PDF gerado: ' + nomeArquivo);
             
+            // Restaurar controles
+            if (controles) {
+                controles.style.display = 'block';
+            }
+            
             // Restaurar botão
             btnGerar.textContent = textoOriginal;
             btnGerar.disabled = false;
@@ -623,6 +655,11 @@ function gerarPDFLayout() {
         }).catch(function(erro) {
             console.error('[LAYOUT] Erro ao gerar PDF:', erro);
             alert('❌ Erro ao gerar PDF: ' + erro.message);
+            
+            // Restaurar controles
+            if (controles) {
+                controles.style.display = 'block';
+            }
             
             // Restaurar botão
             btnGerar.textContent = textoOriginal;
