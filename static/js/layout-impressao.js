@@ -594,16 +594,17 @@ function gerarPDFLayout() {
         var zoom = layoutImpressao.mapaViewport.getZoom();
         console.log('[LAYOUT] Centro:', center, 'Zoom:', zoom);
         
-        // Forçar re-posicionamento
-        layoutImpressao.mapaViewport.setView(center, zoom, {animate: false});
-    }
-    
-    // Aguardar tiles carregarem
-    setTimeout(function() {
-        console.log('[LAYOUT] Capturando mapa com leaflet-image...');
-        
-        // Capturar mapa Leaflet com leaflet-image
-        leafletImage(layoutImpressao.mapaViewport, function(err, canvas) {
+        // Aguardar evento moveend para garantir que o mapa foi reposicionado
+        layoutImpressao.mapaViewport.once('moveend', function() {
+            console.log('[LAYOUT] Mapa reposicionado, aguardando tiles...');
+            
+            // Aguardar mais 1.5 segundos para tiles carregarem
+            setTimeout(function() {
+                console.log('[LAYOUT] Capturando mapa com leaflet-image...');
+                console.log('[LAYOUT] Centro final:', layoutImpressao.mapaViewport.getCenter(), 'Zoom final:', layoutImpressao.mapaViewport.getZoom());
+                
+                // Capturar mapa Leaflet com leaflet-image
+                leafletImage(layoutImpressao.mapaViewport, function(err, canvas) {
             if (err) {
                 console.error('[LAYOUT] Erro ao capturar mapa:', err);
                 alert('❌ Erro ao capturar mapa: ' + err.message);
@@ -697,9 +698,13 @@ function gerarPDFLayout() {
                 // Restaurar botão
                 btnGerar.textContent = textoOriginal;
                 btnGerar.disabled = false;
-            });
+                });
+            }, 1500); // Aguardar 1.5 segundos para tiles carregarem
         });
-    }, 1000); // Aguardar 1 segundo para tiles carregarem
+        
+        // Forçar re-posicionamento para disparar evento moveend
+        layoutImpressao.mapaViewport.setView(center, zoom, {animate: false});
+    }
 }
 
 // ===== CONTROLES DO VIEWPORT =====
