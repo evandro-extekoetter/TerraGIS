@@ -632,23 +632,21 @@ function gerarPDFLayout() {
             var pdfWidth = 210;
             var pdfHeight = 297;
             
-            // Dimensões do viewport do mapa em mm (conforme layout)
-            var mapTop = 10; // 10mm do topo
-            var mapLeft = 10; // 10mm da esquerda
-            var mapWidth = 190; // 210 - 20 = 190mm
-            var mapHeight = 200; // altura do viewport
+            // Calcular proporção correta do mapa capturado
+            var mapImgWidth = pdfWidth;
+            var mapImgHeight = (canvas.height * pdfWidth) / canvas.width;
             
-            // Adicionar mapa ao PDF
+            // Adicionar mapa ao PDF (proporção correta)
             var mapData = canvas.toDataURL('image/png');
-            pdf.addImage(mapData, 'PNG', mapLeft, mapTop, mapWidth, mapHeight);
+            pdf.addImage(mapData, 'PNG', 0, 0, mapImgWidth, mapImgHeight);
             
-            console.log('[LAYOUT] Mapa adicionado ao PDF');
+            console.log('[LAYOUT] Mapa adicionado ao PDF:', mapImgWidth, 'x', mapImgHeight, 'mm');
             
             // Agora capturar os rodapés (título, responsável, observações, data)
             var rodapeContainer = document.getElementById('preview-a4-container');
             
             html2canvas(rodapeContainer, {
-                scale: 2,
+                scale: 1,
                 useCORS: true,
                 logging: false,
                 backgroundColor: 'transparent',
@@ -656,9 +654,15 @@ function gerarPDFLayout() {
             }).then(function(rodapeCanvas) {
                 console.log('[LAYOUT] Rodapés capturados:', rodapeCanvas.width, 'x', rodapeCanvas.height);
                 
-                // Adicionar rodapés ao PDF (sobrepor)
+                // Calcular proporção correta dos rodapés
+                var rodapeImgWidth = pdfWidth;
+                var rodapeImgHeight = (rodapeCanvas.height * pdfWidth) / rodapeCanvas.width;
+                
+                // Adicionar rodapés ao PDF (proporção correta, sobrepor)
                 var rodapeData = rodapeCanvas.toDataURL('image/png');
-                pdf.addImage(rodapeData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                pdf.addImage(rodapeData, 'PNG', 0, 0, rodapeImgWidth, rodapeImgHeight);
+                
+                console.log('[LAYOUT] Rodapés adicionados ao PDF:', rodapeImgWidth, 'x', rodapeImgHeight, 'mm');
                 
                 console.log('[LAYOUT] Rodapés adicionados ao PDF');
                 
