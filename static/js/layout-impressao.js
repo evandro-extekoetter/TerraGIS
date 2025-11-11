@@ -412,16 +412,22 @@ function copiarCamadasParaViewport() {
     console.log('[LAYOUT] Copiando camadas para viewport');
     
     if (!terraManager || !layoutImpressao.mapaViewport) {
+        console.error('[LAYOUT] terraManager ou mapaViewport não disponível');
         return;
     }
+    
+    var totalCopiadas = 0;
     
     // Percorrer todas as camadas do terraManager
     for (var key in terraManager.layers) {
         var layer = terraManager.layers[key];
         
         if (!layer.visible) {
+            console.log('[LAYOUT] Pulando camada invisível:', key);
             continue; // Pular camadas invisíveis
         }
+        
+        console.log('[LAYOUT] Processando camada visível:', key);
         
         // Copiar polígonos/polilinhas
         if (layer.group) {
@@ -435,6 +441,8 @@ function copiarCamadasParaViewport() {
                         weight: 2
                     });
                     copia.addTo(layoutImpressao.mapaViewport);
+                    totalCopiadas++;
+                    console.log('[LAYOUT] Polígono copiado');
                 } else if (l instanceof L.Polyline) {
                     var coords = l.getLatLngs();
                     var copia = L.polyline(coords, {
@@ -442,6 +450,8 @@ function copiarCamadasParaViewport() {
                         weight: 2
                     });
                     copia.addTo(layoutImpressao.mapaViewport);
+                    totalCopiadas++;
+                    console.log('[LAYOUT] Polilinha copiada');
                 } else if (l instanceof L.CircleMarker) {
                     var latlng = l.getLatLng();
                     L.circleMarker(latlng, {
@@ -451,6 +461,8 @@ function copiarCamadasParaViewport() {
                         fillOpacity: 0.8,
                         weight: 2
                     }).addTo(layoutImpressao.mapaViewport);
+                    totalCopiadas++;
+                    console.log('[LAYOUT] CircleMarker copiado');
                 } else if (l instanceof L.Marker) {
                     var latlng = l.getLatLng();
                     L.circleMarker(latlng, {
@@ -460,12 +472,14 @@ function copiarCamadasParaViewport() {
                         fillOpacity: 0.8,
                         weight: 2
                     }).addTo(layoutImpressao.mapaViewport);
+                    totalCopiadas++;
+                    console.log('[LAYOUT] Marker copiado');
                 }
             });
         }
     }
     
-    console.log('[LAYOUT] Camadas copiadas');
+    console.log('[LAYOUT] Total de geometrias copiadas:', totalCopiadas);
 }
 
 // ===== ENQUADRAR CAMADA ATIVA INICIAL =====
@@ -640,27 +654,36 @@ function enquadrarGeometriaViewport() {
     
     // Calcular bounds de TODAS as camadas do viewport (geometrias já copiadas)
     var bounds = null;
-    var encontrouGeometria = false;
+    var totalLayers = 0;
+    var geometriasEncontradas = 0;
     
     layoutImpressao.mapaViewport.eachLayer(function(layer) {
+        totalLayers++;
+        console.log('[LAYOUT] Processando layer:', layer);
+        
         // Pular camada base (TileLayer)
         if (layer instanceof L.TileLayer) {
+            console.log('[LAYOUT] Pulando TileLayer');
             return;
         }
         
-        encontrouGeometria = true;
+        geometriasEncontradas++;
+        console.log('[LAYOUT] Geometria encontrada:', layer.constructor.name);
         
         // Polígonos e Polilinhas
         if (layer instanceof L.Polygon || layer instanceof L.Polyline) {
+            var layerBounds = layer.getBounds();
+            console.log('[LAYOUT] Bounds da geometria:', layerBounds);
             if (!bounds) {
-                bounds = layer.getBounds();
+                bounds = layerBounds;
             } else {
-                bounds.extend(layer.getBounds());
+                bounds.extend(layerBounds);
             }
         }
         // Marcadores
         else if (layer instanceof L.CircleMarker || layer instanceof L.Marker) {
             var latlng = layer.getLatLng();
+            console.log('[LAYOUT] LatLng do marcador:', latlng);
             if (!bounds) {
                 bounds = L.latLngBounds([latlng, latlng]);
             } else {
@@ -669,12 +692,18 @@ function enquadrarGeometriaViewport() {
         }
     });
     
+    console.log('[LAYOUT] Total de layers no viewport:', totalLayers);
+    console.log('[LAYOUT] Geometrias encontradas:', geometriasEncontradas);
+    console.log('[LAYOUT] Bounds final:', bounds);
+    
     if (bounds) {
         layoutImpressao.mapaViewport.fitBounds(bounds, {padding: [20, 20]});
-        console.log('[LAYOUT] Geometrias enquadradas');
-    } else if (!encontrouGeometria) {
-        alert('Nenhuma geometria visível encontrada');
+        console.log('[LAYOUT] Geometrias enquadradas com sucesso');
+    } else if (geometriasEncontradas === 0) {
+        console.error('[LAYOUT] Nenhuma geometria encontrada no viewport');
+        alert('Nenhuma geometria visível encontrada. Verifique se há camadas visíveis no mapa principal.');
     } else {
+        console.error('[LAYOUT] Geometrias encontradas mas bounds não calculado');
         alert('Não foi possível calcular o enquadramento');
     }
 }
