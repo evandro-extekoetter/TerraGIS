@@ -188,10 +188,11 @@ function criarModalLayoutImpressao() {
                     <div style="
                         flex: 1;
                         padding: 20px;
+                        padding-top: 40px;
                         background: #f5f5f5;
                         overflow: auto;
                         display: flex;
-                        align-items: center;
+                        align-items: flex-start;
                         justify-content: center;
                     ">
                         <div id="preview-a4-wrapper" style="
@@ -561,23 +562,38 @@ function gerarPDFLayout() {
     // Capturar o container A4
     var container = document.getElementById('preview-a4-container');
     
-    // Forçar renderização do mapa antes de capturar
+    console.log('[LAYOUT] Preparando para captura...');
+    
+    // Forçar Leaflet a recalcular tamanho e posição
     if (layoutImpressao.mapaViewport) {
-        layoutImpressao.mapaViewport.invalidateSize();
+        console.log('[LAYOUT] Forçando invalidateSize(true)...');
+        layoutImpressao.mapaViewport.invalidateSize(true);
+        
+        // Pegar centro e zoom atuais
+        var center = layoutImpressao.mapaViewport.getCenter();
+        var zoom = layoutImpressao.mapaViewport.getZoom();
+        console.log('[LAYOUT] Centro:', center, 'Zoom:', zoom);
+        
+        // Forçar re-posicionamento
+        layoutImpressao.mapaViewport.setView(center, zoom, {animate: false});
     }
     
-    // Aguardar mapa renderizar
+    // Aguardar tiles carregarem completamente
     setTimeout(function() {
         console.log('[LAYOUT] Iniciando captura do canvas...');
+        console.log('[LAYOUT] Tamanho do container:', container.offsetWidth, 'x', container.offsetHeight);
         
         html2canvas(container, {
             scale: 2,
             useCORS: true,
-            logging: false,
+            logging: true,
             backgroundColor: '#ffffff',
-            allowTaint: false
+            allowTaint: false,
+            onclone: function(clonedDoc) {
+                console.log('[LAYOUT] Documento clonado para captura');
+            }
         }).then(function(canvas) {
-            console.log('[LAYOUT] Canvas capturado');
+            console.log('[LAYOUT] Canvas capturado:', canvas.width, 'x', canvas.height);
             
             // Criar PDF A4 (210mm x 297mm)
             var pdf = new jspdf.jsPDF({
@@ -612,7 +628,7 @@ function gerarPDFLayout() {
             btnGerar.textContent = textoOriginal;
             btnGerar.disabled = false;
         });
-    }, 500);
+    }, 1000); // Aguardar 1 segundo para tiles carregarem
 }
 
 // ===== CONTROLES DO VIEWPORT =====
