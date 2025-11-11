@@ -191,17 +191,20 @@ function criarModalLayoutImpressao() {
                         background: #f5f5f5;
                         overflow: auto;
                         display: flex;
-                        align-items: flex-start;
+                        align-items: center;
                         justify-content: center;
-                        padding-top: 30px;
                     ">
-                        <div id="preview-a4-container" style="
-                            width: 210mm;
-                            height: 297mm;
-                            background: white;
-                            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                            position: relative;
+                        <div id="preview-a4-wrapper" style="
+                            transform: scale(0.85);
+                            transform-origin: center center;
                         ">
+                            <div id="preview-a4-container" style="
+                                width: 210mm;
+                                height: 297mm;
+                                background: white;
+                                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                                position: relative;
+                            ">
                             <!-- Viewport do Mapa -->
                             <div id="viewport-mapa" style="
                                 position: absolute;
@@ -292,7 +295,7 @@ function criarModalLayoutImpressao() {
                                 flex-direction: column;
                             ">
                                 <div style="font-size: 8px; font-weight: bold; color: black;">título:</div>
-                                <div id="preview-titulo" style="font-size: 18px; font-weight: bold; text-align: center; flex: 1; display: flex; align-items: center; justify-content: center; color: black;">TITULO (EDITAVEL)</div>
+                                <div id="preview-titulo" style="font-size: 24px; font-weight: bold; text-align: center; flex: 1; display: flex; align-items: center; justify-content: center; color: black;">TITULO (EDITAVEL)</div>
                             </div>
                             
                             <!-- Rodapé: Responsável e Observações -->
@@ -346,6 +349,7 @@ function criarModalLayoutImpressao() {
                                 <div style="font-size: 8px; font-weight: bold; color: black;">Data:</div>
                                 <div id="preview-data" style="font-size: 11px; color: black;">DATAL 00/00/00 (EDITAVEL)</div>
                             </div>
+                        </div>
                         </div>
                     </div>
                 </div>
@@ -557,11 +561,16 @@ function gerarPDFLayout() {
     
     // Capturar o container A4
     var container = document.getElementById('preview-a4-container');
+    var wrapper = document.getElementById('preview-a4-wrapper');
     
     // Forçar renderização do mapa antes de capturar
     if (layoutImpressao.mapaViewport) {
         layoutImpressao.mapaViewport.invalidateSize();
     }
+    
+    // Remover escala do wrapper temporariamente para captura
+    var transformOriginal = wrapper.style.transform;
+    wrapper.style.transform = 'scale(1)';
     
     setTimeout(function() {
         html2canvas(container, {
@@ -570,6 +579,8 @@ function gerarPDFLayout() {
             logging: false,
             backgroundColor: '#ffffff'
         }).then(function(canvas) {
+            // Restaurar escala do wrapper
+            wrapper.style.transform = transformOriginal;
             console.log('[LAYOUT] Canvas capturado');
             
             // Criar PDF A4 (210mm x 297mm)
@@ -598,6 +609,9 @@ function gerarPDFLayout() {
             
             alert('✅ PDF gerado com sucesso: ' + nomeArquivo);
         }).catch(function(erro) {
+            // Restaurar escala do wrapper
+            wrapper.style.transform = transformOriginal;
+            
             console.error('[LAYOUT] Erro ao gerar PDF:', erro);
             alert('❌ Erro ao gerar PDF: ' + erro.message);
             
