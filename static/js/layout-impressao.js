@@ -195,8 +195,7 @@ function criarModalLayoutImpressao() {
                         justify-content: center;
                     ">
                         <div id="preview-a4-wrapper" style="
-                            transform: scale(0.75);
-                            transform-origin: center center;
+                            /* Sem escala - tamanho real 100% */
                         ">
                             <div id="preview-a4-container" style="
                                 width: 210mm;
@@ -561,38 +560,23 @@ function gerarPDFLayout() {
     
     // Capturar o container A4
     var container = document.getElementById('preview-a4-container');
-    var wrapper = document.getElementById('preview-a4-wrapper');
     
     // Forçar renderização do mapa antes de capturar
     if (layoutImpressao.mapaViewport) {
         layoutImpressao.mapaViewport.invalidateSize();
     }
     
-    // Remover escala do wrapper temporariamente para captura
-    var transformOriginal = wrapper.style.transform;
-    wrapper.style.transform = 'scale(1)';
-    
-    // Forçar Leaflet a re-renderizar após remover escala
+    // Aguardar mapa renderizar
     setTimeout(function() {
-        if (layoutImpressao.mapaViewport) {
-            layoutImpressao.mapaViewport.invalidateSize();
-            console.log('[LAYOUT] Mapa re-renderizado para captura');
-        }
+        console.log('[LAYOUT] Iniciando captura do canvas...');
         
-        // Aguardar tiles carregarem antes de capturar
-        setTimeout(function() {
-            console.log('[LAYOUT] Iniciando captura do canvas...');
-            
-            html2canvas(container, {
-                scale: 1.5,
-                useCORS: true,
-                logging: true,
-                backgroundColor: '#ffffff',
-                allowTaint: false,
-                foreignObjectRendering: false
-            }).then(function(canvas) {
-            // Restaurar escala do wrapper
-            wrapper.style.transform = transformOriginal;
+        html2canvas(container, {
+            scale: 2,
+            useCORS: true,
+            logging: false,
+            backgroundColor: '#ffffff',
+            allowTaint: false
+        }).then(function(canvas) {
             console.log('[LAYOUT] Canvas capturado');
             
             // Criar PDF A4 (210mm x 297mm)
@@ -621,9 +605,6 @@ function gerarPDFLayout() {
             
             alert('✅ PDF gerado com sucesso: ' + nomeArquivo);
         }).catch(function(erro) {
-            // Restaurar escala do wrapper
-            wrapper.style.transform = transformOriginal;
-            
             console.error('[LAYOUT] Erro ao gerar PDF:', erro);
             alert('❌ Erro ao gerar PDF: ' + erro.message);
             
@@ -631,8 +612,7 @@ function gerarPDFLayout() {
             btnGerar.textContent = textoOriginal;
             btnGerar.disabled = false;
         });
-        }, 800); // Aguardar tiles carregarem
-    }, 200); // Aguardar re-renderização do Leaflet
+    }, 500);
 }
 
 // ===== CONTROLES DO VIEWPORT =====
