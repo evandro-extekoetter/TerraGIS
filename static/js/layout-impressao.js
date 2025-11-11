@@ -428,52 +428,49 @@ function copiarCamadasParaViewport() {
         }
         
         console.log('[LAYOUT] Processando camada visível:', key);
+        console.log('[LAYOUT] Layer object:', layer);
         
-        // Copiar polígonos/polilinhas
-        if (layer.group) {
-            layer.group.eachLayer(function(l) {
-                if (l instanceof L.Polygon) {
-                    var coords = l.getLatLngs();
-                    var copia = L.polygon(coords, {
-                        color: l.options.color || 'blue',
-                        fillColor: l.options.fillColor || l.options.color || 'blue',
-                        fillOpacity: 0.2,
-                        weight: 2
-                    });
-                    copia.addTo(layoutImpressao.mapaViewport);
-                    totalCopiadas++;
-                    console.log('[LAYOUT] Polígono copiado');
-                } else if (l instanceof L.Polyline) {
-                    var coords = l.getLatLngs();
-                    var copia = L.polyline(coords, {
-                        color: l.options.color || 'red',
-                        weight: 2
-                    });
-                    copia.addTo(layoutImpressao.mapaViewport);
-                    totalCopiadas++;
-                    console.log('[LAYOUT] Polilinha copiada');
-                } else if (l instanceof L.CircleMarker) {
-                    var latlng = l.getLatLng();
+        // TerraLayer usa geometryLayer (L.Polygon ou L.Polyline)
+        if (layer.geometryLayer) {
+            var geom = layer.geometryLayer;
+            console.log('[LAYOUT] geometryLayer encontrado:', geom);
+            
+            if (geom instanceof L.Polygon) {
+                var coords = geom.getLatLngs();
+                var copia = L.polygon(coords, {
+                    color: layer.color || geom.options.color || 'blue',
+                    fillColor: layer.color || geom.options.fillColor || 'blue',
+                    fillOpacity: 0.2,
+                    weight: 2
+                });
+                copia.addTo(layoutImpressao.mapaViewport);
+                totalCopiadas++;
+                console.log('[LAYOUT] Polígono copiado');
+            } else if (geom instanceof L.Polyline) {
+                var coords = geom.getLatLngs();
+                var copia = L.polyline(coords, {
+                    color: layer.color || geom.options.color || 'red',
+                    weight: 2
+                });
+                copia.addTo(layoutImpressao.mapaViewport);
+                totalCopiadas++;
+                console.log('[LAYOUT] Polilinha copiada');
+            }
+        }
+        
+        // Copiar vértices se houver (opcional)
+        if (layer.verticesLayer && layer.verticesLayer.getLayers) {
+            layer.verticesLayer.eachLayer(function(marker) {
+                if (marker instanceof L.CircleMarker || marker instanceof L.Marker) {
+                    var latlng = marker.getLatLng();
                     L.circleMarker(latlng, {
-                        radius: 4,
-                        color: l.options.color || 'blue',
-                        fillColor: l.options.fillColor || 'blue',
+                        radius: 3,
+                        color: layer.vertexColor || 'red',
+                        fillColor: layer.vertexColor || 'red',
                         fillOpacity: 0.8,
-                        weight: 2
+                        weight: 1
                     }).addTo(layoutImpressao.mapaViewport);
                     totalCopiadas++;
-                    console.log('[LAYOUT] CircleMarker copiado');
-                } else if (l instanceof L.Marker) {
-                    var latlng = l.getLatLng();
-                    L.circleMarker(latlng, {
-                        radius: 5,
-                        color: 'blue',
-                        fillColor: 'blue',
-                        fillOpacity: 0.8,
-                        weight: 2
-                    }).addTo(layoutImpressao.mapaViewport);
-                    totalCopiadas++;
-                    console.log('[LAYOUT] Marker copiado');
                 }
             });
         }
@@ -497,23 +494,15 @@ function enquadrarCamadaAtivaInicial() {
         var bounds = null;
         for (var key in terraManager.layers) {
             var layer = terraManager.layers[key];
-            if (layer.visible && layer.group) {
-                layer.group.eachLayer(function(l) {
-                    if (l.getBounds) {
-                        if (!bounds) {
-                            bounds = l.getBounds();
-                        } else {
-                            bounds.extend(l.getBounds());
-                        }
-                    } else if (l.getLatLng) {
-                        var latlng = l.getLatLng();
-                        if (!bounds) {
-                            bounds = L.latLngBounds([latlng, latlng]);
-                        } else {
-                            bounds.extend(latlng);
-                        }
+            if (layer.visible && layer.geometryLayer) {
+                var geom = layer.geometryLayer;
+                if (geom.getBounds) {
+                    if (!bounds) {
+                        bounds = geom.getBounds();
+                    } else {
+                        bounds.extend(geom.getBounds());
                     }
-                });
+                }
             }
         }
         if (bounds) {
@@ -524,23 +513,11 @@ function enquadrarCamadaAtivaInicial() {
     
     // Calcular bounds da camada ativa
     var bounds = null;
-    if (camadaAtiva.group) {
-        camadaAtiva.group.eachLayer(function(l) {
-            if (l instanceof L.Polygon || l instanceof L.Polyline) {
-                if (!bounds) {
-                    bounds = l.getBounds();
-                } else {
-                    bounds.extend(l.getBounds());
-                }
-            } else if (l instanceof L.CircleMarker || l instanceof L.Marker) {
-                var latlng = l.getLatLng();
-                if (!bounds) {
-                    bounds = L.latLngBounds([latlng, latlng]);
-                } else {
-                    bounds.extend(latlng);
-                }
-            }
-        });
+    if (camadaAtiva.geometryLayer) {
+        var geom = camadaAtiva.geometryLayer;
+        if (geom.getBounds) {
+            bounds = geom.getBounds();
+        }
     }
     
     if (bounds) {
