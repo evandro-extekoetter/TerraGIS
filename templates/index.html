@@ -324,6 +324,12 @@
                         </button>
                     </div>
                 </div>
+                
+                <div class="menu-item">
+                    <button class="menu-btn" onclick="abrirLayoutImpressao(); closeAllMenus();">
+                        <img src="{{ url_for('static', filename='icons/salvar_projeto_icon.png') }}" class="icon" alt=""> IMPRIMIR
+                    </button>
+                </div>
             </nav>
             
             <div class="project-info">
@@ -1127,6 +1133,12 @@
     
     <!-- Proj4js for coordinat    <!-- Proj4js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.9.0/proj4.js"></script>
+    
+    <!-- html2canvas para captura de tela -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <!-- jsPDF para geração de PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
     <!-- TerraGIS Core (Sistema de Camadas) -->
     <script src="{{ url_for('static', filename='js/terra-core.js') }}"></script>
@@ -1147,6 +1159,8 @@
     <script src="{{ url_for('static', filename='js/converter-polilinha-poligono.js') }}?v={{ range(1, 999999999) | random }}"></script>
     <!-- Ferramentas de Medição - Medir Linha, Área, Azimute, Ângulo e Coordenada (estilo QGIS) -->
     <script src="{{ url_for('static', filename='js/ferramentas-medicao.js') }}?v={{ range(1, 999999999) | random }}"></script>
+    <!-- Módulo de Layout de Impressão - Viewport interativo + Campos editáveis + Exportação PDF A4 -->
+    <script src="{{ url_for('static', filename='js/layout-impressao.js') }}?v={{ range(1, 999999999) | random }}"></script>
 
     <script>
 // Código legado removido - agora usa mover-geometria-v2.js com sistema de camada ativa
