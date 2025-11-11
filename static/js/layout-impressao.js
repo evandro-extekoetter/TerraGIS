@@ -631,23 +631,28 @@ function zoomOutViewport() {
 }
 
 function enquadrarGeometriaViewport() {
-    console.log('[LAYOUT] Enquadrando geometria ativa');
+    console.log('[LAYOUT] Enquadrando todas as geometrias visíveis');
     
     if (!layoutImpressao.mapaViewport || !terraManager) {
         alert('Viewport não inicializado');
         return;
     }
     
-    var camadaAtiva = terraManager.getActiveLayer();
-    if (!camadaAtiva) {
-        alert('Nenhuma camada ativa selecionada');
-        return;
-    }
-    
-    // Calcular bounds da geometria
+    // Calcular bounds de TODAS as camadas visíveis (como botão Zoom do painel)
     var bounds = null;
-    if (camadaAtiva.group) {
-        camadaAtiva.group.eachLayer(function(l) {
+    var encontrouGeometria = false;
+    
+    for (var key in terraManager.layers) {
+        var layer = terraManager.layers[key];
+        
+        // Processar apenas camadas visíveis
+        if (!layer.visible || !layer.group) {
+            continue;
+        }
+        
+        layer.group.eachLayer(function(l) {
+            encontrouGeometria = true;
+            
             if (l instanceof L.Polygon || l instanceof L.Polyline) {
                 if (!bounds) {
                     bounds = l.getBounds();
@@ -667,9 +672,11 @@ function enquadrarGeometriaViewport() {
     
     if (bounds) {
         layoutImpressao.mapaViewport.fitBounds(bounds, {padding: [20, 20]});
-        console.log('[LAYOUT] Geometria enquadrada');
+        console.log('[LAYOUT] Geometrias enquadradas');
+    } else if (!encontrouGeometria) {
+        alert('Nenhuma geometria visível encontrada');
     } else {
-        alert('Geometria não encontrada na camada ativa');
+        alert('Não foi possível calcular o enquadramento');
     }
 }
 
