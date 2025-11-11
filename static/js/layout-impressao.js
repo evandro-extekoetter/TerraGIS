@@ -559,12 +559,12 @@ function atualizarPreviewLayout() {
     document.getElementById('preview-data').textContent = layoutImpressao.configuracao.data || 'DATAL 00/00/00 (EDITAVEL)';
 }
 
-// ===== GERAR PDF =====
+// ===== GERAR PDF COM LEAFLET-IMAGE =====
 function gerarPDFLayout() {
     console.log('[LAYOUT] Gerando PDF...');
     
     // Verificar se bibliotecas estão carregadas
-    if (typeof html2canvas === 'undefined' || typeof jspdf === 'undefined') {
+    if (typeof leafletImage === 'undefined' || typeof jspdf === 'undefined') {
         alert('Erro: Bibliotecas de geração de PDF não carregadas. Verifique a conexão com a internet.');
         return;
     }
@@ -574,9 +574,6 @@ function gerarPDFLayout() {
     var textoOriginal = btnGerar.textContent;
     btnGerar.textContent = '⏳ Gerando PDF...';
     btnGerar.disabled = true;
-    
-    // Capturar o container A4
-    var container = document.getElementById('preview-a4-container');
     
     console.log('[LAYOUT] Preparando para captura...');
     
@@ -601,22 +598,28 @@ function gerarPDFLayout() {
         layoutImpressao.mapaViewport.setView(center, zoom, {animate: false});
     }
     
-    // Aguardar tiles carregarem completamente
+    // Aguardar tiles carregarem
     setTimeout(function() {
-        console.log('[LAYOUT] Iniciando captura do canvas...');
-        console.log('[LAYOUT] Tamanho do container:', container.offsetWidth, 'x', container.offsetHeight);
+        console.log('[LAYOUT] Capturando mapa com leaflet-image...');
         
-        html2canvas(container, {
-            scale: 1,
-            useCORS: true,
-            logging: true,
-            backgroundColor: '#ffffff',
-            allowTaint: false,
-            onclone: function(clonedDoc) {
-                console.log('[LAYOUT] Documento clonado para captura');
+        // Capturar mapa Leaflet com leaflet-image
+        leafletImage(layoutImpressao.mapaViewport, function(err, canvas) {
+            if (err) {
+                console.error('[LAYOUT] Erro ao capturar mapa:', err);
+                alert('❌ Erro ao capturar mapa: ' + err.message);
+                
+                // Restaurar controles
+                if (controles) {
+                    controles.style.display = 'block';
+                }
+                
+                // Restaurar botão
+                btnGerar.textContent = textoOriginal;
+                btnGerar.disabled = false;
+                return;
             }
-        }).then(function(canvas) {
-            console.log('[LAYOUT] Canvas capturado:', canvas.width, 'x', canvas.height);
+            
+            console.log('[LAYOUT] Mapa capturado:', canvas.width, 'x', canvas.height);
             
             // Criar PDF A4 (210mm x 297mm)
             var pdf = new jspdf.jsPDF({
@@ -625,45 +628,72 @@ function gerarPDFLayout() {
                 format: 'a4'
             });
             
-            // Adicionar imagem ao PDF (sem esticar)
-            var imgData = canvas.toDataURL('image/png');
-            var imgWidth = 210; // A4 width in mm
-            var imgHeight = (canvas.height * imgWidth) / canvas.width;
-            pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+            // Dimensões do A4 em mm
+            var pdfWidth = 210;
+            var pdfHeight = 297;
             
-            console.log('[LAYOUT] Imagem adicionada ao PDF:', imgWidth, 'x', imgHeight, 'mm');
+            // Dimensões do viewport do mapa em mm (conforme layout)
+            var mapTop = 10; // 10mm do topo
+            var mapLeft = 10; // 10mm da esquerda
+            var mapWidth = 190; // 210 - 20 = 190mm
+            var mapHeight = 200; // altura do viewport
             
-            // Gerar nome do arquivo
-            var titulo = layoutImpressao.configuracao.titulo || 'mapa';
-            var nomeArquivo = 'TerraGIS_' + titulo.replace(/[^a-zA-Z0-9]/g, '_') + '.pdf';
+            // Adicionar mapa ao PDF
+            var mapData = canvas.toDataURL('image/png');
+            pdf.addImage(mapData, 'PNG', mapLeft, mapTop, mapWidth, mapHeight);
             
-            // Salvar PDF
-            pdf.save(nomeArquivo);
+            console.log('[LAYOUT] Mapa adicionado ao PDF');
             
-            console.log('[LAYOUT] PDF gerado: ' + nomeArquivo);
+            // Agora capturar os rodapés (título, responsável, observações, data)
+            var rodapeContainer = document.getElementById('preview-a4-container');
             
-            // Restaurar controles
-            if (controles) {
-                controles.style.display = 'block';
-            }
-            
-            // Restaurar botão
-            btnGerar.textContent = textoOriginal;
-            btnGerar.disabled = false;
-            
-            alert('✅ PDF gerado com sucesso: ' + nomeArquivo);
-        }).catch(function(erro) {
-            console.error('[LAYOUT] Erro ao gerar PDF:', erro);
-            alert('❌ Erro ao gerar PDF: ' + erro.message);
-            
-            // Restaurar controles
-            if (controles) {
-                controles.style.display = 'block';
-            }
-            
-            // Restaurar botão
-            btnGerar.textContent = textoOriginal;
-            btnGerar.disabled = false;
+            html2canvas(rodapeContainer, {
+                scale: 2,
+                useCORS: true,
+                logging: false,
+                backgroundColor: 'transparent',
+                allowTaint: false
+            }).then(function(rodapeCanvas) {
+                console.log('[LAYOUT] Rodapés capturados:', rodapeCanvas.width, 'x', rodapeCanvas.height);
+                
+                // Adicionar rodapés ao PDF (sobrepor)
+                var rodapeData = rodapeCanvas.toDataURL('image/png');
+                pdf.addImage(rodapeData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                
+                console.log('[LAYOUT] Rodapés adicionados ao PDF');
+                
+                // Gerar nome do arquivo
+                var titulo = layoutImpressao.configuracao.titulo || 'mapa';
+                var nomeArquivo = 'TerraGIS_' + titulo.replace(/[^a-zA-Z0-9]/g, '_') + '.pdf';
+                
+                // Salvar PDF
+                pdf.save(nomeArquivo);
+                
+                console.log('[LAYOUT] PDF gerado: ' + nomeArquivo);
+                
+                // Restaurar controles
+                if (controles) {
+                    controles.style.display = 'block';
+                }
+                
+                // Restaurar botão
+                btnGerar.textContent = textoOriginal;
+                btnGerar.disabled = false;
+                
+                alert('✅ PDF gerado com sucesso: ' + nomeArquivo);
+            }).catch(function(erro) {
+                console.error('[LAYOUT] Erro ao capturar rodapés:', erro);
+                alert('❌ Erro ao capturar rodapés: ' + erro.message);
+                
+                // Restaurar controles
+                if (controles) {
+                    controles.style.display = 'block';
+                }
+                
+                // Restaurar botão
+                btnGerar.textContent = textoOriginal;
+                btnGerar.disabled = false;
+            });
         });
     }, 1000); // Aguardar 1 segundo para tiles carregarem
 }
