@@ -191,8 +191,9 @@ function criarModalLayoutImpressao() {
                         background: #f5f5f5;
                         overflow: auto;
                         display: flex;
-                        align-items: center;
+                        align-items: flex-start;
                         justify-content: center;
+                        padding-top: 30px;
                     ">
                         <div id="preview-a4-container" style="
                             width: 210mm;
@@ -259,14 +260,24 @@ function criarModalLayoutImpressao() {
                                 ">🎯</button>
                             </div>
                             
-                            <!-- Seta Norte -->
+                            <!-- Rosa dos Ventos / Indicador Norte -->
                             <div style="
                                 position: absolute;
                                 top: 15mm;
                                 right: 15mm;
-                                font-size: 40px;
                                 z-index: 1000;
-                            ">↑</div>
+                            ">
+                                <svg width="50" height="50" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
+                                    <!-- Círculo externo -->
+                                    <circle cx="25" cy="25" r="23" fill="white" stroke="black" stroke-width="1.5"/>
+                                    <!-- Seta Norte (preta) -->
+                                    <path d="M 25 5 L 30 25 L 25 20 L 20 25 Z" fill="black" stroke="black" stroke-width="1"/>
+                                    <!-- Seta Sul (branca) -->
+                                    <path d="M 25 45 L 20 25 L 25 30 L 30 25 Z" fill="white" stroke="black" stroke-width="1"/>
+                                    <!-- Letra N -->
+                                    <text x="25" y="12" font-family="Arial" font-size="8" font-weight="bold" text-anchor="middle" fill="white">N</text>
+                                </svg>
+                            </div>
                             
                             <!-- Rodapé: Título -->
                             <div style="
@@ -276,13 +287,12 @@ function criarModalLayoutImpressao() {
                                 right: 10mm;
                                 height: 15mm;
                                 border: 1mm solid black;
-                                border-top: none;
                                 padding: 2mm;
                                 display: flex;
                                 flex-direction: column;
                             ">
-                                <div style="font-size: 8px; font-weight: bold;">título:</div>
-                                <div id="preview-titulo" style="font-size: 14px; font-weight: bold; text-align: center; flex: 1; display: flex; align-items: center; justify-content: center;">TITULO (EDITAVEL)</div>
+                                <div style="font-size: 8px; font-weight: bold; color: black;">título:</div>
+                                <div id="preview-titulo" style="font-size: 18px; font-weight: bold; text-align: center; flex: 1; display: flex; align-items: center; justify-content: center; color: black;">TITULO (EDITAVEL)</div>
                             </div>
                             
                             <!-- Rodapé: Responsável e Observações -->
@@ -304,8 +314,8 @@ function criarModalLayoutImpressao() {
                                     display: flex;
                                     flex-direction: column;
                                 ">
-                                    <div style="font-size: 8px; font-weight: bold;">Responsavel:</div>
-                                    <div id="preview-responsavel" style="font-size: 10px; flex: 1; overflow: hidden;">RESPONSAVEL (EDITAVEL)</div>
+                                    <div style="font-size: 8px; font-weight: bold; color: black;">Responsavel:</div>
+                                    <div id="preview-responsavel" style="font-size: 11px; flex: 1; overflow: hidden; color: black;">RESPONSAVEL (EDITAVEL)</div>
                                 </div>
                                 
                                 <!-- Observações -->
@@ -315,8 +325,8 @@ function criarModalLayoutImpressao() {
                                     display: flex;
                                     flex-direction: column;
                                 ">
-                                    <div style="font-size: 8px; font-weight: bold;">Observações</div>
-                                    <div id="preview-observacoes" style="font-size: 10px; flex: 1; overflow: hidden;">OBSERVAÇÕES (EDITAVEL)</div>
+                                    <div style="font-size: 8px; font-weight: bold; color: black;">Observações</div>
+                                    <div id="preview-observacoes" style="font-size: 11px; flex: 1; overflow: hidden; color: black;">OBSERVAÇÕES (EDITAVEL)</div>
                                 </div>
                             </div>
                             
@@ -333,8 +343,8 @@ function criarModalLayoutImpressao() {
                                 display: flex;
                                 flex-direction: column;
                             ">
-                                <div style="font-size: 8px; font-weight: bold;">Data:</div>
-                                <div id="preview-data" style="font-size: 10px;">DATAL 00/00/00 (EDITAVEL)</div>
+                                <div style="font-size: 8px; font-weight: bold; color: black;">Data:</div>
+                                <div id="preview-data" style="font-size: 11px; color: black;">DATAL 00/00/00 (EDITAVEL)</div>
                             </div>
                         </div>
                     </div>
@@ -377,7 +387,7 @@ function inicializarViewportMapa() {
     
     // Criar mapa Leaflet independente
     layoutImpressao.mapaViewport = L.map('viewport-mapa', {
-        zoomControl: true,
+        zoomControl: false,
         attributionControl: false
     });
     
@@ -386,13 +396,13 @@ function inicializarViewportMapa() {
         maxZoom: 19
     }).addTo(layoutImpressao.mapaViewport);
     
-    // Copiar centro e zoom do mapa principal
-    var centro = map.getCenter();
-    var zoom = map.getZoom();
-    layoutImpressao.mapaViewport.setView(centro, zoom);
-    
     // Copiar camadas do mapa principal
     copiarCamadasParaViewport();
+    
+    // Enquadrar automaticamente na camada ativa
+    setTimeout(function() {
+        enquadrarCamadaAtivaInicial();
+    }, 200);
     
     console.log('[LAYOUT] Viewport inicializado');
 }
@@ -416,19 +426,39 @@ function copiarCamadasParaViewport() {
         // Copiar polígonos/polilinhas
         if (layer.group) {
             layer.group.eachLayer(function(l) {
-                if (l instanceof L.Polygon || l instanceof L.Polyline) {
+                if (l instanceof L.Polygon) {
                     var coords = l.getLatLngs();
-                    var copia = l instanceof L.Polygon ? 
-                        L.polygon(coords, {color: l.options.color, weight: 2}) :
-                        L.polyline(coords, {color: l.options.color, weight: 2});
+                    var copia = L.polygon(coords, {
+                        color: l.options.color || 'blue',
+                        fillColor: l.options.fillColor || l.options.color || 'blue',
+                        fillOpacity: 0.2,
+                        weight: 2
+                    });
                     copia.addTo(layoutImpressao.mapaViewport);
-                } else if (l instanceof L.CircleMarker || l instanceof L.Marker) {
+                } else if (l instanceof L.Polyline) {
+                    var coords = l.getLatLngs();
+                    var copia = L.polyline(coords, {
+                        color: l.options.color || 'red',
+                        weight: 2
+                    });
+                    copia.addTo(layoutImpressao.mapaViewport);
+                } else if (l instanceof L.CircleMarker) {
                     var latlng = l.getLatLng();
                     L.circleMarker(latlng, {
                         radius: 4,
                         color: l.options.color || 'blue',
                         fillColor: l.options.fillColor || 'blue',
-                        fillOpacity: 0.8
+                        fillOpacity: 0.8,
+                        weight: 2
+                    }).addTo(layoutImpressao.mapaViewport);
+                } else if (l instanceof L.Marker) {
+                    var latlng = l.getLatLng();
+                    L.circleMarker(latlng, {
+                        radius: 5,
+                        color: 'blue',
+                        fillColor: 'blue',
+                        fillOpacity: 0.8,
+                        weight: 2
                     }).addTo(layoutImpressao.mapaViewport);
                 }
             });
@@ -436,6 +466,73 @@ function copiarCamadasParaViewport() {
     }
     
     console.log('[LAYOUT] Camadas copiadas');
+}
+
+// ===== ENQUADRAR CAMADA ATIVA INICIAL =====
+function enquadrarCamadaAtivaInicial() {
+    console.log('[LAYOUT] Enquadrando camada ativa inicial');
+    
+    if (!layoutImpressao.mapaViewport || !terraManager) {
+        return;
+    }
+    
+    var camadaAtiva = terraManager.getActiveLayer();
+    if (!camadaAtiva) {
+        console.log('[LAYOUT] Nenhuma camada ativa, usando bounds de todas as camadas');
+        // Se não houver camada ativa, enquadrar todas as geometrias
+        var bounds = null;
+        for (var key in terraManager.layers) {
+            var layer = terraManager.layers[key];
+            if (layer.visible && layer.group) {
+                layer.group.eachLayer(function(l) {
+                    if (l.getBounds) {
+                        if (!bounds) {
+                            bounds = l.getBounds();
+                        } else {
+                            bounds.extend(l.getBounds());
+                        }
+                    } else if (l.getLatLng) {
+                        var latlng = l.getLatLng();
+                        if (!bounds) {
+                            bounds = L.latLngBounds([latlng, latlng]);
+                        } else {
+                            bounds.extend(latlng);
+                        }
+                    }
+                });
+            }
+        }
+        if (bounds) {
+            layoutImpressao.mapaViewport.fitBounds(bounds, {padding: [20, 20]});
+        }
+        return;
+    }
+    
+    // Calcular bounds da camada ativa
+    var bounds = null;
+    if (camadaAtiva.group) {
+        camadaAtiva.group.eachLayer(function(l) {
+            if (l instanceof L.Polygon || l instanceof L.Polyline) {
+                if (!bounds) {
+                    bounds = l.getBounds();
+                } else {
+                    bounds.extend(l.getBounds());
+                }
+            } else if (l instanceof L.CircleMarker || l instanceof L.Marker) {
+                var latlng = l.getLatLng();
+                if (!bounds) {
+                    bounds = L.latLngBounds([latlng, latlng]);
+                } else {
+                    bounds.extend(latlng);
+                }
+            }
+        });
+    }
+    
+    if (bounds) {
+        layoutImpressao.mapaViewport.fitBounds(bounds, {padding: [20, 20]});
+        console.log('[LAYOUT] Camada ativa enquadrada');
+    }
 }
 
 // ===== ATUALIZAR PREVIEW EM TEMPO REAL =====
