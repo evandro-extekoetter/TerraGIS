@@ -584,7 +584,7 @@ function gerarPDFLayout() {
         console.log('[LAYOUT] Tamanho do container:', container.offsetWidth, 'x', container.offsetHeight);
         
         html2canvas(container, {
-            scale: 2,
+            scale: 1,
             useCORS: true,
             logging: true,
             backgroundColor: '#ffffff',
