@@ -158,6 +158,19 @@ function criarModalLayoutImpressao() {
                                 box-sizing: border-box;
                             ">
                         
+                        <button id="btn-editar-mapa" onclick="toggleEditarMapa()" style="
+                            width: 100%;
+                            padding: 12px;
+                            background: #3498db;
+                            color: white;
+                            border: none;
+                            border-radius: 4px;
+                            font-size: 16px;
+                            font-weight: bold;
+                            cursor: pointer;
+                            margin-bottom: 15px;
+                        ">✏️ Editar Mapa</button>
+                        
                         <button onclick="gerarPDFLayout()" style="
                             width: 100%;
                             padding: 12px;
@@ -218,64 +231,7 @@ function criarModalLayoutImpressao() {
                                 <!-- Mapa será inserido aqui -->
                             </div>
                             
-                            <!-- Controles do Viewport -->
-                            <div id="viewport-controles" style="
-                                position: absolute;
-                                top: 15mm;
-                                left: 15mm;
-                                background: white;
-                                border: 1px solid #ccc;
-                                border-radius: 4px;
-                                padding: 5px;
-                                z-index: 1000;
-                                box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-                            ">
-                                <button onclick="atualizarMapaViewport()" title="Atualizar mapa com camadas visíveis" style="
-                                    display: block;
-                                    width: auto;
-                                    padding: 5px 8px;
-                                    margin-bottom: 5px;
-                                    background: #4CAF50;
-                                    color: white;
-                                    border: 1px solid #45a049;
-                                    cursor: pointer;
-                                    font-size: 11px;
-                                    font-weight: bold;
-                                    border-radius: 3px;
-                                ">🔄 Atualizar</button>
-                                <button onclick="zoomInViewport()" style="
-                                    display: block;
-                                    width: 30px;
-                                    height: 30px;
-                                    margin-bottom: 2px;
-                                    background: white;
-                                    border: 1px solid #ccc;
-                                    cursor: pointer;
-                                    font-size: 18px;
-                                    font-weight: bold;
-                                ">+</button>
-                                <button onclick="zoomOutViewport()" style="
-                                    display: block;
-                                    width: 30px;
-                                    height: 30px;
-                                    margin-bottom: 2px;
-                                    background: white;
-                                    border: 1px solid #ccc;
-                                    cursor: pointer;
-                                    font-size: 18px;
-                                    font-weight: bold;
-                                ">−</button>
-                                <button onclick="enquadrarGeometriaViewport()" title="Enquadrar geometria ativa" style="
-                                    display: block;
-                                    width: 30px;
-                                    height: 30px;
-                                    background: white;
-                                    border: 1px solid #ccc;
-                                    cursor: pointer;
-                                    font-size: 14px;
-                                ">🎯</button>
-                            </div>
-                            
+
                             <!-- Rosa dos Ventos / Indicador Norte -->
                             <div style="
                                 position: absolute;
@@ -418,10 +374,16 @@ function inicializarViewportMapa() {
         return;
     }
     
-    // Criar mapa Leaflet independente
+    // Criar mapa Leaflet independente (TRAVADO por padrão)
     layoutImpressao.mapaViewport = L.map('viewport-mapa', {
         zoomControl: false,
-        attributionControl: false
+        attributionControl: false,
+        dragging: false,           // Desabilita arrastar
+        touchZoom: false,          // Desabilita zoom por toque
+        scrollWheelZoom: false,    // Desabilita zoom por scroll
+        doubleClickZoom: false,    // Desabilita zoom por duplo clique
+        boxZoom: false,            // Desabilita zoom por seleção
+        keyboard: false            // Desabilita controles por teclado
     });
     
     // Adicionar camada base (mesma do mapa principal)
@@ -429,10 +391,15 @@ function inicializarViewportMapa() {
         maxZoom: 19
     }).addTo(layoutImpressao.mapaViewport);
     
-    // Definir vista inicial (mundo inteiro)
-    layoutImpressao.mapaViewport.setView([0, 0], 2);
+    // Copiar camadas do mapa principal
+    copiarCamadasParaViewport();
     
-    console.log('[LAYOUT] Viewport inicializado (vazio)');
+    // Enquadrar automaticamente na camada ativa
+    setTimeout(function() {
+        enquadrarCamadaAtivaInicial();
+    }, 200);
+    
+    console.log('[LAYOUT] Viewport inicializado (travado)');
 }
 
 // ===== COPIAR CAMADAS DO MAPA PRINCIPAL =====
@@ -825,5 +792,46 @@ function atualizarMapaViewport() {
     }, 200);
     
     console.log('[LAYOUT] Mapa viewport atualizado');
+}
+
+
+// ===== TOGGLE EDITAR MAPA =====
+var mapaEditavel = false;
+
+function toggleEditarMapa() {
+    if (!layoutImpressao.mapaViewport) {
+        alert('Viewport não inicializado');
+        return;
+    }
+    
+    var btn = document.getElementById('btn-editar-mapa');
+    
+    if (mapaEditavel) {
+        // TRAVAR mapa
+        layoutImpressao.mapaViewport.dragging.disable();
+        layoutImpressao.mapaViewport.touchZoom.disable();
+        layoutImpressao.mapaViewport.scrollWheelZoom.disable();
+        layoutImpressao.mapaViewport.doubleClickZoom.disable();
+        layoutImpressao.mapaViewport.boxZoom.disable();
+        layoutImpressao.mapaViewport.keyboard.disable();
+        
+        btn.style.background = '#3498db';
+        btn.textContent = '✏️ Editar Mapa';
+        mapaEditavel = false;
+        console.log('[LAYOUT] Mapa TRAVADO');
+    } else {
+        // LIBERAR mapa
+        layoutImpressao.mapaViewport.dragging.enable();
+        layoutImpressao.mapaViewport.touchZoom.enable();
+        layoutImpressao.mapaViewport.scrollWheelZoom.enable();
+        layoutImpressao.mapaViewport.doubleClickZoom.enable();
+        layoutImpressao.mapaViewport.boxZoom.enable();
+        layoutImpressao.mapaViewport.keyboard.enable();
+        
+        btn.style.background = '#e67e22';
+        btn.textContent = '🔒 Travar Mapa';
+        mapaEditavel = true;
+        console.log('[LAYOUT] Mapa LIBERADO para edição');
+    }
 }
 
