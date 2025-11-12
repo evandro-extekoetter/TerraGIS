@@ -706,9 +706,10 @@ function gerarPDFLayout() {
                 // Restaurar botão
                 btnGerar.textContent = textoOriginal;
                 btnGerar.disabled = false;
-                });
+            });
+        }); // Fim callback leafletImage
             }, 1500); // Aguardar 1.5 segundos para tiles carregarem
-        });
+        }); // Fim callback moveend
         
         // Forçar re-posicionamento para disparar evento moveend
         layoutImpressao.mapaViewport.setView(center, zoom, {animate: false});
