@@ -552,50 +552,21 @@ function gerarPDFLayout() {
     
     console.log('[LAYOUT] Preparando para captura...');
     
-    // Ocultar controles de zoom durante captura
-    var controles = document.getElementById('viewport-controles');
-    if (controles) {
-        controles.style.display = 'none';
-        console.log('[LAYOUT] Controles ocultados');
-    }
-    
-    // Forçar Leaflet a recalcular tamanho e posição
-    if (layoutImpressao.mapaViewport) {
-        console.log('[LAYOUT] Forçando invalidateSize(true)...');
-        layoutImpressao.mapaViewport.invalidateSize(true);
+    // Aguardar 500ms para garantir que tudo está renderizado
+    setTimeout(function() {
+        console.log('[LAYOUT] Capturando container A4 completo...');
         
-        // Pegar centro e zoom atuais
-        var center = layoutImpressao.mapaViewport.getCenter();
-        var zoom = layoutImpressao.mapaViewport.getZoom();
-        console.log('[LAYOUT] Centro:', center, 'Zoom:', zoom);
+        // Capturar TODO o container A4 de uma vez
+        var containerA4 = document.getElementById('preview-a4-container');
         
-        // Aguardar evento moveend para garantir que o mapa foi reposicionado
-        layoutImpressao.mapaViewport.once('moveend', function() {
-            console.log('[LAYOUT] Mapa reposicionado, aguardando tiles...');
-            
-            // Aguardar mais 1.5 segundos para tiles carregarem
-            setTimeout(function() {
-                console.log('[LAYOUT] Capturando mapa com leaflet-image...');
-                console.log('[LAYOUT] Centro final:', layoutImpressao.mapaViewport.getCenter(), 'Zoom final:', layoutImpressao.mapaViewport.getZoom());
-                
-                // Capturar mapa Leaflet com leaflet-image
-                leafletImage(layoutImpressao.mapaViewport, function(err, canvas) {
-            if (err) {
-                console.error('[LAYOUT] Erro ao capturar mapa:', err);
-                alert('❌ Erro ao capturar mapa: ' + err.message);
-                
-                // Restaurar controles
-                if (controles) {
-                    controles.style.display = 'block';
-                }
-                
-                // Restaurar botão
-                btnGerar.textContent = textoOriginal;
-                btnGerar.disabled = false;
-                return;
-            }
-            
-            console.log('[LAYOUT] Mapa capturado:', canvas.width, 'x', canvas.height);
+        html2canvas(containerA4, {
+            scale: 2,
+            useCORS: true,
+            allowTaint: false,
+            logging: false,
+            backgroundColor: '#ffffff'
+        }).then(function(canvas) {
+            console.log('[LAYOUT] Container A4 capturado:', canvas.width, 'x', canvas.height);
             
             // Criar PDF A4 (210mm x 297mm)
             var pdf = new jspdf.jsPDF({
@@ -608,79 +579,48 @@ function gerarPDFLayout() {
             var pdfWidth = 210;
             var pdfHeight = 297;
             
-            // Calcular proporção correta do mapa capturado
-            var mapImgWidth = pdfWidth;
-            var mapImgHeight = (canvas.height * pdfWidth) / canvas.width;
+            // Calcular proporção correta
+            var imgWidth = pdfWidth;
+            var imgHeight = (canvas.height * pdfWidth) / canvas.width;
             
-            // Adicionar mapa ao PDF (proporção correta)
-            var mapData = canvas.toDataURL('image/png');
-            pdf.addImage(mapData, 'PNG', 0, 0, mapImgWidth, mapImgHeight);
+            // Se a altura calculada for maior que A4, ajustar
+            if (imgHeight > pdfHeight) {
+                imgHeight = pdfHeight;
+                imgWidth = (canvas.width * pdfHeight) / canvas.height;
+            }
             
-            console.log('[LAYOUT] Mapa adicionado ao PDF:', mapImgWidth, 'x', mapImgHeight, 'mm');
+            // Adicionar imagem ao PDF (centralizada)
+            var imgData = canvas.toDataURL('image/png');
+            var xOffset = (pdfWidth - imgWidth) / 2;
+            var yOffset = (pdfHeight - imgHeight) / 2;
             
-            // Agora capturar os rodapés (título, responsável, observações, data)
-            var rodapeContainer = document.getElementById('preview-a4-container');
+            pdf.addImage(imgData, 'PNG', xOffset, yOffset, imgWidth, imgHeight);
             
-            html2canvas(rodapeContainer, {
-                scale: 1,
-                useCORS: true,
-                logging: false,
-                backgroundColor: 'transparent',
-                allowTaint: false
-            }).then(function(rodapeCanvas) {
-                console.log('[LAYOUT] Rodapés capturados:', rodapeCanvas.width, 'x', rodapeCanvas.height);
-                
-                // Calcular proporção correta dos rodapés
-                var rodapeImgWidth = pdfWidth;
-                var rodapeImgHeight = (rodapeCanvas.height * pdfWidth) / rodapeCanvas.width;
-                
-                // Adicionar rodapés ao PDF (proporção correta, sobrepor)
-                var rodapeData = rodapeCanvas.toDataURL('image/png');
-                pdf.addImage(rodapeData, 'PNG', 0, 0, rodapeImgWidth, rodapeImgHeight);
-                
-                console.log('[LAYOUT] Rodapés adicionados ao PDF:', rodapeImgWidth, 'x', rodapeImgHeight, 'mm');
-                
-                console.log('[LAYOUT] Rodapés adicionados ao PDF');
-                
-                // Gerar nome do arquivo
-                var titulo = layoutImpressao.configuracao.titulo || 'mapa';
-                var nomeArquivo = 'TerraGIS_' + titulo.replace(/[^a-zA-Z0-9]/g, '_') + '.pdf';
-                
-                // Salvar PDF
-                pdf.save(nomeArquivo);
-                
-                console.log('[LAYOUT] PDF gerado: ' + nomeArquivo);
-                
-                // Restaurar controles
-                if (controles) {
-                    controles.style.display = 'block';
-                }
-                
-                // Restaurar botão
-                btnGerar.textContent = textoOriginal;
-                btnGerar.disabled = false;
-                
-                alert('✅ PDF gerado com sucesso: ' + nomeArquivo);
-            }).catch(function(erro) {
-                console.error('[LAYOUT] Erro ao capturar rodapés:', erro);
-                alert('❌ Erro ao capturar rodapés: ' + erro.message);
-                
-                // Restaurar controles
-                if (controles) {
-                    controles.style.display = 'block';
-                }
-                
-                // Restaurar botão
-                btnGerar.textContent = textoOriginal;
-                btnGerar.disabled = false;
-            });
-        }); // Fim callback leafletImage
-            }, 1500); // Aguardar 1.5 segundos para tiles carregarem
-        }); // Fim callback moveend
-        
-        // Forçar re-posicionamento para disparar evento moveend
-        layoutImpressao.mapaViewport.setView(center, zoom, {animate: false});
-    }
+            console.log('[LAYOUT] Imagem adicionada ao PDF:', imgWidth, 'x', imgHeight, 'mm');
+            
+            // Gerar nome do arquivo
+            var titulo = layoutImpressao.configuracao.titulo || 'mapa';
+            var nomeArquivo = 'TerraGIS_' + titulo.replace(/[^a-zA-Z0-9]/g, '_') + '.pdf';
+            
+            // Salvar PDF
+            pdf.save(nomeArquivo);
+            
+            console.log('[LAYOUT] PDF gerado: ' + nomeArquivo);
+            
+            // Restaurar botão
+            btnGerar.textContent = textoOriginal;
+            btnGerar.disabled = false;
+            
+            alert('✅ PDF gerado com sucesso: ' + nomeArquivo);
+        }).catch(function(erro) {
+            console.error('[LAYOUT] Erro ao capturar:', erro);
+            alert('❌ Erro ao capturar: ' + erro.message);
+            
+            // Restaurar botão
+            btnGerar.textContent = textoOriginal;
+            btnGerar.disabled = false;
+        });
+    }, 500); // Aguardar 500ms para renderização
 }
 
 // ===== CONTROLES DO VIEWPORT =====
