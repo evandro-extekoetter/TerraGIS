@@ -230,6 +230,19 @@ function criarModalLayoutImpressao() {
                                 z-index: 1000;
                                 box-shadow: 0 2px 4px rgba(0,0,0,0.2);
                             ">
+                                <button onclick="atualizarMapaViewport()" title="Atualizar mapa com camadas visíveis" style="
+                                    display: block;
+                                    width: auto;
+                                    padding: 5px 8px;
+                                    margin-bottom: 5px;
+                                    background: #4CAF50;
+                                    color: white;
+                                    border: 1px solid #45a049;
+                                    cursor: pointer;
+                                    font-size: 11px;
+                                    font-weight: bold;
+                                    border-radius: 3px;
+                                ">🔄 Atualizar</button>
                                 <button onclick="zoomInViewport()" style="
                                     display: block;
                                     width: 30px;
@@ -416,15 +429,10 @@ function inicializarViewportMapa() {
         maxZoom: 19
     }).addTo(layoutImpressao.mapaViewport);
     
-    // Copiar camadas do mapa principal
-    copiarCamadasParaViewport();
+    // Definir vista inicial (mundo inteiro)
+    layoutImpressao.mapaViewport.setView([0, 0], 2);
     
-    // Enquadrar automaticamente na camada ativa
-    setTimeout(function() {
-        enquadrarCamadaAtivaInicial();
-    }, 200);
-    
-    console.log('[LAYOUT] Viewport inicializado');
+    console.log('[LAYOUT] Viewport inicializado (vazio)');
 }
 
 // ===== COPIAR CAMADAS DO MAPA PRINCIPAL =====
@@ -785,4 +793,36 @@ function enquadrarGeometriaViewport() {
 }
 
 console.log('[LAYOUT] Módulo de Layout de Impressão carregado');
+
+
+
+
+// ===== ATUALIZAR MAPA VIEWPORT =====
+function atualizarMapaViewport() {
+    console.log('[LAYOUT] Atualizando mapa viewport...');
+    
+    if (!layoutImpressao.mapaViewport) {
+        alert('Viewport não inicializado');
+        return;
+    }
+    
+    // Limpar camadas existentes (exceto base)
+    layoutImpressao.mapaViewport.eachLayer(function(layer) {
+        if (!(layer instanceof L.TileLayer)) {
+            layoutImpressao.mapaViewport.removeLayer(layer);
+        }
+    });
+    
+    console.log('[LAYOUT] Camadas antigas removidas');
+    
+    // Copiar camadas do mapa principal
+    copiarCamadasParaViewport();
+    
+    // Enquadrar na geometria ativa
+    setTimeout(function() {
+        enquadrarCamadaAtivaInicial();
+    }, 200);
+    
+    console.log('[LAYOUT] Mapa viewport atualizado');
+}
 
