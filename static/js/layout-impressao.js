@@ -559,27 +559,19 @@ function gerarPDFLayout() {
         // Capturar TODO o container A4 de uma vez
         var containerA4 = document.getElementById('preview-a4-container');
         
-        // Criar um clone do container para captura sem scroll
-        var containerClone = containerA4.cloneNode(true);
-        containerClone.style.position = 'fixed';
-        containerClone.style.top = '0';
-        containerClone.style.left = '0';
-        containerClone.style.zIndex = '999999';
-        containerClone.style.visibility = 'hidden';
-        document.body.appendChild(containerClone);
+        // Scroll para o topo para garantir que o container está visível
+        var previewWrapper = document.getElementById('preview-a4-wrapper');
+        if (previewWrapper && previewWrapper.parentNode) {
+            previewWrapper.parentNode.scrollTop = 0;
+        }
         
-        console.log('[LAYOUT] Clone criado para captura');
-        
-        html2canvas(containerClone, {
+        html2canvas(containerA4, {
             scale: 2,
             useCORS: true,
             allowTaint: false,
             logging: false,
             backgroundColor: '#ffffff'
         }).then(function(canvas) {
-            // Remover clone
-            document.body.removeChild(containerClone);
-            console.log('[LAYOUT] Clone removido');
             console.log('[LAYOUT] Container A4 capturado:', canvas.width, 'x', canvas.height);
             
             // Criar PDF A4 (210mm x 297mm)
@@ -630,10 +622,6 @@ function gerarPDFLayout() {
             console.error('[LAYOUT] Erro ao capturar:', erro);
             alert('❌ Erro ao capturar: ' + erro.message);
             
-            // Remover clone se houver erro
-            if (containerClone && containerClone.parentNode) {
-                document.body.removeChild(containerClone);
-            }
             
             // Restaurar botão
             btnGerar.textContent = textoOriginal;
