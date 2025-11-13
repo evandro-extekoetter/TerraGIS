@@ -2570,7 +2570,24 @@ function toggleSubmenuInline(event, submenuId) {
         return;
     }
     
-    // Alternar o submenu
+    // Encontrar o container pai (o div que contém este submenu e seus irmãos)
+    const container = submenu.parentElement;
+    if (!container) return;
+    
+    // Encontrar o menu pai (EDIÇÃO, CONSTRUÇÃO, etc)
+    const parentMenu = container.closest('.top-dropdown');
+    if (!parentMenu) return;
+    
+    // Fechar TODOS os submenus do mesmo menu pai
+    const allSubmenusInParent = parentMenu.querySelectorAll('.top-dropdown[style*="display"]');
+    allSubmenusInParent.forEach(s => {
+        // Fechar apenas se for um submenu (tem id e não é o menu pai)
+        if (s.id && s.id !== submenuId && s !== parentMenu) {
+            s.style.display = 'none';
+        }
+    });
+    
+    // Alternar o submenu atual
     if (submenu.style.display === 'none' || submenu.style.display === '') {
         submenu.style.display = 'block';
     } else {
