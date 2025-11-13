@@ -1267,6 +1267,11 @@ function openProject() {
                     map.fitBounds(firstLayerBounds);
                 }
                 
+                // Atualizar painel de camadas
+                if (typeof terraManager !== 'undefined') {
+                    terraManager.updateLayerListUI();
+                }
+                
                 showMessage('Projeto aberto com sucesso', 'success');
             } catch (error) {
                 console.error('Erro ao abrir projeto:', error);
