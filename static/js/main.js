@@ -2514,10 +2514,9 @@ function toggleSubmenu(event, submenuId) {
     const submenu = document.getElementById(submenuId);
     if (!submenu) return;
     
-    // Fechar outros submenus no mesmo nível
-    const parent = submenu.parentElement.parentElement;
-    const siblings = parent.querySelectorAll('.submenu');
-    siblings.forEach(s => {
+    // Fechar TODOS os outros submenus (em qualquer menu)
+    const allSubmenus = document.querySelectorAll('.submenu');
+    allSubmenus.forEach(s => {
         if (s.id !== submenuId) {
             s.style.display = 'none';
         }
