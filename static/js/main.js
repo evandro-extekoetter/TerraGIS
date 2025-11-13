@@ -1075,6 +1075,21 @@ async function saveProject() {
             // Obter bounds para zoom
             const bounds = layer.polygon.getBounds();
             
+            // Extrair coordenadas e IDs dos vertices
+            let coords = [];
+            let ids = [];
+            let fuso = currentProject.fuso;
+            
+            if (terraLayer && terraLayer.vertices && terraLayer.vertices.length > 0) {
+                coords = terraLayer.vertices.map(v => [v.e, v.n]);
+                ids = terraLayer.vertices.map(v => v.id);
+                fuso = terraLayer.fuso;
+            } else if (layer.coords && layer.coords.length > 0) {
+                coords = layer.coords;
+                ids = layer.ids || [];
+                fuso = layer.fuso || currentProject.fuso;
+            }
+            
             // Armazenar dados completos
             projectData.layers[layerName] = {
                 geoJSON: geoJSON,
@@ -1086,9 +1101,9 @@ async function saveProject() {
                     fillOpacity: style.fillOpacity || 0.2
                 },
                 bounds: { north: bounds.getNorth(), south: bounds.getSouth(), east: bounds.getEast(), west: bounds.getWest() },
-                coords: terraLayer ? terraLayer.coords : [],
-                ids: terraLayer ? terraLayer.ids : [],
-                fuso: terraLayer ? terraLayer.fuso : currentProject.fuso
+                coords: coords,
+                ids: ids,
+                fuso: fuso
             };
         }
         
