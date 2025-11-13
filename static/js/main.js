@@ -389,7 +389,7 @@ function openCoordListDialog() {
 function createPolygonFromCoordList() {
     console.log('[DEBUG] createPolygonFromCoordList() chamada!');
     const layerName = document.getElementById('coord-list-name').value.trim() || 'TT';
-    const fuso = document.getElementById('coord-list-fuso').value;
+    const fuso = currentProject.fuso;
     const text = document.getElementById('coord-list-input').value;
     console.log('[DEBUG] Nome:', layerName, 'Fuso:', fuso, 'Text length:', text.length);
     
@@ -448,7 +448,7 @@ function openCoordTableDialog() {
 
 function createPolygonFromCoordTable() {
     const layerName = document.getElementById('coord-table-name').value.trim() || 'TT';
-    const fuso = document.getElementById('coord-table-fuso').value;
+    const fuso = currentProject.fuso;
     const tableData = getTableData('coord-table-body');
     
     const coords = [];
@@ -529,7 +529,7 @@ function createPolygonFromAzimuth() {
             };
         } else if (tabIndex === 1) {
             // UTM
-            fuso = document.getElementById('azimuth-utm-fuso').value;
+            fuso = currentProject.fuso;
             const coordText = document.getElementById('azimuth-start-utm').value;
             const parts = parseLine(coordText, 3);
             startPoint = {
@@ -539,7 +539,7 @@ function createPolygonFromAzimuth() {
             };
         } else if (tabIndex === 2) {
             // Lat/Long
-            fuso = document.getElementById('azimuth-ll-fuso').value;
+            fuso = currentProject.fuso;
             const coordText = document.getElementById('azimuth-start-ll').value;
             const parts = parseLine(coordText, 3);
             const lon = dmsToDecimal(parts[1]);
@@ -655,7 +655,7 @@ function createPolygonFromBearing() {
             };
         } else if (tabIndex === 1) {
             // UTM
-            fuso = document.getElementById('bearing-utm-fuso').value;
+            fuso = currentProject.fuso;
             const coordText = document.getElementById('bearing-start-utm').value;
             const parts = parseLine(coordText, 3);
             startPoint = {
@@ -665,7 +665,7 @@ function createPolygonFromBearing() {
             };
         } else if (tabIndex === 2) {
             // Lat/Long
-            fuso = document.getElementById('bearing-ll-fuso').value;
+            fuso = currentProject.fuso;
             const coordText = document.getElementById('bearing-start-ll').value;
             const parts = parseLine(coordText, 3);
             const lon = dmsToDecimal(parts[1]);
@@ -832,7 +832,7 @@ function latLongToUTM(lat, lon, zone) {
 
 function createPolygonFromListaLatLong() {
     const layerName = document.getElementById('lista-latlong-name').value.trim() || 'TT';
-    const fuso = document.getElementById('lista-latlong-utm').value;
+    const fuso = currentProject.fuso;
     const coordsText = document.getElementById('lista-latlong-coords').value;
     
     const lines = coordsText.split('\n').filter(l => l.trim());
@@ -909,7 +909,7 @@ function removeRowTabelaLatLong() {
 
 function createPolygonFromTabelaLatLong() {
     const layerName = document.getElementById('tabela-latlong-name').value.trim() || 'TT';
-    const fuso = document.getElementById('tabela-latlong-utm').value;
+    const fuso = currentProject.fuso;
     const table = document.getElementById('tabela-latlong-table').getElementsByTagName('tbody')[0];
     
     const coords = [];
@@ -1390,7 +1390,7 @@ function handleSIGEFFileSelect(event) {
 
 async function importarPoligonoSIGEF() {
     const nomeImovel = document.getElementById('sigef-nome-imovel').value.trim();
-    const fuso = document.getElementById('sigef-fuso').value;
+    const fuso = currentProject.fuso;
     
     if (!nomeImovel) {
         showMessage('Digite o nome do imóvel/matrícula', 'error');
