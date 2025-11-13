@@ -1186,7 +1186,7 @@ function openProject() {
                         verticesLayer = L.featureGroup();
                         coords.forEach(([e, n], i) => {
                             const vertexId = ids && ids[i] ? ids[i] : `P-${String(i+1).padStart(2, '0')}`;
-                            const latlng = L.latLng(n, e); // Nota: Leaflet usa [lat, lng]
+                            const latlng = utmToLatLng(e, n, layerData.fuso); // Converter UTM para LatLng
                             
                             // Criar marcador de vértice
                             const circleIcon = L.divIcon({
