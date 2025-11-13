@@ -1057,11 +1057,62 @@ function saveProject() {
         showMessage('Nenhum projeto ativo', 'error');
         return;
     }
-    showMessage('Funcionalidade em desenvolvimento', 'info');
+    const projectData = { name: currentProject.name, fuso: currentProject.fuso, timestamp: new Date().toISOString(), layers: {} };
+    for (const layerName in layers) {
+        const layer = layers[layerName];
+        const geoJSON = layer.polygon.toGeoJSON();
+        projectData.layers[layerName] = { geoJSON: geoJSON, visible: layer.visible };
+    }
+    const jsonStr = JSON.stringify(projectData, null, 2);
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = currentProject.name.replace(/[^a-zA-Z0-9]/g, '_') + '.terra';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    showMessage('Projeto salvo com sucesso', 'success');
 }
 
 function openProject() {
-    showMessage('Funcionalidade em desenvolvimento', 'info');
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.terra';
+    input.onchange = function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            try {
+                const projectData = JSON.parse(event.target.result);
+                if (!projectData.name || !projectData.fuso || !projectData.layers) {
+                    showMessage('Arquivo de projeto invalido', 'error');
+                    return;
+                }
+                for (const layerName in layers) {
+                    if (layers[layerName].polygon) map.removeLayer(layers[layerName].polygon);
+                    if (layers[layerName].vertices) map.removeLayer(layers[layerName].vertices);
+                }
+                layers = {};
+                currentProject = { name: projectData.name, fuso: projectData.fuso };
+                document.getElementById('project-name').textContent = projectData.name;
+                for (const layerName in projectData.layers) {
+                    const layerData = projectData.layers[layerName];
+                    const geoJSON = layerData.geoJSON;
+                    const geoJSONLayer = L.geoJSON(geoJSON, { style: { color: '#3388ff', weight: 2, opacity: 0.8, fillOpacity: 0.2 } }).addTo(map);
+                    layers[layerName] = { polygon: geoJSONLayer, vertices: null, visible: layerData.visible };
+                }
+                showMessage('Projeto aberto com sucesso', 'success');
+            } catch (error) {
+                console.error('Erro ao abrir projeto:', error);
+                showMessage('Erro ao abrir projeto', 'error');
+            }
+        };
+        reader.readAsText(file);
+    };
+    input.click();
 }
 
 function activateTool(tool) {
