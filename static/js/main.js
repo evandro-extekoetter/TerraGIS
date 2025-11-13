@@ -1159,18 +1159,78 @@ function openProject() {
                     const layerData = projectData.layers[layerName];
                     const geoJSON = layerData.geoJSON;
                     const style = layerData.style || { color: '#3388ff', weight: 2, opacity: 0.8, fillOpacity: 0.2 };
+                    const coords = layerData.coords || [];
+                    const ids = layerData.ids || [];
                     
                     // Criar camada GeoJSON com o estilo correto
                     const geoJSONLayer = L.geoJSON(geoJSON, { style: style }).addTo(map);
                     
+                    // Recriar vértices a partir das coordenadas salvas
+                    let verticesLayer = null;
+                    if (coords.length > 0) {
+                        verticesLayer = L.featureGroup();
+                        coords.forEach(([e, n], i) => {
+                            const vertexId = ids && ids[i] ? ids[i] : `P-${String(i+1).padStart(2, '0')}`;
+                            const latlng = L.latLng(n, e); // Nota: Leaflet usa [lat, lng]
+                            
+                            // Criar marcador de vértice
+                            const circleIcon = L.divIcon({
+                                className: 'vertex-marker',
+                                html: `<div style="
+                                    width: 12px;
+                                    height: 12px;
+                                    background: #FF6B6B;
+                                    border: 2px solid white;
+                                    border-radius: 50%;
+                                    cursor: pointer;
+                                "></div>`,
+                                iconSize: [12, 12],
+                                iconAnchor: [6, 6]
+                            });
+                            
+                            const marker = L.marker(latlng, {
+                                icon: circleIcon,
+                                draggable: false,
+                                autoPan: true
+                            });
+                            
+                            // Armazenar dados no marcador
+                            marker._vertexIndex = i;
+                            marker._vertexId = vertexId;
+                            marker._coordE = e;
+                            marker._coordN = n;
+                            
+                            // Criar label
+                            const labelIcon = L.divIcon({
+                                className: 'vertex-label',
+                                html: `<div style="background: white; padding: 2px 6px; border-radius: 3px; font-size: 11px; font-weight: bold; border: 1px solid #333;">${vertexId}</div>`,
+                                iconSize: [50, 20],
+                                iconAnchor: [25, -10]
+                            });
+                            
+                            const label = L.marker(latlng, { icon: labelIcon });
+                            
+                            // Adicionar popup
+                            marker.bindPopup(`
+                                <b>${vertexId}</b><br>
+                                E: ${e.toFixed(3)}<br>
+                                N: ${n.toFixed(3)}
+                            `);
+                            
+                            verticesLayer.addLayer(marker);
+                            verticesLayer.addLayer(label);
+                        });
+                        verticesLayer.addTo(map);
+                    }
+                    
                     // Armazenar camada
                     layers[layerName] = {
                         polygon: geoJSONLayer,
-                        vertices: null,
+                        vertices: verticesLayer,
                         visible: layerData.visible,
                         terraLayer: null,
-                        coords: layerData.coords || [],
-                        ids: layerData.ids || [],
+                        coords: coords,
+                        ids: ids,
                         fuso: layerData.fuso || projectData.fuso
                     };
                     
