@@ -1189,6 +1189,7 @@ function openProject() {
                             console.log(`[OPEN] Criando vértice ${i}: e=${e}, n=${n}, id=${ids[i]}`);
                             const vertexId = ids && ids[i] ? ids[i] : `P-${String(i+1).padStart(2, '0')}`;
                             const latlng = utmToLatLng(e, n, layerData.fuso); // Converter UTM para LatLng
+                            console.log(`[OPEN] LatLng convertida: lat=${latlng.lat}, lng=${latlng.lng}`);
                             
                             // Criar marcador de vértice
                             const circleIcon = L.divIcon({
