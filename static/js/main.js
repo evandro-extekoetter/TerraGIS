@@ -1052,28 +1052,51 @@ function createProject() {
     showMessage(`Projeto "${name}" criado com sucesso`, 'success');
 }
 
-function saveProject() {
+async function saveProject() {
     if (!currentProject) {
         showMessage('Nenhum projeto ativo', 'error');
         return;
     }
-    const projectData = { name: currentProject.name, fuso: currentProject.fuso, timestamp: new Date().toISOString(), layers: {} };
-    for (const layerName in layers) {
-        const layer = layers[layerName];
-        const geoJSON = layer.polygon.toGeoJSON();
-        projectData.layers[layerName] = { geoJSON: geoJSON, visible: layer.visible };
+    
+    try {
+        const projectData = { name: currentProject.name, fuso: currentProject.fuso, timestamp: new Date().toISOString(), layers: {} };
+        for (const layerName in layers) {
+            const layer = layers[layerName];
+            const geoJSON = layer.polygon.toGeoJSON();
+            projectData.layers[layerName] = { geoJSON: geoJSON, visible: layer.visible };
+        }
+        
+        const jsonStr = JSON.stringify(projectData, null, 2);
+        const blob = new Blob([jsonStr], { type: 'application/json' });
+        
+        // Tentar usar File System Access API (Chrome, Edge)
+        if (window.showSaveFilePicker) {
+            const handle = await window.showSaveFilePicker({
+                suggestedName: currentProject.name.replace(/[^a-zA-Z0-9]/g, '_') + '.terra',
+                types: [{ description: 'Arquivo TerraGIS', accept: { 'application/json': ['.terra'] } }]
+            });
+            const writable = await handle.createWritable();
+            await writable.write(blob);
+            await writable.close();
+            showMessage('Projeto salvo com sucesso', 'success');
+        } else {
+            // Fallback para download automático
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = currentProject.name.replace(/[^a-zA-Z0-9]/g, '_') + '.terra';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            showMessage('Projeto salvo com sucesso', 'success');
+        }
+    } catch (error) {
+        if (error.name !== 'AbortError') {
+            console.error('Erro ao salvar projeto:', error);
+            showMessage('Erro ao salvar projeto', 'error');
+        }
     }
-    const jsonStr = JSON.stringify(projectData, null, 2);
-    const blob = new Blob([jsonStr], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = currentProject.name.replace(/[^a-zA-Z0-9]/g, '_') + '.terra';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-    showMessage('Projeto salvo com sucesso', 'success');
 }
 
 function openProject() {
