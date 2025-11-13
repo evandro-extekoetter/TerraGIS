@@ -1182,9 +1182,11 @@ function openProject() {
                     
                     // Recriar vértices a partir das coordenadas salvas
                     let verticesLayer = null;
+                    console.log(`[OPEN] Carregando camada: ${layerName}, coords.length: ${coords.length}, ids.length: ${ids.length}`);
                     if (coords.length > 0) {
                         verticesLayer = L.featureGroup();
                         coords.forEach(([e, n], i) => {
+                            console.log(`[OPEN] Criando vértice ${i}: e=${e}, n=${n}, id=${ids[i]}`);
                             const vertexId = ids && ids[i] ? ids[i] : `P-${String(i+1).padStart(2, '0')}`;
                             const latlng = utmToLatLng(e, n, layerData.fuso); // Converter UTM para LatLng
                             
