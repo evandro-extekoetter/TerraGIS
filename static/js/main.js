@@ -1060,10 +1060,36 @@ async function saveProject() {
     
     try {
         const projectData = { name: currentProject.name, fuso: currentProject.fuso, timestamp: new Date().toISOString(), layers: {} };
+        
+        // Salvar TODAS as informações de cada camada
         for (const layerName in layers) {
             const layer = layers[layerName];
+            const terraLayer = layer.terraLayer;
+            
+            // Obter GeoJSON
             const geoJSON = layer.polygon.toGeoJSON();
-            projectData.layers[layerName] = { geoJSON: geoJSON, visible: layer.visible };
+            
+            // Obter estilo do polígono
+            const style = layer.polygon.options || {};
+            
+            // Obter bounds para zoom
+            const bounds = layer.polygon.getBounds();
+            
+            // Armazenar dados completos
+            projectData.layers[layerName] = {
+                geoJSON: geoJSON,
+                visible: layer.visible,
+                style: {
+                    color: style.color || '#3388ff',
+                    weight: style.weight || 2,
+                    opacity: style.opacity || 0.8,
+                    fillOpacity: style.fillOpacity || 0.2
+                },
+                bounds: { north: bounds.getNorth(), south: bounds.getSouth(), east: bounds.getEast(), west: bounds.getWest() },
+                coords: terraLayer ? terraLayer.coords : [],
+                ids: terraLayer ? terraLayer.ids : [],
+                fuso: terraLayer ? terraLayer.fuso : currentProject.fuso
+            };
         }
         
         const jsonStr = JSON.stringify(projectData, null, 2);
@@ -1114,19 +1140,54 @@ function openProject() {
                     showMessage('Arquivo de projeto invalido', 'error');
                     return;
                 }
+                
+                // Limpar camadas atuais
                 for (const layerName in layers) {
                     if (layers[layerName].polygon) map.removeLayer(layers[layerName].polygon);
                     if (layers[layerName].vertices) map.removeLayer(layers[layerName].vertices);
                 }
                 layers = {};
+                
+                // Carregar novo projeto
                 currentProject = { name: projectData.name, fuso: projectData.fuso };
                 document.getElementById('project-name').textContent = projectData.name;
+                
+                let firstLayerBounds = null;
+                
+                // Carregar cada camada
                 for (const layerName in projectData.layers) {
                     const layerData = projectData.layers[layerName];
                     const geoJSON = layerData.geoJSON;
-                    const geoJSONLayer = L.geoJSON(geoJSON, { style: { color: '#3388ff', weight: 2, opacity: 0.8, fillOpacity: 0.2 } }).addTo(map);
-                    layers[layerName] = { polygon: geoJSONLayer, vertices: null, visible: layerData.visible };
+                    const style = layerData.style || { color: '#3388ff', weight: 2, opacity: 0.8, fillOpacity: 0.2 };
+                    
+                    // Criar camada GeoJSON com o estilo correto
+                    const geoJSONLayer = L.geoJSON(geoJSON, { style: style }).addTo(map);
+                    
+                    // Armazenar camada
+                    layers[layerName] = {
+                        polygon: geoJSONLayer,
+                        vertices: null,
+                        visible: layerData.visible,
+                        terraLayer: null,
+                        coords: layerData.coords || [],
+                        ids: layerData.ids || [],
+                        fuso: layerData.fuso || projectData.fuso
+                    };
+                    
+                    // Guardar bounds da primeira camada para zoom
+                    if (!firstLayerBounds && layerData.bounds) {
+                        firstLayerBounds = L.latLngBounds(
+                            [layerData.bounds.south, layerData.bounds.west],
+                            [layerData.bounds.north, layerData.bounds.east]
+                        );
+                    }
                 }
+                
+                // Fazer zoom para a primeira camada
+                if (firstLayerBounds) {
+                    map.fitBounds(firstLayerBounds);
+                }
+                
                 showMessage('Projeto aberto com sucesso', 'success');
             } catch (error) {
                 console.error('Erro ao abrir projeto:', error);
