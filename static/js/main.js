@@ -3743,3 +3743,156 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+
+
+
+/**
+ * Abrir modal para adicionar vértices por coordenadas (v3.1.0)
+ */
+function abrirModalAdicionarVerticesCoordenadas() {
+    // Desativar outras ferramentas
+    desativarTodasFerramentasEdicao();
+    
+    // Limpar o modal
+    document.getElementById('adicionar-vertice-coord-camada').innerHTML = '';
+    document.getElementById('adicionar-vertice-coord-anterior').innerHTML = '';
+    
+    // Preencher dropdown de camadas
+    const camadasSelect = document.getElementById('adicionar-vertice-coord-camada');
+    Object.values(terraManager.layers).forEach(terraLayer => {
+        const option = document.createElement('option');
+        option.value = terraLayer.name;
+        option.text = `${terraLayer.name} (${terraLayer.type === 'polygon' ? 'Polígono' : 'Polilinha'})`;
+        camadasSelect.appendChild(option);
+    });
+    
+    // Atualizar vértices anteriores ao mudar camada
+    camadasSelect.addEventListener('change', function() {
+        atualizarVerticesAnteriores(this.value);
+    });
+    
+    // Carregar vértices da primeira camada
+    if (Object.keys(terraManager.layers).length > 0) {
+        const primeiraLayer = Object.values(terraManager.layers)[0];
+        atualizarVerticesAnteriores(primeiraLayer.name);
+    }
+    
+    // Mostrar modal
+    document.getElementById('modal-adicionar-vertice-coordenadas').style.display = 'block';
+}
+
+/**
+ * Atualizar dropdown de vértices anteriores
+ */
+function atualizarVerticesAnteriores(layerName) {
+    const terraLayer = terraManager.layers[layerName];
+    if (!terraLayer) return;
+    
+    const select = document.getElementById('adicionar-vertice-coord-anterior');
+    select.innerHTML = '';
+    
+    terraLayer.vertices.forEach((vertex, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        option.text = `${vertex.id} (${vertex.e}, ${vertex.n})`;
+        select.appendChild(option);
+    });
+}
+
+/**
+ * Aplicar adição de vértice por coordenadas
+ */
+function aplicarAdicionarVerticesCoordenadas() {
+    const layerName = document.getElementById('adicionar-vertice-coord-camada').value;
+    const verticeAnteriorIndex = parseInt(document.getElementById('adicionar-vertice-coord-anterior').value);
+    const novoId = document.getElementById('adicionar-vertice-coord-id').value.trim();
+    
+    if (!layerName || novoId === '') {
+        showMessage('Preencha todos os campos obrigatórios', 'error');
+        return;
+    }
+    
+    const terraLayer = terraManager.layers[layerName];
+    if (!terraLayer) {
+        showMessage('Camada não encontrada', 'error');
+        return;
+    }
+    
+    // Determinar qual aba está ativa
+    const abGeografica = document.getElementById('aba-coord-geografica-input').style.display !== 'none';
+    
+    let coordE, coordN;
+    
+    if (abGeografica) {
+        // Coordenada geográfica (Lat/Long)
+        try {
+            let lonStr = document.getElementById('adicionar-vertice-coord-lon').value.trim();
+            let latStr = document.getElementById('adicionar-vertice-coord-lat').value.trim();
+            
+            let lon, lat;
+            
+            // Tentar converter DMS primeiro
+            if (lonStr.includes('°') || lonStr.includes("'") || lonStr.includes('"')) {
+                lon = dmsToDecimal(lonStr);
+            } else {
+                lon = parseFloat(lonStr.replace(',', '.'));
+            }
+            
+            if (latStr.includes('°') || latStr.includes("'") || latStr.includes('"')) {
+                lat = dmsToDecimal(latStr);
+            } else {
+                lat = parseFloat(latStr.replace(',', '.'));
+            }
+            
+            if (isNaN(lon) || isNaN(lat)) throw new Error('Coordenadas inválidas');
+            
+            // Converter para UTM
+            const utm = latLngToUTM(lat, lon, terraLayer.fuso);
+            coordE = utm.e;
+            coordN = utm.n;
+        } catch (error) {
+            showMessage(`Erro na coordenada geográfica: ${error.message}`, 'error');
+            return;
+        }
+    } else {
+        // Coordenada UTM
+        try {
+            coordE = parseFloat(document.getElementById('adicionar-vertice-coord-e').value.replace(',', '.'));
+            coordN = parseFloat(document.getElementById('adicionar-vertice-coord-n').value.replace(',', '.'));
+            
+            if (isNaN(coordE) || isNaN(coordN)) throw new Error('Coordenadas inválidas');
+        } catch (error) {
+            showMessage(`Erro na coordenada UTM: ${error.message}`, 'error');
+            return;
+        }
+    }
+    
+    // Adicionar vértice após o vértice anterior
+    try {
+        const insertIndex = verticeAnteriorIndex + 1;
+        terraLayer.addVertex(novoId, coordE, coordN, insertIndex);
+        showMessage(`Vértice '${novoId}' adicionado com sucesso!`, 'success');
+        
+        // Limpar campos
+        document.getElementById('adicionar-vertice-coord-id').value = '';
+        document.getElementById('adicionar-vertice-coord-e').value = '';
+        document.getElementById('adicionar-vertice-coord-n').value = '';
+        document.getElementById('adicionar-vertice-coord-lon').value = '';
+        document.getElementById('adicionar-vertice-coord-lat').value = '';
+    } catch (error) {
+        showMessage(`Erro: ${error.message}`, 'error');
+    }
+}
+
+/**
+ * Alternar entre abas de coordenadas
+ */
+function alternarAbaCoord(aba) {
+    document.getElementById('aba-coord-geografica-input').style.display = aba === 'geografica' ? 'block' : 'none';
+    document.getElementById('aba-coord-utm-input').style.display = aba === 'utm' ? 'block' : 'none';
+    
+    // Atualizar botões das abas
+    document.getElementById('btn-aba-geografica').style.background = aba === 'geografica' ? '#2A4A62' : '#1A1A1A';
+    document.getElementById('btn-aba-utm').style.background = aba === 'utm' ? '#2A4A62' : '#1A1A1A';
+}
+

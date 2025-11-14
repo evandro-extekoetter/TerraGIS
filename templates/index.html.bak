@@ -212,17 +212,9 @@
                                 <img src="{{ url_for('static', filename='icons/move_vertices_icon.png') }}" class="icon" alt=""> VÉRTICE ▶
                             </button>
                             <div id="edicao-vertice-submenu" class="top-dropdown" style="display: none; position: absolute; left: 100%; top: 0; margin-left: 4px;">
-                                <button class="dropdown-item" onclick="toggleSubmenuInline(event, 'adicionar-vertice-submenu')">
-                                    <img src="{{ url_for('static', filename='icons/move_vertices_icon.png') }}" class="icon" alt=""> Adicionar ▶
+                                <button class="dropdown-item" onclick="ativarAdicionarVerticesMapa(); closeAllMenus();">
+                                    <img src="{{ url_for('static', filename='icons/move_vertices_icon.png') }}" class="icon" alt=""> Adicionar (Mapa)
                                 </button>
-                                <div id="adicionar-vertice-submenu" class="top-dropdown" style="display: none; position: absolute; left: 100%; top: 0; margin-left: 4px;">
-                                    <button class="dropdown-item" onclick="ativarAdicionarVerticesMapa(); closeAllMenus();">
-                                        <img src="{{ url_for('static', filename='icons/move_vertices_icon.png') }}" class="icon" alt=""> Mapa
-                                    </button>
-                                    <button class="dropdown-item" onclick="abrirModalAdicionarVerticesCoordenadas(); closeAllMenus();">
-                                        <img src="{{ url_for('static', filename='icons/table_icon.png') }}" class="icon" alt=""> Coordenadas
-                                    </button>
-                                </div>
                                 <button class="dropdown-item" onclick="ativarMoverVerticesMapa(); closeAllMenus();">
                                     <img src="{{ url_for('static', filename='icons/move_vertices_icon.png') }}" class="icon" alt=""> Mover (Mapa)
                                 </button>
@@ -331,7 +323,7 @@
                     </button>
                 </div>
             </nav>
-            <div style="font-size: 12px; color: #999;">v3.1.0</div>
+            <div style="font-size: 12px; color: #999;">v3.0.0</div>
         </div>
     </header>
 
@@ -947,77 +939,8 @@
             </div>
         </div>
     </div>
-    
-    <!-- Modal Adicionar Vértice por Coordenadas (v3.1.0) -->
-    <div id="modal-adicionar-vertice-coordenadas" class="modal" style="display: none;">
-        <div class="modal-content" style="max-width: 600px;">
-            <div class="modal-header">
-                <h2>➕ Adicionar Vértice por Coordenadas</h2>
-                <button class="close-btn" onclick="document.getElementById('modal-adicionar-vertice-coordenadas').style.display='none'">&times;</button>
-            </div>
-            <div class="modal-body">
-                <!-- Seleção de Camada -->
-                <div class="form-group">
-                    <label for="adicionar-vertice-coord-camada">Camada:</label>
-                    <select id="adicionar-vertice-coord-camada">
-                        <option value="">Selecione uma camada</option>
-                    </select>
-                </div>
-                
-                <!-- Seleção de Vértice Anterior -->
-                <div class="form-group">
-                    <label for="adicionar-vertice-coord-anterior">Vértice Anterior (inserir após):</label>
-                    <select id="adicionar-vertice-coord-anterior">
-                        <option value="">Selecione um vértice</option>
-                    </select>
-                </div>
-                
-                <!-- ID do Novo Vértice -->
-                <div class="form-group">
-                    <label for="adicionar-vertice-coord-id">ID do Novo Vértice:</label>
-                    <input type="text" id="adicionar-vertice-coord-id" placeholder="P-05">
-                </div>
-                
-                <!-- Abas de Coordenadas -->
-                <div class="form-group">
-                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                        <button id="btn-aba-utm" class="btn-secondary" onclick="alternarAbaCoord('utm')" style="flex: 1; background: #2A4A62;">UTM</button>
-                        <button id="btn-aba-geografica" class="btn-secondary" onclick="alternarAbaCoord('geografica')" style="flex: 1; background: #1A1A1A;">Geográfica</button>
-                    </div>
-                </div>
-                
-                <!-- Aba UTM -->
-                <div id="aba-coord-utm-input" style="display: block;">
-                    <div class="form-group">
-                        <label for="adicionar-vertice-coord-e">Coordenada E (UTM):</label>
-                        <input type="text" id="adicionar-vertice-coord-e" placeholder="752000,250">
-                    </div>
-                    <div class="form-group">
-                        <label for="adicionar-vertice-coord-n">Coordenada N (UTM):</label>
-                        <input type="text" id="adicionar-vertice-coord-n" placeholder="8569200,750">
-                    </div>
-                </div>
-                
-                <!-- Aba Geográfica -->
-                <div id="aba-coord-geografica-input" style="display: none;">
-                    <div class="form-group">
-                        <label for="adicionar-vertice-coord-lon">Longitude (DMS ou Decimal):</label>
-                        <input type="text" id="adicionar-vertice-coord-lon" placeholder="-56°23'20,828\" ou -56.389">
-                    </div>
-                    <div class="form-group">
-                        <label for="adicionar-vertice-coord-lat">Latitude (DMS ou Decimal):</label>
-                        <input type="text" id="adicionar-vertice-coord-lat" placeholder="-14°29'18,542\" ou -14.488">
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-secondary" onclick="document.getElementById('modal-adicionar-vertice-coordenadas').style.display='none'">Cancelar</button>
-                <button class="btn-primary" onclick="aplicarAdicionarVerticesCoordenadas()">Adicionar</button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Modal Remover Vértice -->>
+
+    <!-- Modal Remover Vértice -->
     <div id="modal-remover-vertice" class="modal">
         <div class="modal-content">
             <div class="modal-header">
