@@ -3754,16 +3754,14 @@ function abrirModalAdicionarVerticesCoordenadas() {
     desativarTodasFerramentasEdicao();
     
     // Obter camada ativa
-    const activeLayers = Object.values(terraManager.layers).filter(layer => layer.active);
-    if (activeLayers.length === 0) {
+    const activeLayerName = terraManager.getActiveLayerName();
+    if (!activeLayerName) {
         showMessage('Selecione uma camada ativa no gerenciador de camadas', 'error');
         return;
     }
     
-    const activeLayer = activeLayers[0];
-    
     // Carregar vértices da camada ativa
-    atualizarVerticesAnteriores(activeLayer.name);
+    atualizarVerticesAnteriores(activeLayerName);
     
     // Limpar campos
     document.getElementById('adicionar-vertice-coord-id').value = '';
@@ -3799,13 +3797,13 @@ function atualizarVerticesAnteriores(layerName) {
  */
 function aplicarAdicionarVerticesCoordenadas() {
     // Obter camada ativa
-    const activeLayers = Object.values(terraManager.layers).filter(layer => layer.active);
-    if (activeLayers.length === 0) {
+    const activeLayerName = terraManager.getActiveLayerName();
+    if (!activeLayerName) {
         showMessage('Selecione uma camada ativa', 'error');
         return;
     }
     
-    const terraLayer = activeLayers[0];
+    const terraLayer = terraManager.layers[activeLayerName];
     const verticeAnteriorIndex = parseInt(document.getElementById('adicionar-vertice-coord-anterior').value);
     const novoId = document.getElementById('adicionar-vertice-coord-id').value.trim();
     
