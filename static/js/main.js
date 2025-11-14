@@ -3753,29 +3753,24 @@ function abrirModalAdicionarVerticesCoordenadas() {
     // Desativar outras ferramentas
     desativarTodasFerramentasEdicao();
     
-    // Limpar o modal
-    document.getElementById('adicionar-vertice-coord-camada').innerHTML = '';
-    document.getElementById('adicionar-vertice-coord-anterior').innerHTML = '';
-    
-    // Preencher dropdown de camadas
-    const camadasSelect = document.getElementById('adicionar-vertice-coord-camada');
-    Object.values(terraManager.layers).forEach(terraLayer => {
-        const option = document.createElement('option');
-        option.value = terraLayer.name;
-        option.text = `${terraLayer.name} (${terraLayer.type === 'polygon' ? 'Polígono' : 'Polilinha'})`;
-        camadasSelect.appendChild(option);
-    });
-    
-    // Atualizar vértices anteriores ao mudar camada
-    camadasSelect.addEventListener('change', function() {
-        atualizarVerticesAnteriores(this.value);
-    });
-    
-    // Carregar vértices da primeira camada
-    if (Object.keys(terraManager.layers).length > 0) {
-        const primeiraLayer = Object.values(terraManager.layers)[0];
-        atualizarVerticesAnteriores(primeiraLayer.name);
+    // Obter camada ativa
+    const activeLayers = Object.values(terraManager.layers).filter(layer => layer.active);
+    if (activeLayers.length === 0) {
+        showMessage('Selecione uma camada ativa no gerenciador de camadas', 'error');
+        return;
     }
+    
+    const activeLayer = activeLayers[0];
+    
+    // Carregar vértices da camada ativa
+    atualizarVerticesAnteriores(activeLayer.name);
+    
+    // Limpar campos
+    document.getElementById('adicionar-vertice-coord-id').value = '';
+    document.getElementById('adicionar-vertice-coord-e').value = '';
+    document.getElementById('adicionar-vertice-coord-n').value = '';
+    document.getElementById('adicionar-vertice-coord-lon').value = '';
+    document.getElementById('adicionar-vertice-coord-lat').value = '';
     
     // Mostrar modal
     document.getElementById('modal-adicionar-vertice-coordenadas').style.display = 'block';
@@ -3803,18 +3798,19 @@ function atualizarVerticesAnteriores(layerName) {
  * Aplicar adição de vértice por coordenadas
  */
 function aplicarAdicionarVerticesCoordenadas() {
-    const layerName = document.getElementById('adicionar-vertice-coord-camada').value;
-    const verticeAnteriorIndex = parseInt(document.getElementById('adicionar-vertice-coord-anterior').value);
-    const novoId = document.getElementById('adicionar-vertice-coord-id').value.trim();
-    
-    if (!layerName || novoId === '') {
-        showMessage('Preencha todos os campos obrigatórios', 'error');
+    // Obter camada ativa
+    const activeLayers = Object.values(terraManager.layers).filter(layer => layer.active);
+    if (activeLayers.length === 0) {
+        showMessage('Selecione uma camada ativa', 'error');
         return;
     }
     
-    const terraLayer = terraManager.layers[layerName];
-    if (!terraLayer) {
-        showMessage('Camada não encontrada', 'error');
+    const terraLayer = activeLayers[0];
+    const verticeAnteriorIndex = parseInt(document.getElementById('adicionar-vertice-coord-anterior').value);
+    const novoId = document.getElementById('adicionar-vertice-coord-id').value.trim();
+    
+    if (isNaN(verticeAnteriorIndex) || novoId === '') {
+        showMessage('Preencha todos os campos obrigatórios', 'error');
         return;
     }
     

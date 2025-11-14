@@ -15,4 +15,7 @@
 - [x] Criar dropdown para escolher vértice anterior
 - [x] Implementar lógica de inserção após vértice anterior
 - [ ] Testar inserção de vértices em polígonos existentes
+- [x] Remover emoji do título do modal
+- [x] Remover dropdown de camada e usar camada ativa
+- [x] Debugar dropdown de vértice anterior
 
