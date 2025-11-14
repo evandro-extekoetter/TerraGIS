@@ -562,7 +562,7 @@ body {
 .leaflet-control-zoom {
     position: absolute !important;
     right: auto !important;
-    left: 20px !important;
+    left: 310px !important;
     top: 90px !important;
 }
 
