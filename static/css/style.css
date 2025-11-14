@@ -560,8 +560,10 @@ body {
 }
 
 .leaflet-control-zoom {
+    position: fixed !important;
     right: 20px !important;
     left: auto !important;
+    top: 90px !important;
 }
 
 .leaflet-control-zoom a {
