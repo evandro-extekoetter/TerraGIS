@@ -23,9 +23,10 @@ body {
 .header-content {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
     padding: 0 24px;
     height: 100%;
+    gap: 40px;
 }
 
 .logo {
@@ -560,10 +561,8 @@ body {
 }
 
 .leaflet-control-zoom {
-    position: absolute !important;
+    left: 300px !important;
     right: auto !important;
-    left: 310px !important;
-    top: 90px !important;
 }
 
 .leaflet-control-zoom a {
@@ -946,8 +945,8 @@ body {
 
 .tool-indicator strong { color: #F4A460; font-weight: 600; text-transform: uppercase; }
 
-/* Nova Camada visível */
-.submenu-item { display: flex; }
+/* Nova Camada escondida */
+.submenu-item { display: none; }
 
 /* ========================================
    SELETOR DE BASE DE MAPA
