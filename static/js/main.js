@@ -3890,3 +3890,171 @@ function alternarAbaCoord(aba) {
     document.getElementById('btn-aba-utm').style.background = aba === 'utm' ? '#2A4A62' : '#1A1A1A';
 }
 
+
+
+// ===== ADICIONAR VÉRTICES (AZIMUTE E DISTÂNCIA) =====
+
+/**
+ * Abrir modal de adicionar vértices por azimute e distância
+ */
+function abrirModalAdicionarVerticesAzimute() {
+    // Desativar outras ferramentas
+    desativarTodasFerramentasEdicao();
+    
+    // Obter camada ativa
+    const activeLayerName = terraManager.getActiveLayerName();
+    if (!activeLayerName) {
+        showMessage('Selecione uma camada ativa no gerenciador de camadas', 'error');
+        return;
+    }
+    
+    // Carregar vértices da camada ativa
+    atualizarVerticesAnterioresAzimute(activeLayerName);
+    
+    // Limpar tabela
+    document.getElementById('tabela-vertices-azimute').innerHTML = '';
+    
+    // Adicionar uma linha vazia
+    adicionarLinhaAzimute();
+    
+    // Mostrar modal
+    document.getElementById('modal-adicionar-vertice-azimute').style.display = 'block';
+}
+
+/**
+ * Atualizar dropdown de vértices anteriores para azimute
+ */
+function atualizarVerticesAnterioresAzimute(layerName) {
+    const terraLayer = terraManager.layers[layerName];
+    if (!terraLayer) return;
+    
+    const select = document.getElementById('adicionar-vertice-azimute-anterior');
+    select.innerHTML = '';
+    
+    terraLayer.vertices.forEach((vertex, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        option.text = `${vertex.id} (${vertex.e}, ${vertex.n})`;
+        select.appendChild(option);
+    });
+}
+
+/**
+ * Adicionar linha na tabela de azimute e distância
+ */
+function adicionarLinhaAzimute() {
+    const tbody = document.getElementById('tabela-vertices-azimute');
+    const rowIndex = tbody.children.length;
+    
+    const row = document.createElement('tr');
+    row.style.background = rowIndex % 2 === 0 ? '#1A1A1A' : '#252525';
+    row.style.borderBottom = '1px solid #404040';
+    
+    row.innerHTML = `
+        <td style="padding: 8px; border: 1px solid #404040;">
+            <input type="text" placeholder="P-05" style="width: 100%; padding: 6px; background: #1A1A1A; color: #FFF; border: 1px solid #404040; border-radius: 3px;" class="azimute-id">
+        </td>
+        <td style="padding: 8px; border: 1px solid #404040;">
+            <input type="text" placeholder="45,5" style="width: 100%; padding: 6px; background: #1A1A1A; color: #FFF; border: 1px solid #404040; border-radius: 3px;" class="azimute-valor">
+        </td>
+        <td style="padding: 8px; border: 1px solid #404040;">
+            <input type="text" placeholder="100,50" style="width: 100%; padding: 6px; background: #1A1A1A; color: #FFF; border: 1px solid #404040; border-radius: 3px;" class="distancia-valor">
+        </td>
+        <td style="padding: 8px; border: 1px solid #404040; text-align: center;">
+            <button onclick="removerLinhaAzimute(this)" style="background: #C41E3A; color: #FFF; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer;">X</button>
+        </td>
+    `;
+    
+    tbody.appendChild(row);
+}
+
+/**
+ * Remover linha da tabela
+ */
+function removerLinhaAzimute(btn) {
+    btn.closest('tr').remove();
+}
+
+/**
+ * Aplicar adição de vértices por azimute e distância
+ */
+function aplicarAdicionarVerticesAzimute() {
+    // Obter camada ativa
+    const activeLayerName = terraManager.getActiveLayerName();
+    if (!activeLayerName) {
+        showMessage('Selecione uma camada ativa', 'error');
+        return;
+    }
+    
+    const terraLayer = terraManager.layers[activeLayerName];
+    const verticeAnteriorIndex = parseInt(document.getElementById('adicionar-vertice-azimute-anterior').value);
+    
+    if (isNaN(verticeAnteriorIndex)) {
+        showMessage('Selecione um vértice anterior', 'error');
+        return;
+    }
+    
+    // Obter dados da tabela
+    const rows = document.getElementById('tabela-vertices-azimute').querySelectorAll('tr');
+    if (rows.length === 0) {
+        showMessage('Adicione pelo menos uma linha na tabela', 'error');
+        return;
+    }
+    
+    // Vértice de partida
+    const verticePartida = terraLayer.vertices[verticeAnteriorIndex];
+    const x0 = verticePartida.e;
+    const y0 = verticePartida.n;
+    
+    // Processar cada linha
+    let insertIndex = verticeAnteriorIndex + 1;
+    let verticesAdicionados = 0;
+    
+    try {
+        rows.forEach((row) => {
+            const idInput = row.querySelector('.azimute-id');
+            const azimeteInput = row.querySelector('.azimute-valor');
+            const distanciaInput = row.querySelector('.distancia-valor');
+            
+            const id = idInput.value.trim();
+            const azimuteStr = azimeteInput.value.trim();
+            const distanciaStr = distanciaInput.value.trim();
+            
+            // Validar campos
+            if (!id || !azimuteStr || !distanciaStr) {
+                return; // Pular linhas vazias
+            }
+            
+            // Converter para números
+            const azimute = parseFloat_BR(azimuteStr);
+            const distancia = parseFloat_BR(distanciaStr);
+            
+            if (isNaN(azimute) || isNaN(distancia)) {
+                throw new Error(`Valores inválidos para vértice ${id}`);
+            }
+            
+            // Calcular coordenadas usando azimute e distância
+            const azRad = (azimute * Math.PI) / 180; // Converter para radianos
+            const x = x0 + distancia * Math.sin(azRad);
+            const y = y0 + distancia * Math.cos(azRad);
+            
+            // Adicionar vértice
+            terraLayer.addVertex(id, x, y, insertIndex);
+            insertIndex++;
+            verticesAdicionados++;
+        });
+        
+        if (verticesAdicionados === 0) {
+            showMessage('Nenhum vértice foi adicionado (linhas vazias)', 'warning');
+            return;
+        }
+        
+        showMessage(`${verticesAdicionados} vértice(s) adicionado(s) com sucesso!`, 'success');
+        
+        // Fechar modal
+        document.getElementById('modal-adicionar-vertice-azimute').style.display = 'none';
+    } catch (error) {
+        showMessage(`Erro: ${error.message}`, 'error');
+    }
+}
+

@@ -19,3 +19,14 @@
 - [x] Remover dropdown de camada e usar camada ativa
 - [x] Debugar dropdown de vértice anterior
 
+
+
+## Ferramenta Adicionar Vértice por Azimute e Distância (v3.2.0)
+
+- [x] Criar submenu "Azimute e Distância" no menu "Adicionar"
+- [x] Criar modal com campos: Vértice Anterior, ID do Novo Vértice
+- [x] Implementar tabela de entrada (Azimute, Distância, ID)
+- [x] Implementar cálculo de coordenadas usando azimute e distância
+- [x] Implementar lógica de inserção de múltiplos vértices
+- [ ] Testar inserção de vértices com azimute e distância
+
