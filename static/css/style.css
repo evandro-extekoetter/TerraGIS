@@ -925,7 +925,7 @@ body {
 
 .tool-indicator {
     position: fixed;
-    bottom: 20px;
+    bottom: 120px;
     left: 20px;
     background: rgba(42, 42, 42, 0.95);
     border: 1px solid #404040;
@@ -949,7 +949,7 @@ body {
 
 .basemap-selector {
     position: fixed;
-    bottom: 150px;
+    bottom: 20px;
     left: 20px;
     background: rgba(42, 42, 42, 0.95);
     border: 1px solid #404040;
