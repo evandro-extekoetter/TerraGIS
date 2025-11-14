@@ -560,9 +560,9 @@ body {
 }
 
 .leaflet-control-zoom {
-    position: fixed !important;
-    right: 20px !important;
-    left: auto !important;
+    position: absolute !important;
+    right: auto !important;
+    left: 20px !important;
     top: 90px !important;
 }
 
@@ -946,8 +946,8 @@ body {
 
 .tool-indicator strong { color: #F4A460; font-weight: 600; text-transform: uppercase; }
 
-/* Esconder Nova Camada */
-.submenu-item { display: none; }
+/* Nova Camada visível */
+.submenu-item { display: flex; }
 
 /* ========================================
    SELETOR DE BASE DE MAPA
