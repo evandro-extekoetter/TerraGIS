@@ -27,7 +27,8 @@ const UTM_ZONES = {
 // Inicializar mapa
 function initMap() {
     map = L.map('map', {
-        editable: true
+        editable: true,
+        attributionControl: false
     }).setView([-15.7801, -47.9292], 4);
     
     // Criar camadas base
