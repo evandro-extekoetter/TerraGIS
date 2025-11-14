@@ -681,9 +681,10 @@ class TerraManager {
                 nameRow.appendChild(activeIcon);
             }
             
-            // Nome da camada
+            // Nome da camada (remover sufixo para exibição)
             const nameSpan = document.createElement('span');
-            nameSpan.textContent = layerName;
+            const displayName = layerName.replace(/_Poligono$|_Polilinha$/, '');
+            nameSpan.textContent = displayName;
             nameSpan.style.flex = '1';
             nameRow.appendChild(nameSpan);
             
