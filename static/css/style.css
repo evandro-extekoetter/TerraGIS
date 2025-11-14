@@ -946,7 +946,7 @@ body {
 .tool-indicator strong { color: #F4A460; font-weight: 600; text-transform: uppercase; }
 
 /* Nova Camada escondida */
-.submenu-item { display: none; }
+.submenu-item { display: none !important; }
 
 /* ========================================
    SELETOR DE BASE DE MAPA
