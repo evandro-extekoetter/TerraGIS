@@ -229,9 +229,25 @@
                                         <img src="{{ url_for('static', filename='icons/table_icon.png') }}" class="icon" alt=""> Rumo e Distância
                                     </button>
                                 </div>
-                                <button class="dropdown-item" onclick="ativarMoverVerticesMapa(); closeAllMenus();">
-                                    <img src="{{ url_for('static', filename='icons/move_vertices_icon.png') }}" class="icon" alt=""> Mover (Mapa)
-                                </button>
+                                <div style="position: relative;">
+                                    <button class="dropdown-item" onclick="toggleSubmenuInline(event, 'mover-vertice-submenu')">
+                                        <img src="{{ url_for('static', filename='icons/move_vertices_icon.png') }}" class="icon" alt=""> Mover ▶
+                                    </button>
+                                    <div id="mover-vertice-submenu" class="top-dropdown" style="display: none; position: absolute; left: 100%; top: 0; margin-left: 4px;">
+                                        <button class="dropdown-item" onclick="ativarMoverVerticesMapa(); closeAllMenus();">
+                                            <img src="{{ url_for('static', filename='icons/move_vertices_icon.png') }}" class="icon" alt=""> Mapa
+                                        </button>
+                                        <button class="dropdown-item" onclick="abrirModalMoverVerticesCoordenadas(); closeAllMenus();">
+                                            <img src="{{ url_for('static', filename='icons/table_icon.png') }}" class="icon" alt=""> Coordenadas
+                                        </button>
+                                        <button class="dropdown-item" onclick="abrirModalMoverVerticesAzimute(); closeAllMenus();">
+                                            <img src="{{ url_for('static', filename='icons/table_icon.png') }}" class="icon" alt=""> Azimute e Distancia
+                                        </button>
+                                        <button class="dropdown-item" onclick="abrirModalMoverVerticesRumo(); closeAllMenus();">
+                                            <img src="{{ url_for('static', filename='icons/table_icon.png') }}" class="icon" alt=""> Rumo e Distancia
+                                        </button>
+                                    </div>
+                                </div>
                                 <button class="dropdown-item" onclick="ativarRemoverVerticesMapa(); closeAllMenus();">
                                     <img src="{{ url_for('static', filename='icons/remove_icon.png') }}" class="icon" alt=""> Remover
                                 </button>
@@ -337,7 +353,7 @@
                     </button>
                 </div>
             </nav>
-            <div style="font-size: 12px; color: #999;">v3.3.0</div>
+            <div style="font-size: 12px; color: #999;">v3.4.0</div>
         </div>
     </header>
 
@@ -1058,10 +1074,64 @@
                 <button class="btn-secondary" onclick="document.getElementById('modal-adicionar-vertice-rumo').style.display='none'">Cancelar</button>
                 <button class="btn-primary" onclick="aplicarAdicionarVerticesRumo()">Adicionar Vértices</button>
             </div>
+           </div>
+    
+    <!-- Modal Mover Vu00e9rtice por Coordenadas -->
+    <div id="modal-mover-vertice-coordenadas" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2>Mover Vu00e9rtice por Coordenadas</h2>
+                <button class="close-btn" onclick="document.getElementById('modal-mover-vertice-coordenadas').style.display='none'">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Seleção de Vu00e9rtice -->
+                <div class="form-group">
+                    <label for="mover-vertice-coord-id">Selecione o Vu00e9rtice:</label>
+                    <select id="mover-vertice-coord-id">
+                        <option value="">Selecione um vu00e9rtice</option>
+                    </select>
+                </div>
+                
+                <!-- Abas de Coordenadas -->
+                <div class="form-group">
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                        <button id="btn-aba-utm-mover" class="btn-secondary" onclick="alternarAbaMoverCoord('utm')" style="flex: 1; background: #2A4A62;">UTM</button>
+                        <button id="btn-aba-geografica-mover" class="btn-secondary" onclick="alternarAbaMoverCoord('geografica')" style="flex: 1; background: #1A1A1A;">Geogru00e1fica</button>
+                    </div>
+                </div>
+                
+                <!-- Aba UTM -->
+                <div id="aba-coord-utm-mover" style="display: block;">
+                    <div class="form-group">
+                        <label for="mover-vertice-coord-e">Coordenada E (UTM):</label>
+                        <input type="text" id="mover-vertice-coord-e" placeholder="752000,250">
+                    </div>
+                    <div class="form-group">
+                        <label for="mover-vertice-coord-n">Coordenada N (UTM):</label>
+                        <input type="text" id="mover-vertice-coord-n" placeholder="8569200,750">
+                    </div>
+                </div>
+                
+                <!-- Aba Geogru00e1fica -->
+                <div id="aba-coord-geografica-mover" style="display: none;">
+                    <div class="form-group">
+                        <label for="mover-vertice-coord-lon">Longitude (DMS ou Decimal):</label>
+                        <input type="text" id="mover-vertice-coord-lon" placeholder="-56u00b023'20,828\" ou -56.389">
+                    </div>
+                    <div class="form-group">
+                        <label for="mover-vertice-coord-lat">Latitude (DMS ou Decimal):</label>
+                        <input type="text" id="mover-vertice-coord-lat" placeholder="-14u00b029'18,542\" ou -14.488">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="document.getElementById('modal-mover-vertice-coordenadas').style.display='none'">Cancelar</button>
+                <button class="btn-primary" onclick="aplicarMoverVerticesCoordenadas()">Mover</button>
+            </div>
         </div>
     </div>
     
-    <!-- Modal Adicionar Vértice por Azimute e Distância -->
+    <!-- Modal Adicionar Vu00e9rtice por Azimute e Distu00e2ncia -->
     <div id="modal-adicionar-vertice-azimute" class="modal" style="display: none;">
         <div class="modal-content" style="max-width: 700px;">
             <div class="modal-header">
@@ -1623,3 +1693,87 @@
     <div style="position: fixed; bottom: 10px; right: 10px; background: rgba(255,255,255,0.9); padding: 5px 10px; border-radius: 5px; font-size: 12px; z-index: 10000;">TerraGIS v2.18</div>
 </body>
 </html>
+
+    
+    <!-- Modal Mover Vértice por Azimute e Distância -->
+    <div id="modal-mover-vertice-azimute" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2>Mover Vértice por Azimute e Distância</h2>
+                <button class="close-btn" onclick="document.getElementById('modal-mover-vertice-azimute').style.display='none'">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Seleção de Vértice -->
+                <div class="form-group">
+                    <label for="mover-vertice-azimute-id">Selecione o Vértice:</label>
+                    <select id="mover-vertice-azimute-id">
+                        <option value="">Selecione um vértice</option>
+                    </select>
+                </div>
+                
+                <!-- Azimute -->
+                <div class="form-group">
+                    <label for="mover-vertice-azimute-valor">Azimute (°):</label>
+                    <input type="text" id="mover-vertice-azimute-valor" placeholder="45,5">
+                </div>
+                
+                <!-- Distância -->
+                <div class="form-group">
+                    <label for="mover-vertice-azimute-distancia">Distância (m):</label>
+                    <input type="text" id="mover-vertice-azimute-distancia" placeholder="100,50">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="document.getElementById('modal-mover-vertice-azimute').style.display='none'">Cancelar</button>
+                <button class="btn-primary" onclick="aplicarMoverVerticesAzimute()">Mover</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal Mover Vértice por Rumo e Distância -->
+    <div id="modal-mover-vertice-rumo" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2>Mover Vértice por Rumo e Distância</h2>
+                <button class="close-btn" onclick="document.getElementById('modal-mover-vertice-rumo').style.display='none'">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Seleção de Vértice -->
+                <div class="form-group">
+                    <label for="mover-vertice-rumo-id">Selecione o Vértice:</label>
+                    <select id="mover-vertice-rumo-id">
+                        <option value="">Selecione um vértice</option>
+                    </select>
+                </div>
+                
+                <!-- Rumo -->
+                <div class="form-group">
+                    <label for="mover-vertice-rumo-valor">Rumo (°):</label>
+                    <input type="text" id="mover-vertice-rumo-valor" placeholder="45,5">
+                </div>
+                
+                <!-- Quadrante -->
+                <div class="form-group">
+                    <label for="mover-vertice-rumo-quadrante">Quadrante:</label>
+                    <select id="mover-vertice-rumo-quadrante">
+                        <option value="">Selecione</option>
+                        <option value="NE">NE</option>
+                        <option value="SE">SE</option>
+                        <option value="SW">SW</option>
+                        <option value="NW">NW</option>
+                    </select>
+                </div>
+                
+                <!-- Distância -->
+                <div class="form-group">
+                    <label for="mover-vertice-rumo-distancia">Distância (m):</label>
+                    <input type="text" id="mover-vertice-rumo-distancia" placeholder="100,50">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="document.getElementById('modal-mover-vertice-rumo').style.display='none'">Cancelar</button>
+                <button class="btn-primary" onclick="aplicarMoverVerticesRumo()">Mover</button>
+            </div>
+        </div>
+    </div>
+

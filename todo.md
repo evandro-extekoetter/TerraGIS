@@ -40,3 +40,24 @@
 - [x] Implementar lógica de inserção de múltiplos vértices
 - [ ] Testar inserção de vértices com rumo e distância
 
+
+
+## Ferramentas Mover Vu00e9rtice (v3.4.0)
+
+- [x] Converter "Mover (Mapa)" em submenu com: Mapa, Coordenadas, Azimute e Distu00e2ncia, Rumo e Distu00e2ncia
+- [x] Bloquear ferramenta "Mover (Mapa)" de alterau00e7u00f5es (apenas mover no menu)
+- [x] Criar modal "Mover Vu00e9rtice por Coordenadas"
+  - [x] Dropdown: "Selecione o vu00e9rtice" (todos os vu00e9rtices da camada)
+  - [x] Abas: UTM e Geogru00e1fica
+  - [x] Sem campo de ID
+  - [x] Sem dropdown de fuso
+  - [x] Suporte a DMS e decimal
+- [x] Criar modal "Mover Vu00e9rtice por Azimute e Distu00e2ncia"
+  - [x] Dropdown: "Selecione o vu00e9rtice"
+  - [x] Campos: Azimute, Distu00e2ncia
+  - [x] Mover vu00e9rtice selecionado
+- [x] Criar modal "Mover Vu00e9rtice por Rumo e Distu00e2ncia"
+  - [x] Dropdown: "Selecione o vu00e9rtice"
+  - [x] Campos: Rumo, Quadrante, Distu00e2ncia
+  - [x] Mover vu00e9rtice selecionado
+- [ ] Testar todas as tru00eas ferramentas de mover

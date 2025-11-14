@@ -4255,3 +4255,337 @@ function aplicarAdicionarVerticesRumo() {
     }
 }
 
+
+
+
+// ===== MOVER VÉRTICES (COORDENADAS) =====
+
+/**
+ * Abrir modal de mover vértices por coordenadas
+ */
+function abrirModalMoverVerticesCoordenadas() {
+    // Desativar outras ferramentas
+    desativarTodasFerramentasEdicao();
+    
+    // Obter camada ativa
+    const activeLayerName = terraManager.getActiveLayerName();
+    if (!activeLayerName) {
+        showMessage('Selecione uma camada ativa no gerenciador de camadas', 'error');
+        return;
+    }
+    
+    // Carregar vértices da camada ativa
+    atualizarVerticesMoverCoordenadas(activeLayerName);
+    
+    // Limpar campos
+    document.getElementById('mover-vertice-coord-e').value = '';
+    document.getElementById('mover-vertice-coord-n').value = '';
+    document.getElementById('mover-vertice-coord-lon').value = '';
+    document.getElementById('mover-vertice-coord-lat').value = '';
+    
+    // Mostrar modal
+    document.getElementById('modal-mover-vertice-coordenadas').style.display = 'block';
+}
+
+/**
+ * Atualizar dropdown de vértices para mover por coordenadas
+ */
+function atualizarVerticesMoverCoordenadas(layerName) {
+    const terraLayer = terraManager.layers[layerName];
+    if (!terraLayer) return;
+    
+    const select = document.getElementById('mover-vertice-coord-id');
+    select.innerHTML = '';
+    
+    terraLayer.vertices.forEach((vertex, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        option.text = `${vertex.id} (${vertex.e.toFixed(2)}, ${vertex.n.toFixed(2)})`;
+        select.appendChild(option);
+    });
+}
+
+/**
+ * Alternar entre abas de coordenadas para mover
+ */
+function alternarAbaMoverCoord(aba) {
+    document.getElementById('aba-coord-geografica-mover').style.display = aba === 'geografica' ? 'block' : 'none';
+    document.getElementById('aba-coord-utm-mover').style.display = aba === 'utm' ? 'block' : 'none';
+    
+    // Atualizar botões das abas
+    document.getElementById('btn-aba-geografica-mover').style.background = aba === 'geografica' ? '#2A4A62' : '#1A1A1A';
+    document.getElementById('btn-aba-utm-mover').style.background = aba === 'utm' ? '#2A4A62' : '#1A1A1A';
+}
+
+/**
+ * Aplicar movimento de vértice por coordenadas
+ */
+function aplicarMoverVerticesCoordenadas() {
+    // Obter camada ativa
+    const activeLayerName = terraManager.getActiveLayerName();
+    if (!activeLayerName) {
+        showMessage('Selecione uma camada ativa', 'error');
+        return;
+    }
+    
+    const terraLayer = terraManager.layers[activeLayerName];
+    const vertexIndex = parseInt(document.getElementById('mover-vertice-coord-id').value);
+    
+    if (isNaN(vertexIndex)) {
+        showMessage('Selecione um vértice', 'error');
+        return;
+    }
+    
+    // Determinar qual aba está ativa
+    const abGeografica = document.getElementById('aba-coord-geografica-mover').style.display !== 'none';
+    
+    let coordE, coordN;
+    
+    if (abGeografica) {
+        // Coordenada geográfica (Lat/Long)
+        try {
+            let lonStr = document.getElementById('mover-vertice-coord-lon').value.trim();
+            let latStr = document.getElementById('mover-vertice-coord-lat').value.trim();
+            
+            let lon, lat;
+            
+            // Tentar converter DMS primeiro
+            if (lonStr.includes('°') || lonStr.includes("'") || lonStr.includes('"')) {
+                lon = dmsToDecimal(lonStr);
+            } else {
+                lon = parseFloat(lonStr.replace(',', '.'));
+            }
+            
+            if (latStr.includes('°') || latStr.includes("'") || latStr.includes('"')) {
+                lat = dmsToDecimal(latStr);
+            } else {
+                lat = parseFloat(latStr.replace(',', '.'));
+            }
+            
+            if (isNaN(lon) || isNaN(lat)) throw new Error('Coordenadas inválidas');
+            
+            // Converter para UTM
+            const utm = latLngToUTM(lat, lon, terraLayer.fuso);
+            coordE = utm.e;
+            coordN = utm.n;
+        } catch (error) {
+            showMessage(`Erro na coordenada geográfica: ${error.message}`, 'error');
+            return;
+        }
+    } else {
+        // Coordenada UTM
+        try {
+            coordE = parseFloat(document.getElementById('mover-vertice-coord-e').value.replace(',', '.'));
+            coordN = parseFloat(document.getElementById('mover-vertice-coord-n').value.replace(',', '.'));
+            
+            if (isNaN(coordE) || isNaN(coordN)) throw new Error('Coordenadas inválidas');
+        } catch (error) {
+            showMessage(`Erro na coordenada UTM: ${error.message}`, 'error');
+            return;
+        }
+    }
+    
+    // Mover vértice
+    try {
+        const vertex = terraLayer.vertices[vertexIndex];
+        terraLayer.moveVertex(vertexIndex, coordE, coordN);
+        showMessage(`Vértice '${vertex.id}' movido para E: ${coordE.toFixed(3)}, N: ${coordN.toFixed(3)}`, 'success');
+        
+        // Fechar modal
+        document.getElementById('modal-mover-vertice-coordenadas').style.display = 'none';
+    } catch (error) {
+        showMessage(`Erro: ${error.message}`, 'error');
+    }
+}
+
+// ===== MOVER VÉRTICES (AZIMUTE E DISTÂNCIA) =====
+
+/**
+ * Abrir modal de mover vértices por azimute e distância
+ */
+function abrirModalMoverVerticesAzimute() {
+    // Desativar outras ferramentas
+    desativarTodasFerramentasEdicao();
+    
+    // Obter camada ativa
+    const activeLayerName = terraManager.getActiveLayerName();
+    if (!activeLayerName) {
+        showMessage('Selecione uma camada ativa no gerenciador de camadas', 'error');
+        return;
+    }
+    
+    // Carregar vértices da camada ativa
+    atualizarVerticesMoverAzimute(activeLayerName);
+    
+    // Limpar campos
+    document.getElementById('mover-vertice-azimute-valor').value = '';
+    document.getElementById('mover-vertice-azimute-distancia').value = '';
+    
+    // Mostrar modal
+    document.getElementById('modal-mover-vertice-azimute').style.display = 'block';
+}
+
+/**
+ * Atualizar dropdown de vértices para mover por azimute
+ */
+function atualizarVerticesMoverAzimute(layerName) {
+    const terraLayer = terraManager.layers[layerName];
+    if (!terraLayer) return;
+    
+    const select = document.getElementById('mover-vertice-azimute-id');
+    select.innerHTML = '';
+    
+    terraLayer.vertices.forEach((vertex, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        option.text = `${vertex.id} (${vertex.e.toFixed(2)}, ${vertex.n.toFixed(2)})`;
+        select.appendChild(option);
+    });
+}
+
+/**
+ * Aplicar movimento de vértice por azimute e distância
+ */
+function aplicarMoverVerticesAzimute() {
+    // Obter camada ativa
+    const activeLayerName = terraManager.getActiveLayerName();
+    if (!activeLayerName) {
+        showMessage('Selecione uma camada ativa', 'error');
+        return;
+    }
+    
+    const terraLayer = terraManager.layers[activeLayerName];
+    const vertexIndex = parseInt(document.getElementById('mover-vertice-azimute-id').value);
+    const azimuteStr = document.getElementById('mover-vertice-azimute-valor').value.trim();
+    const distanciaStr = document.getElementById('mover-vertice-azimute-distancia').value.trim();
+    
+    if (isNaN(vertexIndex) || !azimuteStr || !distanciaStr) {
+        showMessage('Preencha todos os campos obrigatórios', 'error');
+        return;
+    }
+    
+    try {
+        const azimute = parseFloat_BR(azimuteStr);
+        const distancia = parseFloat_BR(distanciaStr);
+        
+        if (isNaN(azimute) || isNaN(distancia)) throw new Error('Valores inválidos');
+        
+        // Vértice atual
+        const vertex = terraLayer.vertices[vertexIndex];
+        const x0 = vertex.e;
+        const y0 = vertex.n;
+        
+        // Calcular novas coordenadas
+        const azRad = (azimute * Math.PI) / 180;
+        const newX = x0 + distancia * Math.sin(azRad);
+        const newY = y0 + distancia * Math.cos(azRad);
+        
+        // Mover vértice
+        terraLayer.moveVertex(vertexIndex, newX, newY);
+        showMessage(`Vértice '${vertex.id}' movido para E: ${newX.toFixed(3)}, N: ${newY.toFixed(3)}`, 'success');
+        
+        // Fechar modal
+        document.getElementById('modal-mover-vertice-azimute').style.display = 'none';
+    } catch (error) {
+        showMessage(`Erro: ${error.message}`, 'error');
+    }
+}
+
+// ===== MOVER VÉRTICES (RUMO E DISTÂNCIA) =====
+
+/**
+ * Abrir modal de mover vértices por rumo e distância
+ */
+function abrirModalMoverVerticesRumo() {
+    // Desativar outras ferramentas
+    desativarTodasFerramentasEdicao();
+    
+    // Obter camada ativa
+    const activeLayerName = terraManager.getActiveLayerName();
+    if (!activeLayerName) {
+        showMessage('Selecione uma camada ativa no gerenciador de camadas', 'error');
+        return;
+    }
+    
+    // Carregar vértices da camada ativa
+    atualizarVerticesMoverRumo(activeLayerName);
+    
+    // Limpar campos
+    document.getElementById('mover-vertice-rumo-valor').value = '';
+    document.getElementById('mover-vertice-rumo-quadrante').value = '';
+    document.getElementById('mover-vertice-rumo-distancia').value = '';
+    
+    // Mostrar modal
+    document.getElementById('modal-mover-vertice-rumo').style.display = 'block';
+}
+
+/**
+ * Atualizar dropdown de vértices para mover por rumo
+ */
+function atualizarVerticesMoverRumo(layerName) {
+    const terraLayer = terraManager.layers[layerName];
+    if (!terraLayer) return;
+    
+    const select = document.getElementById('mover-vertice-rumo-id');
+    select.innerHTML = '';
+    
+    terraLayer.vertices.forEach((vertex, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        option.text = `${vertex.id} (${vertex.e.toFixed(2)}, ${vertex.n.toFixed(2)})`;
+        select.appendChild(option);
+    });
+}
+
+/**
+ * Aplicar movimento de vértice por rumo e distância
+ */
+function aplicarMoverVerticesRumo() {
+    // Obter camada ativa
+    const activeLayerName = terraManager.getActiveLayerName();
+    if (!activeLayerName) {
+        showMessage('Selecione uma camada ativa', 'error');
+        return;
+    }
+    
+    const terraLayer = terraManager.layers[activeLayerName];
+    const vertexIndex = parseInt(document.getElementById('mover-vertice-rumo-id').value);
+    const rumoStr = document.getElementById('mover-vertice-rumo-valor').value.trim();
+    const quadrante = document.getElementById('mover-vertice-rumo-quadrante').value.trim();
+    const distanciaStr = document.getElementById('mover-vertice-rumo-distancia').value.trim();
+    
+    if (isNaN(vertexIndex) || !rumoStr || !quadrante || !distanciaStr) {
+        showMessage('Preencha todos os campos obrigatórios', 'error');
+        return;
+    }
+    
+    try {
+        const rumo = parseFloat_BR(rumoStr);
+        const distancia = parseFloat_BR(distanciaStr);
+        
+        if (isNaN(rumo) || isNaN(distancia)) throw new Error('Valores inválidos');
+        
+        // Converter Rumo + Quadrante para Azimute
+        const azimute = rumoToAzimute(rumo, quadrante);
+        
+        // Vértice atual
+        const vertex = terraLayer.vertices[vertexIndex];
+        const x0 = vertex.e;
+        const y0 = vertex.n;
+        
+        // Calcular novas coordenadas
+        const azRad = (azimute * Math.PI) / 180;
+        const newX = x0 + distancia * Math.sin(azRad);
+        const newY = y0 + distancia * Math.cos(azRad);
+        
+        // Mover vértice
+        terraLayer.moveVertex(vertexIndex, newX, newY);
+        showMessage(`Vértice '${vertex.id}' movido para E: ${newX.toFixed(3)}, N: ${newY.toFixed(3)}`, 'success');
+        
+        // Fechar modal
+        document.getElementById('modal-mover-vertice-rumo').style.display = 'none';
+    } catch (error) {
+        showMessage(`Erro: ${error.message}`, 'error');
+    }
+}
+
