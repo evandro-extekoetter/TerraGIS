@@ -559,6 +559,11 @@ body {
     background: #2A2A2A;
 }
 
+.leaflet-control-zoom {
+    right: 20px !important;
+    left: auto !important;
+}
+
 .leaflet-control-zoom a {
     background: #2A2A2A;
     color: #E0E0E0;
@@ -937,11 +942,10 @@ body {
     z-index: 500;
 }
 
-.tool-indicator strong {
-    color: #F4A460;
-    font-weight: 600;
-    text-transform: uppercase;
-}
+.tool-indicator strong { color: #F4A460; font-weight: 600; text-transform: uppercase; }
+
+/* Esconder Nova Camada */
+.submenu-item { display: none; }
 
 /* ========================================
    SELETOR DE BASE DE MAPA
