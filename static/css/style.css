@@ -577,6 +577,11 @@ body {
     color: #F4A460;
 }
 
+/* Esconder attribution do Leaflet */
+.leaflet-control-attribution {
+    display: none !important;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .sidebar {
@@ -801,7 +806,7 @@ body {
 .submenu {
     margin-left: 15px;
     margin-top: 5px;
-    border-left: 2px solid #4CAF50;
+    border-left: none;
     padding-left: 10px;
     display: none;
 }
