@@ -3086,8 +3086,7 @@ function startFreehandDrawing() {
     map.on('click', handleFreehandMapClick);
     document.addEventListener('keydown', handleFreehandKeyPress);
     
-    // Mostrar instruções
-    alert(`Desenho à mão livre ativado!\n\nClique no mapa para adicionar pontos.\nPressione ENTER para finalizar.\n\nMínimo: ${type === 'polygon' ? '3 pontos' : '2 pontos'}`);
+    // Instruções removidas - interface simplificada;
 }
 
 function handleFreehandMapClick(e) {
@@ -3134,7 +3133,33 @@ function handleFreehandKeyPress(e) {
             return;
         }
         finalizeFreehandDrawing();
+    } else if (e.key === 'Escape') {
+        e.preventDefault();
+        cancelFreehandDrawing();
     }
+}
+
+
+function cancelFreehandDrawing() {
+    // Remover marcadores e linha temporária
+    freehandMarkers.forEach(marker => map.removeLayer(marker));
+    freehandMarkers = [];
+    if (freehandPolyline) {
+        map.removeLayer(freehandPolyline);
+        freehandPolyline = null;
+    }
+    
+    // Desativar modo de desenho
+    freehandDrawingActive = false;
+    updateToolIndicator('nenhuma');
+    
+    // Remover event listeners
+    map.off('click', handleFreehandMapClick);
+    document.removeEventListener('keydown', handleFreehandKeyPress);
+    
+    // Limpar
+    freehandPoints = [];
+    freehandConfig = null;
 }
 
 function finalizeFreehandDrawing() {
