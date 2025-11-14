@@ -225,6 +225,9 @@
                                     <button class="dropdown-item" onclick="abrirModalAdicionarVerticesAzimute(); closeAllMenus();">
                                         <img src="{{ url_for('static', filename='icons/table_icon.png') }}" class="icon" alt=""> Azimute e Distância
                                     </button>
+                                    <button class="dropdown-item" onclick="abrirModalAdicionarVerticesRumo(); closeAllMenus();">
+                                        <img src="{{ url_for('static', filename='icons/table_icon.png') }}" class="icon" alt=""> Rumo e Distância
+                                    </button>
                                 </div>
                                 <button class="dropdown-item" onclick="ativarMoverVerticesMapa(); closeAllMenus();">
                                     <img src="{{ url_for('static', filename='icons/move_vertices_icon.png') }}" class="icon" alt=""> Mover (Mapa)
@@ -334,7 +337,7 @@
                     </button>
                 </div>
             </nav>
-            <div style="font-size: 12px; color: #999;">v3.2.0</div>
+            <div style="font-size: 12px; color: #999;">v3.3.0</div>
         </div>
     </header>
 
@@ -1008,6 +1011,52 @@
             <div class="modal-footer">
                 <button class="btn-secondary" onclick="document.getElementById('modal-adicionar-vertice-coordenadas').style.display='none'">Cancelar</button>
                 <button class="btn-primary" onclick="aplicarAdicionarVerticesCoordenadas()">Adicionar</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal Adicionar Vértice por Rumo e Distância -->
+    <div id="modal-adicionar-vertice-rumo" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2>Adicionar Vértice por Rumo e Distância</h2>
+                <button class="close-btn" onclick="document.getElementById('modal-adicionar-vertice-rumo').style.display='none'">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Seleção de Vértice Anterior -->
+                <div class="form-group">
+                    <label for="adicionar-vertice-rumo-anterior">Vértice Anterior (inserir após):</label>
+                    <select id="adicionar-vertice-rumo-anterior">
+                        <option value="">Selecione um vértice</option>
+                    </select>
+                </div>
+                
+                <!-- Tabela de Entrada -->
+                <div class="form-group">
+                    <label>Vértices a Adicionar:</label>
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px;">
+                        <thead>
+                            <tr style="background: #2A4A62; color: #FFF;">
+                                <th style="padding: 8px; border: 1px solid #404040; text-align: left;">ID</th>
+                                <th style="padding: 8px; border: 1px solid #404040; text-align: left;">Rumo (graus)</th>
+                                <th style="padding: 8px; border: 1px solid #404040; text-align: left;">Quadrante</th>
+                                <th style="padding: 8px; border: 1px solid #404040; text-align: left;">Distância (m)</th>
+                                <th style="padding: 8px; border: 1px solid #404040; text-align: center; width: 50px;">Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-vertices-rumo">
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Botão Adicionar Linha -->
+                <div class="form-group">
+                    <button class="btn-secondary" onclick="adicionarLinhaRumo()" style="width: 100%;">Adicionar Linha</button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="document.getElementById('modal-adicionar-vertice-rumo').style.display='none'">Cancelar</button>
+                <button class="btn-primary" onclick="aplicarAdicionarVerticesRumo()">Adicionar Vértices</button>
             </div>
         </div>
     </div>

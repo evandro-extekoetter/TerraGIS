@@ -28,5 +28,15 @@
 - [x] Implementar tabela de entrada (Azimute, Distância, ID)
 - [x] Implementar cálculo de coordenadas usando azimute e distância
 - [x] Implementar lógica de inserção de múltiplos vértices
-- [ ] Testar inserção de vértices com azimute e distância
+- [x] Testar inserção de vértices com azimute e distância
+
+
+## Ferramenta Adicionar Vértice por Rumo e Distância (v3.3.0)
+
+- [x] Criar submenu "Rumo e Distância" no menu "Adicionar"
+- [x] Criar modal com tabela: ID, Rumo, Quadrante, Distância
+- [x] Implementar conversão Rumo+Quadrante → Azimute
+- [x] Implementar cálculo de coordenadas usando rumo e distância
+- [x] Implementar lógica de inserção de múltiplos vértices
+- [ ] Testar inserção de vértices com rumo e distância
 

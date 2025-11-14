@@ -4058,3 +4058,200 @@ function aplicarAdicionarVerticesAzimute() {
     }
 }
 
+
+
+
+// ===== ADICIONAR VÉRTICES (RUMO E DISTÂNCIA) =====
+
+/**
+ * Converter Rumo + Quadrante para Azimute
+ */
+function rumoToAzimute(rumo, quadrante) {
+    quadrante = quadrante.toUpperCase().trim();
+    
+    if (quadrante === "NE") return rumo;
+    else if (quadrante === "SE") return 180.0 - rumo;
+    else if (quadrante === "SW") return 180.0 + rumo;
+    else if (quadrante === "NW") return 360.0 - rumo;
+    
+    return rumo; // Default
+}
+
+/**
+ * Abrir modal de adicionar vértices por rumo e distância
+ */
+function abrirModalAdicionarVerticesRumo() {
+    // Desativar outras ferramentas
+    desativarTodasFerramentasEdicao();
+    
+    // Obter camada ativa
+    const activeLayerName = terraManager.getActiveLayerName();
+    if (!activeLayerName) {
+        showMessage('Selecione uma camada ativa no gerenciador de camadas', 'error');
+        return;
+    }
+    
+    // Carregar vértices da camada ativa
+    atualizarVerticesAnterioresRumo(activeLayerName);
+    
+    // Limpar tabela
+    document.getElementById('tabela-vertices-rumo').innerHTML = '';
+    
+    // Adicionar uma linha vazia
+    adicionarLinhaRumo();
+    
+    // Mostrar modal
+    document.getElementById('modal-adicionar-vertice-rumo').style.display = 'block';
+}
+
+/**
+ * Atualizar dropdown de vértices anteriores para rumo
+ */
+function atualizarVerticesAnterioresRumo(layerName) {
+    const terraLayer = terraManager.layers[layerName];
+    if (!terraLayer) return;
+    
+    const select = document.getElementById('adicionar-vertice-rumo-anterior');
+    select.innerHTML = '';
+    
+    terraLayer.vertices.forEach((vertex, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        option.text = `${vertex.id} (${vertex.e}, ${vertex.n})`;
+        select.appendChild(option);
+    });
+}
+
+/**
+ * Adicionar linha na tabela de rumo e distância
+ */
+function adicionarLinhaRumo() {
+    const tbody = document.getElementById('tabela-vertices-rumo');
+    const rowIndex = tbody.children.length;
+    
+    const row = document.createElement('tr');
+    row.style.background = rowIndex % 2 === 0 ? '#1A1A1A' : '#252525';
+    row.style.borderBottom = '1px solid #404040';
+    
+    row.innerHTML = `
+        <td style="padding: 8px; border: 1px solid #404040;">
+            <input type="text" placeholder="P-05" style="width: 100%; padding: 6px; background: #1A1A1A; color: #FFF; border: 1px solid #404040; border-radius: 3px;" class="rumo-id">
+        </td>
+        <td style="padding: 8px; border: 1px solid #404040;">
+            <input type="text" placeholder="45,5" style="width: 100%; padding: 6px; background: #1A1A1A; color: #FFF; border: 1px solid #404040; border-radius: 3px;" class="rumo-valor">
+        </td>
+        <td style="padding: 8px; border: 1px solid #404040;">
+            <select style="width: 100%; padding: 6px; background: #1A1A1A; color: #FFF; border: 1px solid #404040; border-radius: 3px;" class="quadrante-valor">
+                <option value="">Selecione</option>
+                <option value="NE">NE</option>
+                <option value="SE">SE</option>
+                <option value="SW">SW</option>
+                <option value="NW">NW</option>
+            </select>
+        </td>
+        <td style="padding: 8px; border: 1px solid #404040;">
+            <input type="text" placeholder="100,50" style="width: 100%; padding: 6px; background: #1A1A1A; color: #FFF; border: 1px solid #404040; border-radius: 3px;" class="distancia-valor-rumo">
+        </td>
+        <td style="padding: 8px; border: 1px solid #404040; text-align: center;">
+            <button onclick="removerLinhaRumo(this)" style="background: #C41E3A; color: #FFF; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer;">X</button>
+        </td>
+    `;
+    
+    tbody.appendChild(row);
+}
+
+/**
+ * Remover linha da tabela de rumo
+ */
+function removerLinhaRumo(btn) {
+    btn.closest('tr').remove();
+}
+
+/**
+ * Aplicar adição de vértices por rumo e distância
+ */
+function aplicarAdicionarVerticesRumo() {
+    // Obter camada ativa
+    const activeLayerName = terraManager.getActiveLayerName();
+    if (!activeLayerName) {
+        showMessage('Selecione uma camada ativa', 'error');
+        return;
+    }
+    
+    const terraLayer = terraManager.layers[activeLayerName];
+    const verticeAnteriorIndex = parseInt(document.getElementById('adicionar-vertice-rumo-anterior').value);
+    
+    if (isNaN(verticeAnteriorIndex)) {
+        showMessage('Selecione um vértice anterior', 'error');
+        return;
+    }
+    
+    // Obter dados da tabela
+    const rows = document.getElementById('tabela-vertices-rumo').querySelectorAll('tr');
+    if (rows.length === 0) {
+        showMessage('Adicione pelo menos uma linha na tabela', 'error');
+        return;
+    }
+    
+    // Vértice de partida
+    const verticePartida = terraLayer.vertices[verticeAnteriorIndex];
+    const x0 = verticePartida.e;
+    const y0 = verticePartida.n;
+    
+    // Processar cada linha
+    let insertIndex = verticeAnteriorIndex + 1;
+    let verticesAdicionados = 0;
+    
+    try {
+        rows.forEach((row) => {
+            const idInput = row.querySelector('.rumo-id');
+            const rumoInput = row.querySelector('.rumo-valor');
+            const quadranteInput = row.querySelector('.quadrante-valor');
+            const distanciaInput = row.querySelector('.distancia-valor-rumo');
+            
+            const id = idInput.value.trim();
+            const rumoStr = rumoInput.value.trim();
+            const quadrante = quadranteInput.value.trim();
+            const distanciaStr = distanciaInput.value.trim();
+            
+            // Validar campos
+            if (!id || !rumoStr || !quadrante || !distanciaStr) {
+                return; // Pular linhas vazias
+            }
+            
+            // Converter para números
+            const rumo = parseFloat_BR(rumoStr);
+            const distancia = parseFloat_BR(distanciaStr);
+            
+            if (isNaN(rumo) || isNaN(distancia)) {
+                throw new Error(`Valores inválidos para vértice ${id}`);
+            }
+            
+            // Converter Rumo + Quadrante para Azimute
+            const azimute = rumoToAzimute(rumo, quadrante);
+            
+            // Calcular coordenadas usando azimute e distância
+            const azRad = (azimute * Math.PI) / 180; // Converter para radianos
+            const x = x0 + distancia * Math.sin(azRad);
+            const y = y0 + distancia * Math.cos(azRad);
+            
+            // Adicionar vértice
+            terraLayer.addVertex(id, x, y, insertIndex);
+            insertIndex++;
+            verticesAdicionados++;
+        });
+        
+        if (verticesAdicionados === 0) {
+            showMessage('Nenhum vértice foi adicionado (linhas vazias)', 'warning');
+            return;
+        }
+        
+        showMessage(`${verticesAdicionados} vértice(s) adicionado(s) com sucesso!`, 'success');
+        
+        // Fechar modal
+        document.getElementById('modal-adicionar-vertice-rumo').style.display = 'none';
+    } catch (error) {
+        showMessage(`Erro: ${error.message}`, 'error');
+    }
+}
+
