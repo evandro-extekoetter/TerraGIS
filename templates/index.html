@@ -364,16 +364,17 @@
 
         <!-- Map Container -->
         <main class="map-container">
-            
             <div id="map"></div>
-            
-            <!-- Indicador de Ferramenta Ativa (Canto Inferior Esquerdo) -->
-            <div class="tool-indicator">
-                <span>ferramenta ativa: <strong id="current-tool-name">nenhuma</strong></span>
-            </div>
-            
-            <!-- Seletor de Base de Mapas (Canto Inferior Direito) -->
-            <div class="basemap-selector">
+        </main>
+        
+        <!-- Indicador de Ferramenta Ativa (Canto Inferior Esquerdo) -->
+        <div class="tool-indicator">
+            <span>Ferramenta ativa: <strong id="current-tool-name">nenhuma</strong></span>
+        </div>
+        
+        <!-- Seletor de Base de Mapas (Canto Inferior Esquerdo, acima da ferramenta) -->
+        <div class="basemap-selector">
+            <div style="display: flex; flex-direction: column; gap: 8px;">
                 <label>Base do Mapa:</label>
                 <select id="baseLayerSelect" onchange="changeBaseLayer()">
                     <option value="osm">OpenStreetMap</option>
@@ -382,7 +383,7 @@
                     <option value="snci">SNCI - Terras Públicas (INCRA)</option>
                 </select>
                 
-                <label id="ufLabel" style="display:none; margin-left: 10px;">UF:</label>
+                <label id="ufLabel" style="display:none;">UF:</label>
                 <select id="ufSelect" onchange="updateIncraLayer()" style="display:none;">
                     <option value="">Selecione</option>
                     <option value="AC">AC</option>
@@ -414,7 +415,7 @@
                     <option value="TO">TO</option>
                 </select>
             </div>
-        </main>
+        </div>
     </div>
 
     <!-- Modal Novo Projeto -->
