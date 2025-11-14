@@ -949,7 +949,7 @@ body {
 
 .basemap-selector {
     position: fixed;
-    bottom: 70px;
+    bottom: 100px;
     left: 20px;
     background: rgba(42, 42, 42, 0.95);
     border: 1px solid #404040;
