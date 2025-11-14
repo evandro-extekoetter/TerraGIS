@@ -61,3 +61,10 @@
   - [x] Campos: Rumo, Quadrante, Distu00e2ncia
   - [x] Mover vu00e9rtice selecionado
 - [ ] Testar todas as tru00eas ferramentas de mover
+
+
+## Remover Mensagens Laterais de Notificação (v3.5.2)
+
+- [ ] Remover showMessage() das ferramentas (manter função intacta, apenas comentar chamadas)
+- [ ] Testar se nenhuma funcionalidade foi afetada
+

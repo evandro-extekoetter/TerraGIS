@@ -1005,30 +1005,8 @@ function selectPointOnMap(toolType) {
 // ===== MENSAGENS =====
 
 function showMessage(message, type = 'info') {
-    // Criar elemento de mensagem
-    const msgDiv = document.createElement('div');
-    msgDiv.className = `message message-${type}`;
-    msgDiv.textContent = message;
-    msgDiv.style.cssText = `
-        position: fixed;
-        top: 90px;
-        right: 20px;
-        padding: 15px 20px;
-        background: ${type === 'error' ? '#d32f2f' : type === 'success' ? '#388e3c' : '#1976d2'};
-        color: white;
-        border-radius: 4px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-        z-index: 10000;
-        animation: slideIn 0.3s ease;
-    `;
-    
-    document.body.appendChild(msgDiv);
-    
-    // Remover após 3 segundos
-    setTimeout(() => {
-        msgDiv.style.animation = 'slideOut 0.3s ease';
-        setTimeout(() => msgDiv.remove(), 300);
-    }, 3000);
+    // Mensagens desabilitadas (função mantida para compatibilidade)
+    // console.log(`[${type.toUpperCase()}] ${message}`);
 }
 
 // ===== FUNÇÕES BÁSICAS (Placeholder) =====
