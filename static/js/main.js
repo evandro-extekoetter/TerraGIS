@@ -1046,7 +1046,7 @@ function createProject() {
     }
     
     currentProject = { name, fuso };
-    document.getElementById('project-name').textContent = name;
+    document.getElementById('project-name-sidebar').textContent = name;
     
     closeModal('modal-new-project');
     showMessage(`Projeto "${name}" criado com sucesso`, 'success');
