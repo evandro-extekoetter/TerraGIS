@@ -955,12 +955,11 @@ body {
     border: 1px solid #404040;
     border-radius: 6px;
     padding: 12px 16px;
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
+    display: block;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
     z-index: 500;
     width: auto;
+    max-width: 250px;
 }
 
 .basemap-selector label {
@@ -978,6 +977,7 @@ body {
     font-size: 13px;
     cursor: pointer;
     transition: all 0.2s ease;
+    width: 100%;
 }
 
 .basemap-selector select:hover {
