@@ -288,12 +288,7 @@ function createVerticesLayer(coords, ids, layerName, fuso, vertexColor = '#ff000
         
         const label = L.marker(latlng, { icon: labelIcon });
         
-        // Adicionar popup com coordenadas
-        marker.bindPopup(`
-            <b>${vertexId}</b><br>
-            E: ${e.toFixed(3)}<br>
-            N: ${n.toFixed(3)}
-        `);
+        // Sem popup - apenas rótulo direto
         
         vertexLayer.addLayer(marker);
         vertexLayer.addLayer(label);
