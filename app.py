@@ -11,6 +11,7 @@ import tempfile
 import zipfile
 from datetime import datetime
 import secrets
+from pyproj import Transformer
 
 # Configurar caminhos - templates e static estão no mesmo diretório que main.py
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -586,6 +587,10 @@ def import_upload():
         else:
             return jsonify({'error': f'Tipo de arquivo não suportado: {file_type}'}), 400
         
+        # Converter coordenadas se necessário (DXF e Shapefile estão em UTM)
+        if file_type in ['dxf', 'shapefile']:
+            geojson = convert_utm_to_latlong(geojson, fuso)
+        
         return jsonify({
             'success': True,
             'layerName': layer_name,
@@ -658,12 +663,24 @@ def process_dxf(file, fuso):
                 
                 if len(coords) >= 2:
                     # Criar feature
+                    # Para Polygon, as coordenadas devem estar em um anel: [[x, y], [x, y], ...]
+                    # Para LineString, as coordenadas são simples: [x, y], [x, y], ...
+                    if len(coords) == 2:
+                        # LineString com apenas 2 pontos
+                        geom_coords = coords
+                        geom_type = 'LineString'
+                    else:
+                        # Polygon: envolver as coordenadas em um anel (adicionar primeiro ponto no final)
+                        polygon_ring = coords + [coords[0]]
+                        geom_coords = [polygon_ring]  # Envolver em lista de anéis
+                        geom_type = 'Polygon'
+                    
                     feature = {
                         'type': 'Feature',
                         'properties': {'type': 'LWPOLYLINE'},
                         'geometry': {
-                            'type': 'LineString' if len(coords) == 2 else 'Polygon',
-                            'coordinates': coords if len(coords) == 2 else coords + [coords[0]]
+                            'type': geom_type,
+                            'coordinates': geom_coords
                         }
                     }
                     features.append(feature)
@@ -899,3 +916,61 @@ def process_shapefile(file, fuso):
         print(f"[v4.0.0] Erro ao processar Shapefile: {e}")
         raise
 
+
+
+
+# ===== CONVERSÃO DE COORDENADAS (v4.0.0) =====
+
+def convert_utm_to_latlong(geojson, fuso):
+    """Converter coordenadas UTM para Lat/Lng"""
+    print(f"[v4.0.0] Convertendo coordenadas de UTM {fuso} para Lat/Lng...")
+    
+    try:
+        import copy
+        
+        # Criar transformador de UTM para WGS84 (Lat/Lng)
+        # Fuso formato: "21S" -> zona 21, hemisfério sul
+        zone_num = int(fuso[:-1])
+        is_south = fuso[-1] == 'S'
+        
+        utm_crs = f"+proj=utm +zone={zone_num} +south" if is_south else f"+proj=utm +zone={zone_num}"
+        transformer = Transformer.from_proj(utm_crs, "EPSG:4326", always_xy=True)
+        
+        # Fazer cópia profunda para não modificar original
+        geojson_copy = copy.deepcopy(geojson)
+        
+        # Converter cada feature
+        for feature in geojson_copy.get('features', []):
+            geometry = feature.get('geometry', {})
+            geom_type = geometry.get('type')
+            coords = geometry.get('coordinates', [])
+            
+            if geom_type == 'LineString':
+                # Converter lista de coordenadas [x, y]
+                new_coords = []
+                for coord in coords:
+                    if isinstance(coord, (list, tuple)) and len(coord) >= 2:
+                        lon, lat = transformer.transform(float(coord[0]), float(coord[1]))
+                        new_coords.append([lon, lat])
+                geometry['coordinates'] = new_coords
+            
+            elif geom_type == 'Polygon':
+                # Converter lista de anéis [[x, y], [x, y], ...]
+                new_coords = []
+                for ring in coords:
+                    new_ring = []
+                    for coord in ring:
+                        if isinstance(coord, (list, tuple)) and len(coord) >= 2:
+                            lon, lat = transformer.transform(float(coord[0]), float(coord[1]))
+                            new_ring.append([lon, lat])
+                    new_coords.append(new_ring)
+                geometry['coordinates'] = new_coords
+        
+        print(f"[v4.0.0] Conversão concluída com sucesso")
+        return geojson_copy
+    
+    except Exception as e:
+        print(f"[v4.0.0] Erro ao converter coordenadas: {e}")
+        import traceback
+        traceback.print_exc()
+        raise
