@@ -84,7 +84,7 @@
 
 ## Corrigir Google Earth Satélite (v3.6.1)
 
-- [ ] Investigar por que Google Earth Satélite não carrega as imagens
-- [ ] Verificar URL/API do Google Maps
-- [ ] Testar se as imagens carregam corretamente
+- [x] Investigar por que Google Earth Satélite não carrega as imagens
+- [x] Verificar URL/API do Google Maps (estava desatualizada)
+- [x] Testar se as imagens carregam corretamente (mudado para Esri World Imagery)
 

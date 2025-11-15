@@ -1258,19 +1258,19 @@ function changeBaseLayer() {
     // Adicionar nova camada
     if (selectedLayer === 'osm') {
         currentBaseLayer = baseLayers.osm;
-        ufSelect.style.display = 'none';
-        ufLabel.style.display = 'none';
-        legendBtn.style.display = 'none';
+        if (ufSelect) ufSelect.style.display = 'none';
+        if (ufLabel) ufLabel.style.display = 'none';
+        if (legendBtn) legendBtn.style.display = 'none';
     } else if (selectedLayer === 'satellite') {
         currentBaseLayer = baseLayers.satellite;
-        ufSelect.style.display = 'none';
-        ufLabel.style.display = 'none';
-        legendBtn.style.display = 'none';
+        if (ufSelect) ufSelect.style.display = 'none';
+        if (ufLabel) ufLabel.style.display = 'none';
+        if (legendBtn) legendBtn.style.display = 'none';
     } else if (selectedLayer === 'sigef' || selectedLayer === 'snci') {
         // Mostrar seletor de UF e botão de legenda
-        ufSelect.style.display = 'inline-block';
-        ufLabel.style.display = 'inline-block';
-        legendBtn.style.display = 'inline-block';
+        if (ufSelect) ufSelect.style.display = 'inline-block';
+        if (ufLabel) ufLabel.style.display = 'inline-block';
+        if (legendBtn) legendBtn.style.display = 'inline-block';
         
         // Criar camada WMS INCRA
         const uf = ufSelect.value;
