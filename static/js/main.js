@@ -4693,7 +4693,7 @@ function executarImportacao() {
             console.log('[v4.0.0] Importação bem-sucedida:', data);
             
             // Desenhar geometrias no mapa
-            desenharGeometriasImportadas(layerName, data.geojson, currentProject.fuso);
+            desenharGeometriasImportadas(layerName, data.geojson, currentProject.fuso, data.coordinateSystem);
             
             // Fechar modal
             closeModal('modal-importar');
@@ -4716,7 +4716,7 @@ function executarImportacao() {
 /**
  * Desenhar geometrias importadas no mapa
  */
-function desenharGeometriasImportadas(layerName, geojson, fuso) {
+function desenharGeometriasImportadas(layerName, geojson, fuso, coordinateSystem = 'UTM') {
     console.log('[v4.0.0] Desenhando geometrias importadas:', layerName);
     
     try {
@@ -4782,10 +4782,16 @@ function desenharGeometriasImportadas(layerName, geojson, fuso) {
             const geometry = feature.geometry;
             
             if (geometry.type === 'LineString') {
-                // Converter coordenadas UTM para Lat/Lng usando proj4
+                // Converter coordenadas (se necessário)
                 const coords = geometry.coordinates.map(c => {
-                    const [lat, lng] = utmToLatLng(c[0], c[1], fuso);
-                    return [lat, lng];
+                    if (coordinateSystem === 'UTM') {
+                        // Converter de UTM para Lat/Lng
+                        const [lat, lng] = utmToLatLng(c[0], c[1], fuso);
+                        return [lat, lng];
+                    } else {
+                        // Já está em Lat/Lng
+                        return [c[1], c[0]];  // Inverter para [lat, lng]
+                    }
                 });
                 
                 const polyline = L.polyline(coords, {
@@ -4801,10 +4807,16 @@ function desenharGeometriasImportadas(layerName, geojson, fuso) {
                     else bounds.extend(coord);
                 });
             } else if (geometry.type === 'Polygon') {
-                // Converter coordenadas UTM para Lat/Lng usando proj4
+                // Converter coordenadas (se necessário)
                 const coords = geometry.coordinates[0].map(c => {
-                    const [lat, lng] = utmToLatLng(c[0], c[1], fuso);
-                    return [lat, lng];
+                    if (coordinateSystem === 'UTM') {
+                        // Converter de UTM para Lat/Lng
+                        const [lat, lng] = utmToLatLng(c[0], c[1], fuso);
+                        return [lat, lng];
+                    } else {
+                        // Já está em Lat/Lng
+                        return [c[1], c[0]];  // Inverter para [lat, lng]
+                    }
                 });
                 
                 const polygon = L.polygon(coords, {

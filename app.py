@@ -744,7 +744,8 @@ def process_kml(file, fuso):
         
         return {
             'type': 'FeatureCollection',
-            'features': features
+            'features': features,
+            'coordinateSystem': 'LatLng'  # KML está em Lat/Lng
         }
     
     except Exception as e:
