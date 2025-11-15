@@ -65,6 +65,17 @@
 
 ## Remover Mensagens Laterais de Notificação (v3.5.2)
 
-- [ ] Remover showMessage() das ferramentas (manter função intacta, apenas comentar chamadas)
-- [ ] Testar se nenhuma funcionalidade foi afetada
+- [x] Remover showMessage() das ferramentas (manter função intacta, apenas comentar chamadas)
+- [x] Testar se nenhuma funcionalidade foi afetada
+
+
+
+
+## Implementar Tooltips Customizados (v3.6.0)
+
+- [ ] Adicionar CSS para tooltips customizados em style.css
+- [ ] Adicionar atributos data-tooltip em todos os botões do HTML
+- [ ] Testar que menus continuam funcionando normalmente
+- [ ] Testar que tooltips aparecem com delay de 1,5 segundos
+- [ ] Testar que fonte tem tamanho 9pt
 

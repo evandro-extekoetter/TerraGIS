@@ -50,13 +50,13 @@
                         <img src="{{ url_for('static', filename='icons/criar_projeto_icon.png') }}" class="icon" alt=""> PROJETO ▼
                     </button>
                     <div id="projeto-top-menu" class="top-dropdown" style="display: none;">
-                        <button class="dropdown-item" onclick="newProject()">
+                        <button class="dropdown-item" onclick="newProject()" data-tooltip="Cria um novo projeto GIS com nome e fuso UTM definido">
                             <img src="{{ url_for('static', filename='icons/criar_projeto_icon.png') }}" class="icon" alt=""> Novo
                         </button>
-                        <button class="dropdown-item" onclick="saveProject()">
+                        <button class="dropdown-item" onclick="saveProject()" data-tooltip="Salva o projeto atual com todas as camadas e dados">
                             <img src="{{ url_for('static', filename='icons/salvar_projeto_icon.png') }}" class="icon" alt=""> Salvar
                         </button>
-                        <button class="dropdown-item" onclick="openProject()">
+                        <button class="dropdown-item" onclick="openProject()" data-tooltip="Abre um projeto GIS existente">
                             <img src="{{ url_for('static', filename='icons/abrir_projeto_icon.png') }}" class="icon" alt=""> Abrir
                         </button>
                     </div>
@@ -81,10 +81,10 @@
                                         <img src="{{ url_for('static', filename='icons/table_icon.png') }}" class="icon" alt=""> TABELA ▶
                                     </button>
                                     <div id="poligono-tabela-submenu" class="top-dropdown" style="display: none; position: absolute; left: 100%; top: 0; margin-left: 4px;">
-                                        <button class="dropdown-item" onclick="openCoordTableDialog()">
+                                        <button class="dropdown-item" onclick="openCoordTableDialog()" data-tooltip="Constrói um polígono a partir de coordenadas UTM digitadas em uma tabela">
                                             <img src="{{ url_for('static', filename='icons/table_icon.png') }}" class="icon" alt=""> UTM
                                         </button>
-                                        <button class="dropdown-item" onclick="openTabelaLatLongDialog()">
+                                        <button class="dropdown-item" onclick="openTabelaLatLongDialog()" data-tooltip="Constrói um polígono a partir de coordenadas geográficas (latitude/longitude) digitadas em uma tabela">
                                             <img src="{{ url_for('static', filename='icons/table_icon.png') }}" class="icon" alt=""> GEOGRÁFICA
                                         </button>
                                     </div>
@@ -96,10 +96,10 @@
                                         <img src="{{ url_for('static', filename='icons/list_icon.png') }}" class="icon" alt=""> LISTA ▶
                                     </button>
                                     <div id="poligono-lista-submenu" class="top-dropdown" style="display: none; position: absolute; left: 100%; top: 0; margin-left: 4px;">
-                                        <button class="dropdown-item" onclick="openCoordListDialog()">
+                                        <button class="dropdown-item" onclick="openCoordListDialog()" data-tooltip="Constrói um polígono a partir de uma lista de coordenadas UTM">
                                             <img src="{{ url_for('static', filename='icons/list_icon.png') }}" class="icon" alt=""> UTM
                                         </button>
-                                        <button class="dropdown-item" onclick="openListaLatLongDialog()">
+                                        <button class="dropdown-item" onclick="openListaLatLongDialog()" data-tooltip="Constrói um polígono a partir de uma lista de coordenadas geográficas">
                                             <img src="{{ url_for('static', filename='icons/list_icon.png') }}" class="icon" alt=""> GEOGRÁFICA
                                         </button>
                                     </div>
@@ -111,17 +111,17 @@
                                         <img src="{{ url_for('static', filename='icons/azimuth_icon.png') }}" class="icon" alt=""> ÂNGULOS ▶
                                     </button>
                                     <div id="poligono-angulos-submenu" class="top-dropdown" style="display: none; position: absolute; left: 100%; top: 0; margin-left: 4px;">
-                                        <button class="dropdown-item" onclick="openAzimuthDialog()">
+                                        <button class="dropdown-item" onclick="openAzimuthDialog()" data-tooltip="Constrói um polígono a partir de azimute e distância entre vértices">
                                             <img src="{{ url_for('static', filename='icons/azimuth_icon.png') }}" class="icon" alt=""> AZIMUTE + DISTÂNCIA
                                         </button>
-                                        <button class="dropdown-item" onclick="openBearingDialog()">
+                                        <button class="dropdown-item" onclick="openBearingDialog()" data-tooltip="Constrói um polígono a partir de rumo e distância entre vértices">
                                             <img src="{{ url_for('static', filename='icons/azimuth_icon.png') }}" class="icon" alt=""> RUMO + DISTÂNCIA
                                         </button>
                                     </div>
                                 </div>
                                 
                                 <!-- SIGEF -->
-                                <button class="dropdown-item" onclick="openPoligonoSIGEFDialog()">
+                                <button class="dropdown-item" onclick="openPoligonoSIGEFDialog()" data-tooltip="Importa polígono do banco de dados SIGEF (Sistema de Gestão Fundiária)">
                                     <img src="{{ url_for('static', filename='icons/sigef_icon.png') }}" class="icon" alt=""> SIGEF
                                 </button>
                                 
@@ -141,10 +141,10 @@
                                         <img src="{{ url_for('static', filename='icons/table_icon.png') }}" class="icon" alt=""> TABELA ▶
                                     </button>
                                     <div id="polilinha-tabela-submenu" class="top-dropdown" style="display: none; position: absolute; left: 100%; top: 0; margin-left: 4px;">
-                                        <button class="dropdown-item" onclick="openPolylineCoordTableDialog()">
+                                        <button class="dropdown-item" onclick="openPolylineCoordTableDialog()" data-tooltip="Constrói uma polilinha a partir de coordenadas UTM digitadas em uma tabela">
                                             <img src="{{ url_for('static', filename='icons/table_icon.png') }}" class="icon" alt=""> UTM
                                         </button>
-                                        <button class="dropdown-item" onclick="openPolylineTabelaLatLongDialog()">
+                                        <button class="dropdown-item" onclick="openPolylineTabelaLatLongDialog()" data-tooltip="Constrói uma polilinha a partir de coordenadas geográficas digitadas em uma tabela">
                                             <img src="{{ url_for('static', filename='icons/table_icon.png') }}" class="icon" alt=""> GEOGRÁFICA
                                         </button>
                                     </div>
@@ -156,10 +156,10 @@
                                         <img src="{{ url_for('static', filename='icons/list_icon.png') }}" class="icon" alt=""> LISTA ▶
                                     </button>
                                     <div id="polilinha-lista-submenu" class="top-dropdown" style="display: none; position: absolute; left: 100%; top: 0; margin-left: 4px;">
-                                        <button class="dropdown-item" onclick="openPolylineCoordListDialog()">
+                                        <button class="dropdown-item" onclick="openPolylineCoordListDialog()" data-tooltip="Constrói uma polilinha a partir de uma lista de coordenadas UTM">
                                             <img src="{{ url_for('static', filename='icons/list_icon.png') }}" class="icon" alt=""> UTM
                                         </button>
-                                        <button class="dropdown-item" onclick="openPolylineListaLatLongDialog()">
+                                        <button class="dropdown-item" onclick="openPolylineListaLatLongDialog()" data-tooltip="Constrói uma polilinha a partir de uma lista de coordenadas geográficas">
                                             <img src="{{ url_for('static', filename='icons/list_icon.png') }}" class="icon" alt=""> GEOGRÁFICA
                                         </button>
                                     </div>
@@ -189,10 +189,10 @@
                                 <img src="{{ url_for('static', filename='icons/freehand_icon.png') }}" class="icon" alt=""> MÃO LIVRE ▶
                             </button>
                             <div id="maolivre-submenu" class="top-dropdown" style="display: none; position: absolute; left: 100%; top: 0; margin-left: 4px;">
-                                <button class="dropdown-item" onclick="openFreehandDrawingDialog('polygon')">
+                                <button class="dropdown-item" onclick="openFreehandDrawingDialog('polygon')" data-tooltip="Desenha um polígono à mão livre clicando no mapa para criar vértices">
                                     <img src="{{ url_for('static', filename='icons/polygon_icon.png') }}" class="icon" alt=""> POLÍGONO
                                 </button>
-                                <button class="dropdown-item" onclick="openFreehandDrawingDialog('polyline')">
+                                <button class="dropdown-item" onclick="openFreehandDrawingDialog('polyline')" data-tooltip="Desenha uma polilinha à mão livre clicando no mapa para criar vértices">
                                     <img src="{{ url_for('static', filename='icons/polyline_icon.png') }}" class="icon" alt=""> POLILINHA
                                 </button>
                             </div>
@@ -216,16 +216,16 @@
                                     <img src="{{ url_for('static', filename='icons/move_vertices_icon.png') }}" class="icon" alt=""> Adicionar ▶
                                 </button>
                                 <div id="adicionar-vertice-submenu" class="top-dropdown" style="display: none; position: absolute; left: 100%; top: 0; margin-left: 4px;">
-                                    <button class="dropdown-item" onclick="ativarAdicionarVerticesMapa(); closeAllMenus();">
+                                    <button class="dropdown-item" onclick="ativarAdicionarVerticesMapa(); closeAllMenus();" data-tooltip="Adiciona um novo vértice clicando no mapa">
                                         <img src="{{ url_for('static', filename='icons/move_vertices_icon.png') }}" class="icon" alt=""> Mapa
                                     </button>
-                                    <button class="dropdown-item" onclick="abrirModalAdicionarVerticesCoordenadas(); closeAllMenus();">
+                                    <button class="dropdown-item" onclick="abrirModalAdicionarVerticesCoordenadas(); closeAllMenus();" data-tooltip="Adiciona um novo vértice a partir de coordenadas digitadas">
                                         <img src="{{ url_for('static', filename='icons/table_icon.png') }}" class="icon" alt=""> Coordenadas
                                     </button>
-                                    <button class="dropdown-item" onclick="abrirModalAdicionarVerticesAzimute(); closeAllMenus();">
+                                    <button class="dropdown-item" onclick="abrirModalAdicionarVerticesAzimute(); closeAllMenus();" data-tooltip="Adiciona um novo vértice a partir de azimute e distância">
                                         <img src="{{ url_for('static', filename='icons/table_icon.png') }}" class="icon" alt=""> Azimute e Distância
                                     </button>
-                                    <button class="dropdown-item" onclick="abrirModalAdicionarVerticesRumo(); closeAllMenus();">
+                                    <button class="dropdown-item" onclick="abrirModalAdicionarVerticesRumo(); closeAllMenus();" data-tooltip="Adiciona um novo vértice a partir de rumo e distância">
                                         <img src="{{ url_for('static', filename='icons/table_icon.png') }}" class="icon" alt=""> Rumo e Distância
                                     </button>
                                 </div>
@@ -234,24 +234,24 @@
                                         <img src="{{ url_for('static', filename='icons/move_vertices_icon.png') }}" class="icon" alt=""> Mover ▶
                                     </button>
                                     <div id="mover-vertice-submenu" class="top-dropdown" style="display: none; position: absolute; left: 100%; top: 0; margin-left: 4px;">
-                                        <button class="dropdown-item" onclick="ativarMoverVerticesMapa(); closeAllMenus();">
+                                        <button class="dropdown-item" onclick="ativarMoverVerticesMapa(); closeAllMenus();" data-tooltip="Move um vértice selecionado arrastando-o no mapa">
                                             <img src="{{ url_for('static', filename='icons/move_vertices_icon.png') }}" class="icon" alt=""> Mapa
                                         </button>
-                                        <button class="dropdown-item" onclick="abrirModalMoverVerticesCoordenadas(); closeAllMenus();">
+                                        <button class="dropdown-item" onclick="abrirModalMoverVerticesCoordenadas(); closeAllMenus();" data-tooltip="Move um vértice selecionado para novas coordenadas digitadas">
                                             <img src="{{ url_for('static', filename='icons/table_icon.png') }}" class="icon" alt=""> Coordenadas
                                         </button>
-                                        <button class="dropdown-item" onclick="abrirModalMoverVerticesAzimute(); closeAllMenus();">
+                                        <button class="dropdown-item" onclick="abrirModalMoverVerticesAzimute(); closeAllMenus();" data-tooltip="Move um vértice selecionado a partir de azimute e distância">
                                             <img src="{{ url_for('static', filename='icons/table_icon.png') }}" class="icon" alt=""> Azimute e Distancia
                                         </button>
-                                        <button class="dropdown-item" onclick="abrirModalMoverVerticesRumo(); closeAllMenus();">
+                                        <button class="dropdown-item" onclick="abrirModalMoverVerticesRumo(); closeAllMenus();" data-tooltip="Move um vértice selecionado a partir de rumo e distância">
                                             <img src="{{ url_for('static', filename='icons/table_icon.png') }}" class="icon" alt=""> Rumo e Distancia
                                         </button>
                                     </div>
                                 </div>
-                                <button class="dropdown-item" onclick="ativarRemoverVerticesMapa(); closeAllMenus();">
+                                <button class="dropdown-item" onclick="ativarRemoverVerticesMapa(); closeAllMenus();" data-tooltip="Remove um vértice selecionado da geometria">
                                     <img src="{{ url_for('static', filename='icons/remove_icon.png') }}" class="icon" alt=""> Remover
                                 </button>
-                                <button class="dropdown-item" onclick="ativarRenomearVerticeMapa(); closeAllMenus();">
+                                <button class="dropdown-item" onclick="ativarRenomearVerticeMapa(); closeAllMenus();" data-tooltip="Renomeia o identificador de um vértice selecionado">
                                     <img src="{{ url_for('static', filename='icons/rename_icon.png') }}" class="icon" alt=""> Renomear
                                 </button>
                             </div>
@@ -269,17 +269,17 @@
                                         <img src="{{ url_for('static', filename='icons/move_geometry_icon.png') }}" class="icon" alt=""> Mover ▶
                                     </button>
                                     <div id="edicao-geometria-mover-submenu" class="top-dropdown" style="display: none; position: absolute; left: 100%; top: 0; margin-left: 4px;">
-                                        <button class="dropdown-item" onclick="openMoverGeometriaMapaDialog(); closeAllMenus();">
+                                        <button class="dropdown-item" onclick="openMoverGeometriaMapaDialog(); closeAllMenus();" data-tooltip="Move uma geometria inteira arrastando-a no mapa">
                                             <img src="{{ url_for('static', filename='icons/move_geometry_icon.png') }}" class="icon" alt=""> Mapa
                                         </button>
-                                        <button class="dropdown-item" onclick="openMoverGeometriaDialog(); closeAllMenus();">
+                                        <button class="dropdown-item" onclick="openMoverGeometriaDialog(); closeAllMenus();" data-tooltip="Move uma geometria inteira a partir de uma distância digitada">
                                             <img src="{{ url_for('static', filename='icons/coordinates_icon.png') }}" class="icon" alt=""> Por Distância (Digitando)
                                         </button>
                                     </div>
                                 </div>
                                 
                                 <!-- Copiar -->
-                                <button class="dropdown-item" onclick="openCopiarGeometriaDialog(); closeAllMenus();">
+                                <button class="dropdown-item" onclick="openCopiarGeometriaDialog(); closeAllMenus();" data-tooltip="Cria uma cópia de uma geometria selecionada">
                                     <img src="{{ url_for('static', filename='icons/copy_icon.png') }}" class="icon" alt=""> Copiar
                                 </button>
                                 
@@ -289,17 +289,17 @@
                                         <img src="{{ url_for('static', filename='icons/rotate_icon.png') }}" class="icon" alt=""> Rotacionar ▶
                                     </button>
                                     <div id="edicao-geometria-rotacionar-submenu" class="top-dropdown" style="display: none; position: absolute; left: 100%; top: 0; margin-left: 4px;">
-                        <button class="dropdown-item" onclick="ativarRotacionarGeometriaMapa(); closeAllMenus();">
+                        <button class="dropdown-item" onclick="ativarRotacionarGeometriaMapa(); closeAllMenus();" data-tooltip="Rotaciona uma geometria clicando no mapa para definir o ângulo">
                             <img src="{{ url_for('static', filename='icons/rotate_icon.png') }}" class="icon" alt=""> Mapa
                         </button>
-                                        <button class="dropdown-item" onclick="openRotacionarGeometriaDialog(); closeAllMenus();">
+                                        <button class="dropdown-item" onclick="openRotacionarGeometriaDialog(); closeAllMenus();" data-tooltip="Rotaciona uma geometria a partir de um ângulo digitado">
                                             <img src="{{ url_for('static', filename='icons/coordinates_icon.png') }}" class="icon" alt=""> Por Ângulo
                                         </button>
                                     </div>
                                 </div>
                                 
                                 <!-- Converter Polilinha em Polígono -->
-                                <button class="dropdown-item" onclick="converterPolilinhaEmPoligono(); closeAllMenus();">
+                                <button class="dropdown-item" onclick="converterPolilinhaEmPoligono(); closeAllMenus();" data-tooltip="Converte uma polilinha aberta em um polígono fechado">
                                     <img src="{{ url_for('static', filename='icons/polygon_icon.png') }}" class="icon" alt=""> Converter Polilinha em Polígono
                                 </button>
                             </div>
@@ -312,10 +312,10 @@
                         <img src="{{ url_for('static', filename='icons/analysis_icon.png') }}" class="icon" alt=""> ANÁLISE ▼
                     </button>
                     <div id="analise-top-menu" class="top-dropdown" style="display: none;">
-                        <button class="dropdown-item" onclick="executarAnalisePoligono()">
+                        <button class="dropdown-item" onclick="executarAnalisePoligono()" data-tooltip="Calcula e exibe informações de um polígono (área, perímetro, coordenadas dos vértices)">
                             <img src="{{ url_for('static', filename='icons/analysis_icon.png') }}" class="icon" alt=""> Análise de Polígono
                         </button>
-                        <button class="dropdown-item" onclick="executarAnalisePolilinha()">
+                        <button class="dropdown-item" onclick="executarAnalisePolilinha()" data-tooltip="Calcula e exibe informações de uma polilinha (comprimento, coordenadas dos vértices)">
                             <img src="{{ url_for('static', filename='icons/analysis_icon.png') }}" class="icon" alt=""> Análise de Polilinha
                         </button>
                         <button class="dropdown-item" onclick="alert('Comparação de Perímetro em desenvolvimento')">
@@ -329,19 +329,19 @@
                         <img src="{{ url_for('static', filename='icons/measure_icon.png') }}" class="icon" alt=""> MEDIDAS ▼
                     </button>
                     <div id="medidas-top-menu" class="top-dropdown" style="display: none;">
-                        <button class="dropdown-item" onclick="ativarMedirLinha(); closeAllMenus();">
+                        <button class="dropdown-item" onclick="ativarMedirLinha(); closeAllMenus();" data-tooltip="Mede a distância entre dois pontos clicados no mapa">
                             <img src="{{ url_for('static', filename='icons/measure_icon.png') }}" class="icon" alt=""> Medir Linha
                         </button>
-                        <button class="dropdown-item" onclick="ativarMedirArea(); closeAllMenus();">
+                        <button class="dropdown-item" onclick="ativarMedirArea(); closeAllMenus();" data-tooltip="Mede a área de uma região desenhada no mapa">
                             <img src="{{ url_for('static', filename='icons/measure_icon.png') }}" class="icon" alt=""> Medir Área
                         </button>
-                        <button class="dropdown-item" onclick="ativarMedirAzimute(); closeAllMenus();">
+                        <button class="dropdown-item" onclick="ativarMedirAzimute(); closeAllMenus();" data-tooltip="Mede o azimute (ângulo) entre dois pontos clicados no mapa">
                             <img src="{{ url_for('static', filename='icons/measure_icon.png') }}" class="icon" alt=""> Medir Azimute
                         </button>
-                        <button class="dropdown-item" onclick="ativarMedirAngulo(); closeAllMenus();">
+                        <button class="dropdown-item" onclick="ativarMedirAngulo(); closeAllMenus();" data-tooltip="Mede o ângulo entre três pontos clicados no mapa">
                             <img src="{{ url_for('static', filename='icons/measure_icon.png') }}" class="icon" alt=""> Medir Ângulo
                         </button>
-                        <button class="dropdown-item" onclick="ativarCoordenadaVertice(); closeAllMenus();">
+                        <button class="dropdown-item" onclick="ativarCoordenadaVertice(); closeAllMenus();" data-tooltip="Exibe as coordenadas de um vértice selecionado">
                             <img src="{{ url_for('static', filename='icons/coordinates_icon.png') }}" class="icon" alt=""> Coordenada do Vértice
                         </button>
                     </div>
@@ -368,11 +368,11 @@
             <!-- CAMADAS -->
             <div class="tool-section">
                 <div class="submenu-container">
-                    <button class="tool-btn submenu-toggle" onclick="toggleSubmenu('camadas-menu')">
+                    <button class="tool-btn submenu-toggle" onclick="toggleSubmenu('camadas-menu')" data-tooltip="Abre/fecha o gerenciador de camadas do projeto">
                         <img src="{{ url_for('static', filename='icons/criar_projeto_icon.png') }}" class="icon" alt=""> CAMADAS <span class="arrow">▼</span>
                     </button>
                     <div id="camadas-menu" class="submenu" style="display: block;">
-                        <button class="tool-btn submenu-item" onclick="addLayer()">
+                        <button class="tool-btn submenu-item" onclick="addLayer()" data-tooltip="Cria uma nova camada vazia no projeto">
                             <img src="{{ url_for('static', filename='icons/add_vertices_icon.png') }}" class="icon" alt=""> Nova Camada
                         </button>
                         <div id="layers-list" class="layers-list">
