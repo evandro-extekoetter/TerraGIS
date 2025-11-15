@@ -352,8 +352,30 @@
                         <img src="{{ url_for('static', filename='icons/salvar_projeto_icon.png') }}" class="icon" alt=""> IMPRIMIR
                     </button>
                 </div>
+                
+                <!-- INTERCÂMBIO -->
+                <div class="menu-item">
+                    <button class="menu-btn" onclick="toggleTopMenu('intercambio-top-menu')">
+                        <img src="{{ url_for('static', filename='icons/construction_icon.png') }}" class="icon" alt=""> INTERCÂMBIO ▼
+                    </button>
+                    <div id="intercambio-top-menu" class="top-dropdown" style="display: none;">
+                        <button class="dropdown-item" onclick="abrirImportar()" data-tooltip="Importa dados de arquivos externos">
+                            <img src="{{ url_for('static', filename='icons/abrir_projeto_icon.png') }}" class="icon" alt=""> Importar
+                        </button>
+                        <button class="dropdown-item" onclick="abrirExportar()" data-tooltip="Exporta dados do projeto para arquivo">
+                            <img src="{{ url_for('static', filename='icons/salvar_projeto_icon.png') }}" class="icon" alt=""> Exportar
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- TUTORIAL -->
+                <div class="menu-item">
+                    <button class="menu-btn" onclick="abrirTutorial(); closeAllMenus();">
+                        <img src="{{ url_for('static', filename='icons/criar_projeto_icon.png') }}" class="icon" alt=""> TUTORIAL
+                    </button>
+                </div>
             </nav>
-            <div style="font-size: 12px; color: #999;">v3.4.0</div>
+            <div style="font-size: 12px; color: #999;">v4.0.0</div>
         </div>
     </header>
 

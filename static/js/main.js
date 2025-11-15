@@ -4458,3 +4458,37 @@ function aplicarMoverVerticesRumo() {
     }
 }
 
+
+
+
+// ===== INTERCÂMBIO (v4.0.0) =====
+
+/**
+ * Abrir diálogo de importação
+ */
+function abrirImportar() {
+    console.log('[v4.0.0] Ferramenta Importar acionada');
+    // TODO: Implementar funcionalidade de importação
+    alert('Ferramenta Importar - em desenvolvimento');
+}
+
+/**
+ * Abrir diálogo de exportação
+ */
+function abrirExportar() {
+    console.log('[v4.0.0] Ferramenta Exportar acionada');
+    // TODO: Implementar funcionalidade de exportação
+    alert('Ferramenta Exportar - em desenvolvimento');
+}
+
+// ===== TUTORIAL (v4.0.0) =====
+
+/**
+ * Abrir página de tutorial
+ */
+function abrirTutorial() {
+    console.log('[v4.0.0] Tutorial acionado');
+    // TODO: Implementar página de tutorial
+    alert('Tutorial - em desenvolvimento');
+}
+
