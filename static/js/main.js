@@ -1566,6 +1566,7 @@ function ativarMoverVerticesMapa() {
     desativarTodasFerramentasEdicao();
     
     moverVerticesMapaAtivo = true;
+    map.getContainer().style.cursor = 'default';
     updateToolIndicator('Mover Vértices (Mapa)');
     
     // === NOVA ARQUITETURA: Usar TerraManager ===
@@ -1751,6 +1752,7 @@ function ativarAdicionarVerticesMapa() {
     desativarTodasFerramentasEdicao();
     
     adicionarVerticesMapaAtivo = true;
+    map.getContainer().style.cursor = 'default';
     updateToolIndicator('Adicionar Vértices (Mapa)');
     
     // Adicionar evento de clique nos polígonos
@@ -2379,6 +2381,7 @@ function ativarCopiarGeometriaMapa() {
     desativarTodasFerramentasEdicao();
     
     copiarGeometriaMapaAtivo = true;
+    map.getContainer().style.cursor = 'default';
     updateToolIndicator('Copiar Geometria (Mapa)');
     
     // Implementar lógica de copiar geometria
@@ -3056,6 +3059,7 @@ function startFreehandDrawing() {
     
     // Ativar modo de desenho
     freehandDrawingActive = true;
+    map.getContainer().style.cursor = 'default';
     updateToolIndicator(`Desenho à Mão Livre (${type === 'polygon' ? 'Polígono' : 'Polilinha'})`);
     
     // Fechar modal
@@ -3299,6 +3303,7 @@ function ativarMoverGeometriaMapa() {
     
     // Ativar ferramenta de mover geometria
     moveGeometryState.active = true;
+    map.getContainer().style.cursor = 'default';
     updateToolIndicator('MOVER GEOMETRIA (MAPA)');
     
     // Adicionar listener de clique no mapa

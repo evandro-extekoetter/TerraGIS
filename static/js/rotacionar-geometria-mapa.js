@@ -70,7 +70,7 @@ function ativarRotacionarGeometriaMapa() {
     criarPreviewRotacao();
     
     // Mudar cursor
-    map.getContainer().style.cursor = 'crosshair';
+    map.getContainer().style.cursor = 'default';
     
     console.log('[ROTACIONAR v2.15] Ferramenta ativada! Clique e arraste para rotacionar.');
     showMessage('🔄 Clique e arraste para rotacionar. ESC para cancelar.', 'info');

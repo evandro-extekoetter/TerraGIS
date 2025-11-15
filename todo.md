@@ -95,5 +95,5 @@
 
 - [x] Procurar onde o cursor é definido como mãozinha
 - [x] Remover ou alterar para cursor padrão (seta) - mudado de '' para 'auto'
-- [ ] Testar que o cursor fica como seta em todas as ferramentas ativas
+- [x] Testar que o cursor fica como seta em todas as ferramentas ativas (grab/grabbing/move -> default)
 
