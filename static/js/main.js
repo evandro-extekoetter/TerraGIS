@@ -4645,6 +4645,30 @@ function processarShapefile(fileArrayBuffer) {
 /**
  * Executar importação
  */
+/**
+ * Atualizar nome da cor selecionada
+ */
+function atualizarNomeCor() {
+    const cor = document.getElementById('importar-cor').value.toUpperCase();
+    const nomes = {
+        '#FF8C00': 'Laranja',
+        '#FF0000': 'Vermelho',
+        '#00FF00': 'Verde',
+        '#0000FF': 'Azul',
+        '#FFFF00': 'Amarelo',
+        '#FF00FF': 'Magenta',
+        '#00FFFF': 'Ciano',
+        '#FFFFFF': 'Branco',
+        '#000000': 'Preto'
+    };
+    
+    const nome = nomes[cor] || cor;
+    document.getElementById('importar-cor-nome').textContent = nome;
+}
+
+/**
+ * Executar importação com cor selecionada
+ */
 function executarImportacao() {
     console.log('[v4.1.0] Executando importação...');
     
@@ -4680,6 +4704,12 @@ function executarImportacao() {
     formData.append('layerName', layerName);
     formData.append('fuso', currentProject.fuso);
     
+    // Adicionar cor selecionada
+    const corSelecionada = document.getElementById('importar-cor').value;
+    formData.append('cor', corSelecionada);
+    
+    console.log('[v4.1.8] Cor selecionada:', corSelecionada);
+    
     // Desabilitar botão
     const btn = event.target;
     btn.disabled = true;
@@ -4695,7 +4725,8 @@ function executarImportacao() {
             console.log('[v4.1.0] Importação bem-sucedida:', data);
             
             // Desenhar geometrias no mapa
-            desenharGeometriasImportadas(layerName, data.geojson, currentProject.fuso, data.coordinateSystem);
+            const corSelecionada = document.getElementById('importar-cor').value;
+            desenharGeometriasImportadas(layerName, data.geojson, currentProject.fuso, data.coordinateSystem, corSelecionada);
             
             // Fechar modal
             closeModal('modal-importar');
@@ -4718,7 +4749,7 @@ function executarImportacao() {
 /**
  * Desenhar geometrias importadas no mapa
  */
-function desenharGeometriasImportadas(layerName, geojson, fuso, coordinateSystem = 'UTM') {
+function desenharGeometriasImportadas(layerName, geojson, fuso, coordinateSystem = 'UTM', cor = '#FF8C00') {
     console.log('[v4.1.0] Desenhando geometrias importadas:', layerName);
     
     try {
@@ -4740,8 +4771,8 @@ function desenharGeometriasImportadas(layerName, geojson, fuso, coordinateSystem
                 verticesLayer: layers[layerName].vertices,
                 visible: true,
                 editable: false,
-                color: '#F4A460',
-                vertexColor: '#F4A460',
+                color: cor,
+                vertexColor: cor,
                 fuso: fuso,
                 vertices: [],
                 
@@ -4797,7 +4828,7 @@ function desenharGeometriasImportadas(layerName, geojson, fuso, coordinateSystem
                 });
                 
                 const polyline = L.polyline(coords, {
-                    color: '#F4A460',
+                    color: cor,
                     weight: 2,
                     opacity: 0.8
                 });
@@ -4822,8 +4853,8 @@ function desenharGeometriasImportadas(layerName, geojson, fuso, coordinateSystem
                 });
                 
                 const polygon = L.polygon(coords, {
-                    color: '#F4A460',
-                    fillColor: '#F4A460',
+                    color: cor,
+                    fillColor: cor,
                     fillOpacity: 0.3,
                     weight: 2
                 });
