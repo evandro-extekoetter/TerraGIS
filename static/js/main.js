@@ -4492,3 +4492,183 @@ function abrirTutorial() {
     alert('Tutorial - em desenvolvimento');
 }
 
+
+
+
+// ===== IMPORTAR (v4.0.0) =====
+
+let importFileData = null;
+let importFileType = null;
+
+/**
+ * Abrir diálogo de importação
+ */
+function abrirImportar() {
+    console.log('[v4.0.0] Diálogo Importar aberto');
+    openModal('modal-importar');
+    // Limpar campos
+    document.getElementById('importar-nome-camada').value = 'Camada Importada';
+    document.getElementById('importar-arquivo').value = '';
+    document.getElementById('importar-info').style.display = 'none';
+    importFileData = null;
+    importFileType = null;
+}
+
+/**
+ * Processar seleção de arquivo
+ */
+function handleImportFileSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    console.log('[v4.0.0] Arquivo selecionado:', file.name, file.size, 'bytes');
+    
+    // Determinar tipo de arquivo
+    const fileName = file.name.toLowerCase();
+    let fileType = null;
+    
+    if (fileName.endsWith('.zip')) {
+        fileType = 'shapefile';
+    } else if (fileName.endsWith('.dxf')) {
+        fileType = 'dxf';
+    } else if (fileName.endsWith('.kml')) {
+        fileType = 'kml';
+    } else if (fileName.endsWith('.kmz')) {
+        fileType = 'kmz';
+    }
+    
+    if (!fileType) {
+        alert('Formato de arquivo não suportado. Use: ZIP (Shapefile), DXF, KML ou KMZ');
+        return;
+    }
+    
+    importFileType = fileType;
+    
+    // Ler arquivo
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        importFileData = e.target.result;
+        
+        // Atualizar UI
+        document.getElementById('importar-filename').textContent = file.name;
+        document.getElementById('importar-tipo').textContent = fileType.toUpperCase();
+        document.getElementById('importar-geometrias-count').textContent = '...';
+        document.getElementById('importar-info').style.display = 'block';
+        
+        // Processar arquivo para contar geometrias
+        processarArquivoImportacao(fileType, importFileData);
+    };
+    
+    if (fileType === 'shapefile' || fileType === 'kmz') {
+        reader.readAsArrayBuffer(file);
+    } else {
+        reader.readAsText(file);
+    }
+}
+
+/**
+ * Processar arquivo e contar geometrias
+ */
+function processarArquivoImportacao(fileType, fileData) {
+    console.log('[v4.0.0] Processando arquivo tipo:', fileType);
+    
+    try {
+        if (fileType === 'dxf') {
+            processarDXF(fileData);
+        } else if (fileType === 'kml') {
+            processarKML(fileData);
+        } else if (fileType === 'kmz') {
+            processarKMZ(fileData);
+        } else if (fileType === 'shapefile') {
+            processarShapefile(fileData);
+        }
+    } catch (error) {
+        console.error('[v4.0.0] Erro ao processar arquivo:', error);
+        alert('Erro ao processar arquivo: ' + error.message);
+    }
+}
+
+/**
+ * Processar arquivo DXF
+ */
+function processarDXF(fileText) {
+    console.log('[v4.0.0] Processando DXF...');
+    
+    // Contar LWPOLYLINE e POLYLINE
+    const lwpolylineMatches = fileText.match(/LWPOLYLINE/g) || [];
+    const polylineMatches = fileText.match(/^POLYLINE$/gm) || [];
+    
+    const count = lwpolylineMatches.length + polylineMatches.length;
+    console.log('[v4.0.0] DXF - Geometrias encontradas:', count);
+    document.getElementById('importar-geometrias-count').textContent = count;
+}
+
+/**
+ * Processar arquivo KML
+ */
+function processarKML(fileText) {
+    console.log('[v4.0.0] Processando KML...');
+    
+    // Contar Polygon e LineString
+    const polygonMatches = fileText.match(/<Polygon>/g) || [];
+    const lineStringMatches = fileText.match(/<LineString>/g) || [];
+    
+    const count = polygonMatches.length + lineStringMatches.length;
+    console.log('[v4.0.0] KML - Geometrias encontradas:', count);
+    document.getElementById('importar-geometrias-count').textContent = count;
+}
+
+/**
+ * Processar arquivo KMZ (ZIP contendo KML)
+ */
+function processarKMZ(fileArrayBuffer) {
+    console.log('[v4.0.0] Processando KMZ...');
+    
+    // Para agora, apenas mostrar que foi detectado
+    // A implementação completa de descompactação será feita no backend
+    document.getElementById('importar-geometrias-count').textContent = '(será contado na importação)';
+}
+
+/**
+ * Processar arquivo Shapefile (ZIP)
+ */
+function processarShapefile(fileArrayBuffer) {
+    console.log('[v4.0.0] Processando Shapefile...');
+    
+    // Para agora, apenas mostrar que foi detectado
+    // A implementação completa de leitura será feita no backend
+    document.getElementById('importar-geometrias-count').textContent = '(será contado na importação)';
+}
+
+/**
+ * Executar importação
+ */
+function executarImportacao() {
+    console.log('[v4.0.0] Executando importação...');
+    
+    if (!currentProject || !currentProject.fuso) {
+        alert('Para importar é necessário ter um projeto ativo');
+        return;
+    }
+    
+    if (!importFileData || !importFileType) {
+        alert('Selecione um arquivo para importar');
+        return;
+    }
+    
+    const layerName = document.getElementById('importar-nome-camada').value.trim();
+    if (!layerName) {
+        alert('Digite um nome para a camada');
+        return;
+    }
+    
+    console.log('[v4.0.0] Importando:', {
+        layerName: layerName,
+        fileType: importFileType,
+        fuso: currentProject.fuso
+    });
+    
+    // TODO: Implementar envio para backend
+    alert('Importação em desenvolvimento\\nArquivo: ' + importFileType + '\\nCamada: ' + layerName);
+}
+

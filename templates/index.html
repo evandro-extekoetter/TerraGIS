@@ -1713,7 +1713,43 @@
         </div>
     </div>
 
-    <div style="position: fixed; bottom: 10px; right: 10px; background: rgba(255,255,255,0.9); padding: 5px 10px; border-radius: 5px; font-size: 12px; z-index: 10000;">TerraGIS v2.18</div>
+    <!-- Modal Importar (v4.0.0) -->
+    <div id="modal-importar" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Importar Arquivo GIS</h2>
+                <button class="close-btn" onclick="closeModal('modal-importar')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="importar-nome-camada">Nome da Camada:</label>
+                    <input type="text" id="importar-nome-camada" placeholder="Digite o nome da camada" value="Camada Importada">
+                </div>
+                
+                <div class="form-group">
+                    <label for="importar-arquivo">Arquivo (SHP, DXF ou KML/KMZ):</label>
+                    <input type="file" id="importar-arquivo" accept=".shp,.zip,.dxf,.kml,.kmz" onchange="handleImportFileSelect(event)">
+                    <small style="color: #999; margin-top: 5px; display: block;">
+                        • Shapefile: enviar em ZIP com .shp, .shx, .dbf<br>
+                        • DXF: arquivo .dxf do AutoCAD<br>
+                        • KML/KMZ: arquivo .kml ou .kmz do Google Earth
+                    </small>
+                </div>
+                
+                <div id="importar-info" style="display:none; margin-top: 10px; padding: 10px; background: #2A2A2A; border-radius: 4px;">
+                    <p><strong>Arquivo selecionado:</strong> <span id="importar-filename"></span></p>
+                    <p><strong>Tipo:</strong> <span id="importar-tipo">-</span></p>
+                    <p><strong>Geometrias encontradas:</strong> <span id="importar-geometrias-count">0</span></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal('modal-importar')">Cancelar</button>
+                <button class="btn-primary" onclick="executarImportacao()">Importar</button>
+            </div>
+        </div>
+    </div>
+
+    <div style="position: fixed; bottom: 10px; right: 10px; background: rgba(255,255,255,0.9); padding: 5px 10px; border-radius: 5px; font-size: 12px; z-index: 10000;">TerraGIS v4.0.0</div>
 </body>
 </html>
 
@@ -1800,7 +1836,45 @@
         </div>
     </div>
 
-    <div style="position: fixed; bottom: 10px; right: 10px; background: rgba(255,255,255,0.9); padding: 5px 10px; border-radius: 5px; font-size: 12px; z-index: 10000;">TerraGIS v2.18</div>
+
+
+    <!-- Modal Importar (v4.0.0) -->
+    <div id="modal-importar" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Importar Arquivo GIS</h2>
+                <button class="close-btn" onclick="closeModal('modal-importar')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="importar-nome-camada">Nome da Camada:</label>
+                    <input type="text" id="importar-nome-camada" placeholder="Digite o nome da camada" value="Camada Importada">
+                </div>
+                
+                <div class="form-group">
+                    <label for="importar-arquivo">Arquivo (SHP, DXF ou KML/KMZ):</label>
+                    <input type="file" id="importar-arquivo" accept=".shp,.zip,.dxf,.kml,.kmz" onchange="handleImportFileSelect(event)">
+                    <small style="color: #999; margin-top: 5px; display: block;">
+                        • Shapefile: enviar em ZIP com .shp, .shx, .dbf<br>
+                        • DXF: arquivo .dxf do AutoCAD<br>
+                        • KML/KMZ: arquivo .kml ou .kmz do Google Earth
+                    </small>
+                </div>
+                
+                <div id="importar-info" style="display:none; margin-top: 10px; padding: 10px; background: #2A2A2A; border-radius: 4px;">
+                    <p><strong>Arquivo selecionado:</strong> <span id="importar-filename"></span></p>
+                    <p><strong>Tipo:</strong> <span id="importar-tipo">-</span></p>
+                    <p><strong>Geometrias encontradas:</strong> <span id="importar-geometrias-count">0</span></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal('modal-importar')">Cancelar</button>
+                <button class="btn-primary" onclick="executarImportacao()">Importar</button>
+            </div>
+        </div>
+    </div>
+
+    <div style="position: fixed; bottom: 10px; right: 10px; background: rgba(255,255,255,0.9); padding: 5px 10px; border-radius: 5px; font-size: 12px; z-index: 10000;">TerraGIS v4.0.0</div>
 </body>
 </html>
 
