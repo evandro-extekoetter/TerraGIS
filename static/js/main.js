@@ -4720,21 +4720,19 @@ function desenharGeometriasImportadas(layerName, geojson, fuso) {
     console.log('[v4.0.0] Desenhando geometrias importadas:', layerName);
     
     try {
-        // Determinar tipo de geometria (polygon ou polyline)
-        const firstFeature = geojson.features[0];
-        const geometryType = firstFeature ? firstFeature.geometry.type : 'Polygon';
-        const layerType = geometryType === 'Polygon' ? 'polygon' : 'polyline';
+        // Criar nova camada
+        if (!layers[layerName]) {
+            layers[layerName] = {
+                polygon: new L.FeatureGroup(),
+                vertices: new L.FeatureGroup(),
+                visible: true,
+                type: 'importado'
+            };
+            map.addLayer(layers[layerName].polygon);
+        }
         
-        // Criar TerraLayer corretamente
-        const terraLayer = new TerraLayer(layerName, layerType);
-        terraLayer.fuso = fuso;
-        terraLayer.color = '#F4A460';
-        terraLayer.vertexColor = '#F4A460';
-        
-        // Criar geometria Leaflet
+        // Desenhar cada feature
         let bounds = null;
-        const allCoords = [];
-        
         geojson.features.forEach(feature => {
             const geometry = feature.geometry;
             
@@ -4742,9 +4740,15 @@ function desenharGeometriasImportadas(layerName, geojson, fuso) {
                 // Converter coordenadas UTM para Lat/Lng usando proj4
                 const coords = geometry.coordinates.map(c => {
                     const [lat, lng] = utmToLatLng(c[0], c[1], fuso);
-                    allCoords.push([lat, lng]);
                     return [lat, lng];
                 });
+                
+                const polyline = L.polyline(coords, {
+                    color: '#F4A460',
+                    weight: 2,
+                    opacity: 0.8
+                });
+                polyline.addTo(layers[layerName].polygon);
                 
                 // Atualizar bounds
                 coords.forEach(coord => {
@@ -4755,9 +4759,16 @@ function desenharGeometriasImportadas(layerName, geojson, fuso) {
                 // Converter coordenadas UTM para Lat/Lng usando proj4
                 const coords = geometry.coordinates[0].map(c => {
                     const [lat, lng] = utmToLatLng(c[0], c[1], fuso);
-                    allCoords.push([lat, lng]);
                     return [lat, lng];
                 });
+                
+                const polygon = L.polygon(coords, {
+                    color: '#F4A460',
+                    fillColor: '#F4A460',
+                    fillOpacity: 0.3,
+                    weight: 2
+                });
+                polygon.addTo(layers[layerName].polygon);
                 
                 // Atualizar bounds
                 coords.forEach(coord => {
@@ -4767,39 +4778,14 @@ function desenharGeometriasImportadas(layerName, geojson, fuso) {
             }
         });
         
-        // Criar geometria Leaflet
-        if (layerType === 'polygon') {
-            terraLayer.geometryLayer = L.polygon(allCoords, {
-                color: terraLayer.color,
-                fillColor: terraLayer.color,
-                fillOpacity: 0.3,
-                weight: 2
-            });
-            terraLayer.geometryLayer.bindPopup(`<b>${layerName}_Poligono</b>`);
-        } else {
-            terraLayer.geometryLayer = L.polyline(allCoords, {
-                color: terraLayer.color,
-                weight: 2
-            });
-            terraLayer.geometryLayer.bindPopup(`<b>${layerName}_Polilinha</b>`);
-        }
-        
-        // Adicionar ao mapa
-        if (terraLayer.visible && map) {
-            map.addLayer(terraLayer.geometryLayer);
-        }
-        
-        // Criar camada vazia de vértices (sem vértices)
-        terraLayer.verticesLayer = L.layerGroup();
-        
-        // Adicionar ao terraManager
-        terraManager.addLayer(terraLayer);
-        
         // Fazer zoom automático para as geometrias importadas
         if (bounds) {
             map.fitBounds(bounds, { padding: [50, 50] });
             console.log('[v4.0.0] Zoom automático aplicado');
         }
+        
+        // Adicionar à lista de camadas
+        terraManager.updateLayerListUI();
         
         console.log('[v4.0.0] Geometrias desenhadas com sucesso');
     } catch (error) {
