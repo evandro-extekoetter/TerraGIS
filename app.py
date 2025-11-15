@@ -11,7 +11,6 @@ import tempfile
 import zipfile
 from datetime import datetime
 import secrets
-from pyproj import Transformer
 
 # Configurar caminhos - templates e static estão no mesmo diretório que main.py
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -919,7 +918,58 @@ def process_shapefile(file, fuso):
 
 
 
+
 # ===== CONVERSÃO DE COORDENADAS (v4.0.0) =====
+
+def utm_to_latlong(utm_x, utm_y, zone, is_south=True):
+    """
+    Converter coordenadas UTM para Lat/Lng (WGS84)
+    Implementação simplificada baseada em fórmulas matemáticas
+    """
+    import math
+    
+    # Constantes WGS84
+    a = 6378137.0  # Semi-eixo maior
+    e2 = 0.00669438  # Excentricidade²
+    e_prime2 = e2 / (1 - e2)
+    k0 = 0.9996  # Fator de escala
+    
+    # Calcular o meridiano central
+    lon_origin = (zone - 1) * 6 - 180 + 3
+    
+    # Remover falso easting e falso northing
+    x = utm_x - 500000
+    y = utm_y
+    if is_south:
+        y = y - 10000000
+    
+    # Calcular latitude e longitude
+    m = y / k0
+    mu = m / (a * (1 - e2/4 - 3*e2*e2/64 - 5*e2*e2*e2/256))
+    
+    p1 = mu + (3*math.sqrt(e_prime2)/2) * math.sin(2*mu)
+    p1 = p1 + (21*e_prime2*math.sqrt(e_prime2)/16) * math.sin(4*mu)
+    p1 = p1 - (151*e_prime2*e_prime2*math.sqrt(e_prime2)/32) * math.sin(6*mu)
+    
+    p2 = (math.cos(p1)**2)
+    p3 = math.tan(p1)**2
+    p4 = (1 - e2 * (math.sin(p1)**2))
+    
+    n = a / math.sqrt(p4)
+    r = (1 - e2) * a / math.sqrt(p4**3)
+    
+    c1 = e_prime2 * p2
+    c2 = p3
+    
+    d = x / (n * k0)
+    
+    lat = p1 - (math.tan(p1)/r) * (d*d/2 - (d**4/24) * (5 + 3*c2 + 10*c1 - 4*c1*c1 - 9*e_prime2) + (d**6/720) * (61 + 90*c2 + 28*c2*c2 + 45*p3 - 252*e_prime2 - 3*c1*c1))
+    
+    lon = (d - (d**3/6) * (1 + 2*c2 + c1) + (d**5/120) * (5 - 2*c1 + 28*c2 - 3*c1*c1 + 8*e_prime2 + 24*c2*c2)) / math.cos(p1)
+    lon = lon_origin + math.degrees(lon)
+    lat = math.degrees(lat)
+    
+    return lon, lat
 
 def convert_utm_to_latlong(geojson, fuso):
     """Converter coordenadas UTM para Lat/Lng"""
@@ -928,13 +978,9 @@ def convert_utm_to_latlong(geojson, fuso):
     try:
         import copy
         
-        # Criar transformador de UTM para WGS84 (Lat/Lng)
-        # Fuso formato: "21S" -> zona 21, hemisfério sul
+        # Extrair zona e hemisfério
         zone_num = int(fuso[:-1])
         is_south = fuso[-1] == 'S'
-        
-        utm_crs = f"+proj=utm +zone={zone_num} +south" if is_south else f"+proj=utm +zone={zone_num}"
-        transformer = Transformer.from_proj(utm_crs, "EPSG:4326", always_xy=True)
         
         # Fazer cópia profunda para não modificar original
         geojson_copy = copy.deepcopy(geojson)
@@ -950,7 +996,7 @@ def convert_utm_to_latlong(geojson, fuso):
                 new_coords = []
                 for coord in coords:
                     if isinstance(coord, (list, tuple)) and len(coord) >= 2:
-                        lon, lat = transformer.transform(float(coord[0]), float(coord[1]))
+                        lon, lat = utm_to_latlong(float(coord[0]), float(coord[1]), zone_num, is_south)
                         new_coords.append([lon, lat])
                 geometry['coordinates'] = new_coords
             
@@ -961,7 +1007,7 @@ def convert_utm_to_latlong(geojson, fuso):
                     new_ring = []
                     for coord in ring:
                         if isinstance(coord, (list, tuple)) and len(coord) >= 2:
-                            lon, lat = transformer.transform(float(coord[0]), float(coord[1]))
+                            lon, lat = utm_to_latlong(float(coord[0]), float(coord[1]), zone_num, is_south)
                             new_ring.append([lon, lat])
                     new_coords.append(new_ring)
                 geometry['coordinates'] = new_coords
