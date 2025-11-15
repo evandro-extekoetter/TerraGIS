@@ -857,53 +857,38 @@ def process_shapefile(file, fuso):
     print("[v4.1.0] Processando Shapefile...")
     
     try:
+        import shutil
+        
         file_content = file.read()
         file.seek(0)  # Reset file pointer
         
+        # Criar pasta temporária
+        temp_dir = tempfile.mkdtemp()
+        
         # Verificar se é um arquivo .shp direto
         if file.filename.lower().endswith('.shp'):
-            # Arquivo .shp direto - precisa dos arquivos .shx e .dbf
-            # Por enquanto, vamos tentar ler apenas com o .shp
-            temp_dir = tempfile.mkdtemp()
+            # Arquivo .shp direto
             shp_path = os.path.join(temp_dir, file.filename)
-            
             with open(shp_path, 'wb') as f:
                 f.write(file_content)
-            
             base_path = shp_path[:-4]  # Remove .shp
         else:
-            # Arquivo ZIP
-            with zipfile.ZipFile(BytesIO(file_content)) as zf:
-                # Procurar por arquivo .shp
-                shp_files = [f for f in zf.namelist() if f.lower().endswith('.shp')]
-                
-                if not shp_files:
-                    raise ValueError("Nenhum arquivo .shp encontrado no ZIP")
-                
-                # Extrair todos os arquivos para pasta temporária
-                temp_dir = tempfile.mkdtemp()
-                
-                # Extrair todos os arquivos
-                zf.extractall(temp_dir)
-                
-                # Obter caminho base do shapefile (sem extensão)
-                shp_file = shp_files[0]
-                
-                # Remover caminho de pasta se existir (ex: "pasta/arquivo.shp" -> "arquivo.shp")
-                shp_file_name = os.path.basename(shp_file)
-                
-                # Procurar pelo arquivo em qualquer subpasta
-                base_path = None
-                for root, dirs, files in os.walk(temp_dir):
-                    for file in files:
-                        if file.lower().endswith('.shp') and file.lower() == shp_file_name.lower():
-                            base_path = os.path.join(root, file[:-4])  # Remove .shp
-                            break
-                    if base_path:
-                        break
-                
-                if not base_path:
-                    raise ValueError(f"Não foi possível encontrar o arquivo {shp_file_name}")
+            # Arquivo ZIP - usar a mesma abordagem da SIGEF
+            zip_path = os.path.join(temp_dir, file.filename)
+            with open(zip_path, 'wb') as f:
+                f.write(file_content)
+            
+            # Extrair ZIP
+            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                zip_ref.extractall(temp_dir)
+            
+            # Procurar arquivo .shp no diretório raiz (não em subpastas)
+            shp_files = [f for f in os.listdir(temp_dir) if f.lower().endswith('.shp')]
+            
+            if not shp_files:
+                raise ValueError("Nenhum arquivo .shp encontrado no ZIP")
+            
+            base_path = os.path.join(temp_dir, shp_files[0][:-4])  # Remove .shp
         
         # Ler shapefile
         sf = shapefile.Reader(base_path)
@@ -938,8 +923,7 @@ def process_shapefile(file, fuso):
                 features.append(feature)
         
         # Limpar arquivos temporários
-        import shutil
-        shutil.rmtree(temp_dir)
+        shutil.rmtree(temp_dir, ignore_errors=True)
         
         print(f"[v4.1.0] Shapefile: {len(features)} geometrias encontradas")
         
@@ -950,7 +934,9 @@ def process_shapefile(file, fuso):
         }
     
     except Exception as e:
-        print(f"[v4.0.0] Erro ao processar Shapefile: {e}")
+        print(f"[v4.1.0] Erro ao processar Shapefile: {e}")
+        import traceback
+        traceback.print_exc()
         raise
 
 
