@@ -874,83 +874,84 @@ def process_shapefile(file, fuso):
         else:
             # Arquivo ZIP
             with zipfile.ZipFile(BytesIO(file_content)) as zf:
-            # Procurar por arquivo .shp
-            shp_files = [f for f in zf.namelist() if f.lower().endswith('.shp')]
-            
-            if not shp_files:
-                raise ValueError("Nenhum arquivo .shp encontrado no ZIP")
-            
-            # Extrair todos os arquivos para pasta temporária
-            temp_dir = tempfile.mkdtemp()
-            
-            # Extrair com tratamento de erro para pastas existentes
-            for member in zf.namelist():
-                try:
-                    zf.extract(member, temp_dir)
-                except (FileExistsError, IsADirectoryError):
-                    pass  # Ignorar erros de pasta já existente
-            
-            # Obter caminho base do shapefile (sem extensão)
-            shp_file = shp_files[0]
-            
-            # Remover caminho de pasta se existir (ex: "pasta/arquivo.shp" -> "arquivo.shp")
-            shp_file_name = os.path.basename(shp_file)
-            
-            # Procurar pelo arquivo em qualquer subpasta
-            base_path = None
-            for root, dirs, files in os.walk(temp_dir):
-                for file in files:
-                    if file.lower().endswith('.shp') and file.lower() == shp_file_name.lower():
-                        base_path = os.path.join(root, file[:-4])  # Remove .shp
+                # Procurar por arquivo .shp
+                shp_files = [f for f in zf.namelist() if f.lower().endswith('.shp')]
+                
+                if not shp_files:
+                    raise ValueError("Nenhum arquivo .shp encontrado no ZIP")
+                
+                # Extrair todos os arquivos para pasta temporária
+                temp_dir = tempfile.mkdtemp()
+                
+                # Extrair com tratamento de erro para pastas existentes
+                for member in zf.namelist():
+                    try:
+                        zf.extract(member, temp_dir)
+                    except (FileExistsError, IsADirectoryError):
+                        pass  # Ignorar erros de pasta já existente
+                
+                # Obter caminho base do shapefile (sem extensão)
+                shp_file = shp_files[0]
+                
+                # Remover caminho de pasta se existir (ex: "pasta/arquivo.shp" -> "arquivo.shp")
+                shp_file_name = os.path.basename(shp_file)
+                
+                # Procurar pelo arquivo em qualquer subpasta
+                base_path = None
+                for root, dirs, files in os.walk(temp_dir):
+                    for file in files:
+                        if file.lower().endswith('.shp') and file.lower() == shp_file_name.lower():
+                            base_path = os.path.join(root, file[:-4])  # Remove .shp
+                            break
+                    if base_path:
                         break
-                if base_path:
-                    break
-            
-            if not base_path:
-                raise ValueError(f"Não foi possível encontrar o arquivo {shp_file_name}")
-            
-            # Ler shapefile
-            sf = shapefile.Reader(base_path)
-            
-            features = []
-            
-            # Processar cada shape
-            for shape in sf.shapes():
-                if shape.shapeType == 1:  # Point
-                    continue
-                elif shape.shapeType == 3:  # PolyLine
-                    coords = shape.points
-                    feature = {
-                        'type': 'Feature',
-                        'properties': {'type': 'PolyLine'},
-                        'geometry': {
-                            'type': 'LineString',
-                            'coordinates': coords
+                
+                if not base_path:
+                    raise ValueError(f"Não foi possível encontrar o arquivo {shp_file_name}")
+                
+                # Ler shapefile
+                sf = shapefile.Reader(base_path)
+                
+                features = []
+                
+                # Processar cada shape
+                for shape in sf.shapes():
+                    if shape.shapeType == 1:  # Point
+                        continue
+                    elif shape.shapeType == 3:  # PolyLine
+                        coords = shape.points
+                        feature = {
+                            'type': 'Feature',
+                            'properties': {'type': 'PolyLine'},
+                            'geometry': {
+                                'type': 'LineString',
+                                'coordinates': coords
+                            }
                         }
-                    }
-                    features.append(feature)
-                elif shape.shapeType == 5:  # Polygon
-                    coords = shape.points
-                    feature = {
-                        'type': 'Feature',
-                        'properties': {'type': 'Polygon'},
-                        'geometry': {
-                            'type': 'Polygon',
-                            'coordinates': [coords]
+                        features.append(feature)
+                    elif shape.shapeType == 5:  # Polygon
+                        coords = shape.points
+                        feature = {
+                            'type': 'Feature',
+                            'properties': {'type': 'Polygon'},
+                            'geometry': {
+                                'type': 'Polygon',
+                                'coordinates': [coords]
+                            }
                         }
-                    }
-                    features.append(feature)
-            
-            # Limpar arquivos temporários
-            import shutil
-            shutil.rmtree(temp_dir)
-            
-            print(f"[v4.0.0] Shapefile: {len(features)} geometrias encontradas")
-            
-            return {
-                'type': 'FeatureCollection',
-                'features': features
-            }
+                        features.append(feature)
+                
+                # Limpar arquivos temporários
+                import shutil
+                shutil.rmtree(temp_dir)
+                
+                print(f"[v4.0.0] Shapefile: {len(features)} geometrias encontradas")
+                
+                return {
+                    'type': 'FeatureCollection',
+                    'features': features,
+                    'coordinateSystem': 'UTM'  # Shapefile está em UTM
+                }
     
     except Exception as e:
         print(f"[v4.0.0] Erro ao processar Shapefile: {e}")
