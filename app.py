@@ -904,50 +904,50 @@ def process_shapefile(file, fuso):
                 
                 if not base_path:
                     raise ValueError(f"Não foi possível encontrar o arquivo {shp_file_name}")
-                
-                # Ler shapefile
-                sf = shapefile.Reader(base_path)
-                
-                features = []
-                
-                # Processar cada shape
-                for shape in sf.shapes():
-                    if shape.shapeType == 1:  # Point
-                        continue
-                    elif shape.shapeType == 3:  # PolyLine
-                        coords = shape.points
-                        feature = {
-                            'type': 'Feature',
-                            'properties': {'type': 'PolyLine'},
-                            'geometry': {
-                                'type': 'LineString',
-                                'coordinates': coords
-                            }
-                        }
-                        features.append(feature)
-                    elif shape.shapeType == 5:  # Polygon
-                        coords = shape.points
-                        feature = {
-                            'type': 'Feature',
-                            'properties': {'type': 'Polygon'},
-                            'geometry': {
-                                'type': 'Polygon',
-                                'coordinates': [coords]
-                            }
-                        }
-                        features.append(feature)
-                
-                # Limpar arquivos temporários
-                import shutil
-                shutil.rmtree(temp_dir)
-                
-                print(f"[v4.0.0] Shapefile: {len(features)} geometrias encontradas")
-                
-                return {
-                    'type': 'FeatureCollection',
-                    'features': features,
-                    'coordinateSystem': 'UTM'  # Shapefile está em UTM
+        
+        # Ler shapefile
+        sf = shapefile.Reader(base_path)
+        
+        features = []
+        
+        # Processar cada shape
+        for shape in sf.shapes():
+            if shape.shapeType == 1:  # Point
+                continue
+            elif shape.shapeType == 3:  # PolyLine
+                coords = shape.points
+                feature = {
+                    'type': 'Feature',
+                    'properties': {'type': 'PolyLine'},
+                    'geometry': {
+                        'type': 'LineString',
+                        'coordinates': coords
+                    }
                 }
+                features.append(feature)
+            elif shape.shapeType == 5:  # Polygon
+                coords = shape.points
+                feature = {
+                    'type': 'Feature',
+                    'properties': {'type': 'Polygon'},
+                    'geometry': {
+                        'type': 'Polygon',
+                        'coordinates': [coords]
+                    }
+                }
+                features.append(feature)
+        
+        # Limpar arquivos temporários
+        import shutil
+        shutil.rmtree(temp_dir)
+        
+        print(f"[v4.1.0] Shapefile: {len(features)} geometrias encontradas")
+        
+        return {
+            'type': 'FeatureCollection',
+            'features': features,
+            'coordinateSystem': 'UTM'  # Shapefile está em UTM
+        }
     
     except Exception as e:
         print(f"[v4.0.0] Erro ao processar Shapefile: {e}")
