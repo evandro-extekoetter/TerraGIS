@@ -581,7 +581,7 @@ def import_upload():
             geojson = process_kml(file, fuso)
         elif file_type == 'kmz':
             geojson = process_kmz(file, fuso)
-        elif file_type == 'shapefile':
+        elif file_type == 'shapefile' or file.filename.lower().endswith('.shp'):
             geojson = process_shapefile(file, fuso)
         else:
             return jsonify({'error': f'Tipo de arquivo não suportado: {file_type}'}), 400
@@ -853,12 +853,27 @@ def process_kmz(file, fuso):
         raise
 
 def process_shapefile(file, fuso):
-    """Processar arquivo Shapefile (ZIP contendo .shp, .shx, .dbf)"""
-    print("[v4.0.0] Processando Shapefile...")
+    """Processar arquivo Shapefile (.shp direto ou ZIP contendo .shp, .shx, .dbf)"""
+    print("[v4.1.0] Processando Shapefile...")
     
     try:
-        # Descompactar ZIP
-        with zipfile.ZipFile(BytesIO(file.read())) as zf:
+        file_content = file.read()
+        file.seek(0)  # Reset file pointer
+        
+        # Verificar se é um arquivo .shp direto
+        if file.filename.lower().endswith('.shp'):
+            # Arquivo .shp direto - precisa dos arquivos .shx e .dbf
+            # Por enquanto, vamos tentar ler apenas com o .shp
+            temp_dir = tempfile.mkdtemp()
+            shp_path = os.path.join(temp_dir, file.filename)
+            
+            with open(shp_path, 'wb') as f:
+                f.write(file_content)
+            
+            base_path = shp_path[:-4]  # Remove .shp
+        else:
+            # Arquivo ZIP
+            with zipfile.ZipFile(BytesIO(file_content)) as zf:
             # Procurar por arquivo .shp
             shp_files = [f for f in zf.namelist() if f.lower().endswith('.shp')]
             
@@ -867,11 +882,32 @@ def process_shapefile(file, fuso):
             
             # Extrair todos os arquivos para pasta temporária
             temp_dir = tempfile.mkdtemp()
-            zf.extractall(temp_dir)
+            
+            # Extrair com tratamento de erro para pastas existentes
+            for member in zf.namelist():
+                try:
+                    zf.extract(member, temp_dir)
+                except (FileExistsError, IsADirectoryError):
+                    pass  # Ignorar erros de pasta já existente
             
             # Obter caminho base do shapefile (sem extensão)
             shp_file = shp_files[0]
-            base_path = os.path.join(temp_dir, shp_file[:-4])  # Remove .shp
+            
+            # Remover caminho de pasta se existir (ex: "pasta/arquivo.shp" -> "arquivo.shp")
+            shp_file_name = os.path.basename(shp_file)
+            
+            # Procurar pelo arquivo em qualquer subpasta
+            base_path = None
+            for root, dirs, files in os.walk(temp_dir):
+                for file in files:
+                    if file.lower().endswith('.shp') and file.lower() == shp_file_name.lower():
+                        base_path = os.path.join(root, file[:-4])  # Remove .shp
+                        break
+                if base_path:
+                    break
+            
+            if not base_path:
+                raise ValueError(f"Não foi possível encontrar o arquivo {shp_file_name}")
             
             # Ler shapefile
             sf = shapefile.Reader(base_path)
