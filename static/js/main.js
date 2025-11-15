@@ -4729,6 +4729,21 @@ function desenharGeometriasImportadas(layerName, geojson, fuso) {
                 type: 'importado'
             };
             map.addLayer(layers[layerName].polygon);
+            
+            // Registrar no terraManager para aparecer no painel
+            const mockLayer = {
+                name: layerName,
+                type: 'importado',
+                geometryLayer: layers[layerName].polygon,
+                verticesLayer: layers[layerName].vertices,
+                visible: true,
+                editable: false,
+                color: '#F4A460',
+                vertexColor: '#F4A460',
+                fuso: fuso,
+                vertices: []
+            };
+            terraManager.layers[layerName] = mockLayer;
         }
         
         // Desenhar cada feature
