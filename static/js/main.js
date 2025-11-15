@@ -4668,7 +4668,102 @@ function executarImportacao() {
         fuso: currentProject.fuso
     });
     
-    // TODO: Implementar envio para backend
-    alert('Importação em desenvolvimento\\nArquivo: ' + importFileType + '\\nCamada: ' + layerName);
+    // Enviar para backend
+    const fileInput = document.getElementById('importar-arquivo');
+    const file = fileInput.files[0];
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('fileType', importFileType);
+    formData.append('layerName', layerName);
+    formData.append('fuso', currentProject.fuso);
+    
+    // Desabilitar botão
+    const btn = event.target;
+    btn.disabled = true;
+    btn.textContent = 'Importando...';
+    
+    fetch('/api/import/upload', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log('[v4.0.0] Importação bem-sucedida:', data);
+            
+            // Desenhar geometrias no mapa
+            desenharGeometriasImportadas(layerName, data.geojson);
+            
+            // Fechar modal
+            closeModal('modal-importar');
+            
+            alert('Importação concluída!\n' + data.geometryCount + ' geometrias importadas');
+        } else {
+            alert('Erro na importação: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('[v4.0.0] Erro:', error);
+        alert('Erro ao importar: ' + error.message);
+    })
+    .finally(() => {
+        btn.disabled = false;
+        btn.textContent = 'Importar';
+    });
+}
+
+/**
+ * Desenhar geometrias importadas no mapa
+ */
+function desenharGeometriasImportadas(layerName, geojson) {
+    console.log('[v4.0.0] Desenhando geometrias importadas:', layerName);
+    
+    try {
+        // Criar nova camada
+        if (!layers[layerName]) {
+            layers[layerName] = {
+                polygon: new L.FeatureGroup(),
+                vertices: new L.FeatureGroup(),
+                visible: true,
+                type: 'importado'
+            };
+            map.addLayer(layers[layerName].polygon);
+        }
+        
+        // Desenhar cada feature
+        geojson.features.forEach(feature => {
+            const geometry = feature.geometry;
+            
+            if (geometry.type === 'LineString') {
+                // Desenhar polilinha
+                const coords = geometry.coordinates.map(c => [c[1], c[0]]);
+                const polyline = L.polyline(coords, {
+                    color: '#F4A460',
+                    weight: 2,
+                    opacity: 0.8
+                });
+                polyline.addTo(layers[layerName].polygon);
+            } else if (geometry.type === 'Polygon') {
+                // Desenhar polígono
+                const coords = geometry.coordinates[0].map(c => [c[1], c[0]]);
+                const polygon = L.polygon(coords, {
+                    color: '#F4A460',
+                    fillColor: '#F4A460',
+                    fillOpacity: 0.3,
+                    weight: 2
+                });
+                polygon.addTo(layers[layerName].polygon);
+            }
+        });
+        
+        // Adicionar à lista de camadas
+        updateLayersList();
+        
+        console.log('[v4.0.0] Geometrias desenhadas com sucesso');
+    } catch (error) {
+        console.error('[v4.0.0] Erro ao desenhar geometrias:', error);
+        throw error;
+    }
 }
 

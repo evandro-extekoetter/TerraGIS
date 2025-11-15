@@ -547,3 +547,331 @@ def process_shapefile_simple(shp_path):
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
+
+
+
+# ===== IMPORTAÇÃO DE ARQUIVOS GIS (v4.0.0) =====
+
+import shapefile
+import xml.etree.ElementTree as ET
+from io import BytesIO
+import struct
+
+@app.route('/api/import/upload', methods=['POST'])
+def import_upload():
+    """Receber upload de arquivo para importação"""
+    try:
+        if 'file' not in request.files:
+            return jsonify({'error': 'Nenhum arquivo enviado'}), 400
+        
+        file = request.files['file']
+        file_type = request.form.get('fileType', '').lower()
+        layer_name = request.form.get('layerName', 'Camada Importada')
+        fuso = request.form.get('fuso', '21S')
+        
+        if not file.filename:
+            return jsonify({'error': 'Arquivo vazio'}), 400
+        
+        print(f"[v4.0.0] Importando: {file.filename} ({file_type}) - Fuso: {fuso}")
+        
+        # Processar arquivo conforme tipo
+        if file_type == 'dxf':
+            geojson = process_dxf(file, fuso)
+        elif file_type == 'kml':
+            geojson = process_kml(file, fuso)
+        elif file_type == 'kmz':
+            geojson = process_kmz(file, fuso)
+        elif file_type == 'shapefile':
+            geojson = process_shapefile(file, fuso)
+        else:
+            return jsonify({'error': f'Tipo de arquivo não suportado: {file_type}'}), 400
+        
+        return jsonify({
+            'success': True,
+            'layerName': layer_name,
+            'geojson': geojson,
+            'geometryCount': len(geojson.get('features', []))
+        })
+    
+    except Exception as e:
+        print(f"[v4.0.0] ❌ Erro na importação: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
+def process_dxf(file, fuso):
+    """Processar arquivo DXF do AutoCAD"""
+    print("[v4.0.0] Processando DXF...")
+    
+    try:
+        content = file.read().decode('utf-8', errors='ignore')
+        
+        # Extrair LWPOLYLINE
+        features = []
+        
+        # Procurar por LWPOLYLINE
+        lines = content.split('\n')
+        i = 0
+        while i < len(lines):
+            if 'LWPOLYLINE' in lines[i]:
+                # Encontrou uma LWPOLYLINE
+                coords = []
+                i += 1
+                
+                # Procurar por coordenadas (código 10 = X, código 20 = Y)
+                while i < len(lines) and lines[i].strip() != '0':
+                    if lines[i].strip() == '10':  # Código de X
+                        x = float(lines[i+1].strip())
+                        i += 2
+                        # Procurar Y
+                        if i < len(lines) and lines[i].strip() == '20':
+                            y = float(lines[i+1].strip())
+                            coords.append([x, y])
+                            i += 2
+                    else:
+                        i += 1
+                
+                if len(coords) >= 2:
+                    # Criar feature
+                    feature = {
+                        'type': 'Feature',
+                        'properties': {'type': 'LWPOLYLINE'},
+                        'geometry': {
+                            'type': 'LineString' if len(coords) == 2 else 'Polygon',
+                            'coordinates': coords if len(coords) == 2 else coords + [coords[0]]
+                        }
+                    }
+                    features.append(feature)
+            else:
+                i += 1
+        
+        print(f"[v4.0.0] DXF: {len(features)} geometrias encontradas")
+        
+        return {
+            'type': 'FeatureCollection',
+            'features': features
+        }
+    
+    except Exception as e:
+        print(f"[v4.0.0] Erro ao processar DXF: {e}")
+        raise
+
+def process_kml(file, fuso):
+    """Processar arquivo KML"""
+    print("[v4.0.0] Processando KML...")
+    
+    try:
+        content = file.read()
+        root = ET.fromstring(content)
+        
+        # Namespace do KML
+        ns = {'kml': 'http://www.opengis.net/kml/2.2'}
+        
+        features = []
+        
+        # Procurar por Placemarks
+        for placemark in root.findall('.//kml:Placemark', ns):
+            # Procurar por Polygon
+            polygon = placemark.find('kml:Polygon', ns)
+            if polygon:
+                coords = extract_kml_polygon_coords(polygon, ns)
+                if coords:
+                    feature = {
+                        'type': 'Feature',
+                        'properties': {'type': 'Polygon'},
+                        'geometry': {
+                            'type': 'Polygon',
+                            'coordinates': [coords]
+                        }
+                    }
+                    features.append(feature)
+            
+            # Procurar por LineString
+            linestring = placemark.find('kml:LineString', ns)
+            if linestring:
+                coords = extract_kml_linestring_coords(linestring, ns)
+                if coords:
+                    feature = {
+                        'type': 'Feature',
+                        'properties': {'type': 'LineString'},
+                        'geometry': {
+                            'type': 'LineString',
+                            'coordinates': coords
+                        }
+                    }
+                    features.append(feature)
+        
+        print(f"[v4.0.0] KML: {len(features)} geometrias encontradas")
+        
+        return {
+            'type': 'FeatureCollection',
+            'features': features
+        }
+    
+    except Exception as e:
+        print(f"[v4.0.0] Erro ao processar KML: {e}")
+        raise
+
+def extract_kml_polygon_coords(polygon, ns):
+    """Extrair coordenadas de um Polygon KML"""
+    outer = polygon.find('kml:outerBoundaryIs/kml:LinearRing/kml:coordinates', ns)
+    if outer is not None and outer.text:
+        coords_text = outer.text.strip()
+        coords = []
+        for coord_pair in coords_text.split():
+            parts = coord_pair.split(',')
+            if len(parts) >= 2:
+                lon = float(parts[0])
+                lat = float(parts[1])
+                coords.append([lon, lat])
+        return coords
+    return None
+
+def extract_kml_linestring_coords(linestring, ns):
+    """Extrair coordenadas de um LineString KML"""
+    coords_elem = linestring.find('kml:coordinates', ns)
+    if coords_elem is not None and coords_elem.text:
+        coords_text = coords_elem.text.strip()
+        coords = []
+        for coord_pair in coords_text.split():
+            parts = coord_pair.split(',')
+            if len(parts) >= 2:
+                lon = float(parts[0])
+                lat = float(parts[1])
+                coords.append([lon, lat])
+        return coords
+    return None
+
+def process_kmz(file, fuso):
+    """Processar arquivo KMZ (ZIP contendo KML)"""
+    print("[v4.0.0] Processando KMZ...")
+    
+    try:
+        # Descompactar KMZ
+        with zipfile.ZipFile(BytesIO(file.read())) as zf:
+            # Procurar por arquivo .kml
+            kml_files = [f for f in zf.namelist() if f.lower().endswith('.kml')]
+            
+            if not kml_files:
+                raise ValueError("Nenhum arquivo KML encontrado no KMZ")
+            
+            # Ler primeiro arquivo KML
+            kml_content = zf.read(kml_files[0])
+            
+            # Processar como KML
+            root = ET.fromstring(kml_content)
+            ns = {'kml': 'http://www.opengis.net/kml/2.2'}
+            
+            features = []
+            
+            # Procurar por Placemarks
+            for placemark in root.findall('.//kml:Placemark', ns):
+                # Procurar por Polygon
+                polygon = placemark.find('kml:Polygon', ns)
+                if polygon:
+                    coords = extract_kml_polygon_coords(polygon, ns)
+                    if coords:
+                        feature = {
+                            'type': 'Feature',
+                            'properties': {'type': 'Polygon'},
+                            'geometry': {
+                                'type': 'Polygon',
+                                'coordinates': [coords]
+                            }
+                        }
+                        features.append(feature)
+                
+                # Procurar por LineString
+                linestring = placemark.find('kml:LineString', ns)
+                if linestring:
+                    coords = extract_kml_linestring_coords(linestring, ns)
+                    if coords:
+                        feature = {
+                            'type': 'Feature',
+                            'properties': {'type': 'LineString'},
+                            'geometry': {
+                                'type': 'LineString',
+                                'coordinates': coords
+                            }
+                        }
+                        features.append(feature)
+            
+            print(f"[v4.0.0] KMZ: {len(features)} geometrias encontradas")
+            
+            return {
+                'type': 'FeatureCollection',
+                'features': features
+            }
+    
+    except Exception as e:
+        print(f"[v4.0.0] Erro ao processar KMZ: {e}")
+        raise
+
+def process_shapefile(file, fuso):
+    """Processar arquivo Shapefile (ZIP contendo .shp, .shx, .dbf)"""
+    print("[v4.0.0] Processando Shapefile...")
+    
+    try:
+        # Descompactar ZIP
+        with zipfile.ZipFile(BytesIO(file.read())) as zf:
+            # Procurar por arquivo .shp
+            shp_files = [f for f in zf.namelist() if f.lower().endswith('.shp')]
+            
+            if not shp_files:
+                raise ValueError("Nenhum arquivo .shp encontrado no ZIP")
+            
+            # Extrair todos os arquivos para pasta temporária
+            temp_dir = tempfile.mkdtemp()
+            zf.extractall(temp_dir)
+            
+            # Obter caminho base do shapefile (sem extensão)
+            shp_file = shp_files[0]
+            base_path = os.path.join(temp_dir, shp_file[:-4])  # Remove .shp
+            
+            # Ler shapefile
+            sf = shapefile.Reader(base_path)
+            
+            features = []
+            
+            # Processar cada shape
+            for shape in sf.shapes():
+                if shape.shapeType == 1:  # Point
+                    continue
+                elif shape.shapeType == 3:  # PolyLine
+                    coords = shape.points
+                    feature = {
+                        'type': 'Feature',
+                        'properties': {'type': 'PolyLine'},
+                        'geometry': {
+                            'type': 'LineString',
+                            'coordinates': coords
+                        }
+                    }
+                    features.append(feature)
+                elif shape.shapeType == 5:  # Polygon
+                    coords = shape.points
+                    feature = {
+                        'type': 'Feature',
+                        'properties': {'type': 'Polygon'},
+                        'geometry': {
+                            'type': 'Polygon',
+                            'coordinates': [coords]
+                        }
+                    }
+                    features.append(feature)
+            
+            # Limpar arquivos temporários
+            import shutil
+            shutil.rmtree(temp_dir)
+            
+            print(f"[v4.0.0] Shapefile: {len(features)} geometrias encontradas")
+            
+            return {
+                'type': 'FeatureCollection',
+                'features': features
+            }
+    
+    except Exception as e:
+        print(f"[v4.0.0] Erro ao processar Shapefile: {e}")
+        raise
+
