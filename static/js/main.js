@@ -37,9 +37,9 @@ function initMap() {
         maxZoom: 19
     });
     
-    baseLayers.satellite = L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
-        attribution: '© Google',
-        maxZoom: 20
+    baseLayers.satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution: '© Esri, DigitalGlobe, Earthstar Geographics',
+        maxZoom: 18
     });
     
     // Adicionar camada padrão (OSM)

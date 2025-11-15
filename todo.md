@@ -73,9 +73,18 @@
 
 ## Implementar Tooltips Customizados (v3.6.0)
 
-- [ ] Adicionar CSS para tooltips customizados em style.css
-- [ ] Adicionar atributos data-tooltip em todos os botões do HTML
+- [x] Adicionar CSS para tooltips customizados em style.css
+- [x] Adicionar atributos data-tooltip em todos os botões do HTML (38 tooltips)
 - [ ] Testar que menus continuam funcionando normalmente
 - [ ] Testar que tooltips aparecem com delay de 1,5 segundos
 - [ ] Testar que fonte tem tamanho 9pt
+
+
+
+
+## Corrigir Google Earth Satélite (v3.6.1)
+
+- [ ] Investigar por que Google Earth Satélite não carrega as imagens
+- [ ] Verificar URL/API do Google Maps
+- [ ] Testar se as imagens carregam corretamente
 
