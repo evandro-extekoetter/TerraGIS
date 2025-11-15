@@ -281,7 +281,7 @@ function createVerticesLayer(coords, ids, layerName, fuso, vertexColor = '#ff000
         // Criar label
         const labelIcon = L.divIcon({
             className: 'vertex-label',
-            html: `<div style="background: white; padding: 2px 6px; border-radius: 3px; font-size: 11px; font-weight: bold; border: 1px solid #333;">${vertexId}</div>`,
+            html: `<div style="font-size: 12px; font-weight: bold; color: #333; text-shadow: 1px 1px 2px rgba(255,255,255,0.8);">${vertexId}</div>`,
             iconSize: [50, 20],
             iconAnchor: [25, -10]
         });
