@@ -588,7 +588,7 @@ def import_upload():
         
         # Converter coordenadas se necessário (DXF e Shapefile estão em UTM)
         if file_type in ['dxf', 'shapefile']:
-            geojson = convert_utm_to_latlong(geojson, fuso)
+            # Conversão de coordenadas será feita no frontend usando proj4
         
         return jsonify({
             'success': True,
@@ -919,102 +919,3 @@ def process_shapefile(file, fuso):
 
 
 
-# ===== CONVERSÃO DE COORDENADAS (v4.0.0) =====
-
-def utm_to_latlong(utm_x, utm_y, zone, is_south=True):
-    """
-    Converter coordenadas UTM para Lat/Lng (WGS84)
-    Baseado em algoritmo padrão de conversão UTM
-    """
-    import math
-    
-    # Constantes WGS84
-    k0 = 0.9996
-    a = 6378137.0
-    e = 0.081819191
-    e_prime_sq = 0.06739497
-    
-    # Calcular o meridiano central
-    lon_origin = (zone - 1) * 6 - 180 + 3
-    
-    # Remover falso easting e falso northing
-    x = utm_x - 500000
-    y = utm_y
-    if is_south:
-        y = y - 10000000
-    
-    # Calcular M
-    m = y / k0
-    mu = m / (a * (1 - e**2/4 - 3*e**4/64 - 5*e**6/256))
-    
-    # Calcular latitude footpoint
-    footpoint_lat = mu + (3*e**2/8 + 3*e**4/32 - 45*e**6/1024) * math.sin(2*mu) + (15*e**4/256 + 45*e**6/1024) * math.sin(4*mu) - (35*e**6/3072) * math.sin(6*mu)
-    
-    # Calcular parâmetros
-    c1 = e_prime_sq * math.cos(footpoint_lat)**2
-    t1 = math.tan(footpoint_lat)**2
-    n1 = a / math.sqrt(1 - e**2 * math.sin(footpoint_lat)**2)
-    r1 = a * (1 - e**2) / math.sqrt((1 - e**2 * math.sin(footpoint_lat)**2)**3)
-    
-    d = x / (n1 * k0)
-    
-    # Calcular latitude
-    lat = footpoint_lat - (n1 * math.tan(footpoint_lat) / r1) * (d**2/2 - (d**4/24) * (5 + 3*t1 + 10*c1 - 4*c1**2 - 9*e_prime_sq) + (d**6/720) * (61 + 90*t1 + 28*t1**2 + 45*c1 - 252*e_prime_sq - 3*c1**2))
-    
-    # Calcular longitude
-    lon = (d - (d**3/6) * (1 + 2*t1 + c1) + (d**5/120) * (5 - 2*c1 + 28*t1 - 3*c1**2 + 8*e_prime_sq + 24*t1**2)) / math.cos(footpoint_lat)
-    
-    lon = lon_origin + math.degrees(lon)
-    lat = math.degrees(lat)
-    
-    return lon, lat
-
-def convert_utm_to_latlong(geojson, fuso):
-    """Converter coordenadas UTM para Lat/Lng"""
-    print(f"[v4.0.0] Convertendo coordenadas de UTM {fuso} para Lat/Lng...")
-    
-    try:
-        import copy
-        
-        # Extrair zona e hemisfério
-        zone_num = int(fuso[:-1])
-        is_south = fuso[-1] == 'S'
-        
-        # Fazer cópia profunda para não modificar original
-        geojson_copy = copy.deepcopy(geojson)
-        
-        # Converter cada feature
-        for feature in geojson_copy.get('features', []):
-            geometry = feature.get('geometry', {})
-            geom_type = geometry.get('type')
-            coords = geometry.get('coordinates', [])
-            
-            if geom_type == 'LineString':
-                # Converter lista de coordenadas [x, y]
-                new_coords = []
-                for coord in coords:
-                    if isinstance(coord, (list, tuple)) and len(coord) >= 2:
-                        lon, lat = utm_to_latlong(float(coord[0]), float(coord[1]), zone_num, is_south)
-                        new_coords.append([lon, lat])
-                geometry['coordinates'] = new_coords
-            
-            elif geom_type == 'Polygon':
-                # Converter lista de anéis [[x, y], [x, y], ...]
-                new_coords = []
-                for ring in coords:
-                    new_ring = []
-                    for coord in ring:
-                        if isinstance(coord, (list, tuple)) and len(coord) >= 2:
-                            lon, lat = utm_to_latlong(float(coord[0]), float(coord[1]), zone_num, is_south)
-                            new_ring.append([lon, lat])
-                    new_coords.append(new_ring)
-                geometry['coordinates'] = new_coords
-        
-        print(f"[v4.0.0] Conversão concluída com sucesso")
-        return geojson_copy
-    
-    except Exception as e:
-        print(f"[v4.0.0] Erro ao converter coordenadas: {e}")
-        import traceback
-        traceback.print_exc()
-        raise

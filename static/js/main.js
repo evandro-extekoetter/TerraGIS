@@ -4693,7 +4693,7 @@ function executarImportacao() {
             console.log('[v4.0.0] Importação bem-sucedida:', data);
             
             // Desenhar geometrias no mapa
-            desenharGeometriasImportadas(layerName, data.geojson);
+            desenharGeometriasImportadas(layerName, data.geojson, currentProject.fuso);
             
             // Fechar modal
             closeModal('modal-importar');
@@ -4716,7 +4716,7 @@ function executarImportacao() {
 /**
  * Desenhar geometrias importadas no mapa
  */
-function desenharGeometriasImportadas(layerName, geojson) {
+function desenharGeometriasImportadas(layerName, geojson, fuso) {
     console.log('[v4.0.0] Desenhando geometrias importadas:', layerName);
     
     try {
@@ -4732,21 +4732,36 @@ function desenharGeometriasImportadas(layerName, geojson) {
         }
         
         // Desenhar cada feature
+        let bounds = null;
         geojson.features.forEach(feature => {
             const geometry = feature.geometry;
             
             if (geometry.type === 'LineString') {
-                // Desenhar polilinha
-                const coords = geometry.coordinates.map(c => [c[1], c[0]]);
+                // Converter coordenadas UTM para Lat/Lng usando proj4
+                const coords = geometry.coordinates.map(c => {
+                    const [lat, lng] = utmToLatLng(c[0], c[1], fuso);
+                    return [lat, lng];
+                });
+                
                 const polyline = L.polyline(coords, {
                     color: '#F4A460',
                     weight: 2,
                     opacity: 0.8
                 });
                 polyline.addTo(layers[layerName].polygon);
+                
+                // Atualizar bounds
+                coords.forEach(coord => {
+                    if (!bounds) bounds = L.latLngBounds(coord, coord);
+                    else bounds.extend(coord);
+                });
             } else if (geometry.type === 'Polygon') {
-                // Desenhar polígono
-                const coords = geometry.coordinates[0].map(c => [c[1], c[0]]);
+                // Converter coordenadas UTM para Lat/Lng usando proj4
+                const coords = geometry.coordinates[0].map(c => {
+                    const [lat, lng] = utmToLatLng(c[0], c[1], fuso);
+                    return [lat, lng];
+                });
+                
                 const polygon = L.polygon(coords, {
                     color: '#F4A460',
                     fillColor: '#F4A460',
@@ -4754,8 +4769,20 @@ function desenharGeometriasImportadas(layerName, geojson) {
                     weight: 2
                 });
                 polygon.addTo(layers[layerName].polygon);
+                
+                // Atualizar bounds
+                coords.forEach(coord => {
+                    if (!bounds) bounds = L.latLngBounds(coord, coord);
+                    else bounds.extend(coord);
+                });
             }
         });
+        
+        // Fazer zoom automático para as geometrias importadas
+        if (bounds) {
+            map.fitBounds(bounds, { padding: [50, 50] });
+            console.log('[v4.0.0] Zoom automático aplicado');
+        }
         
         // Adicionar à lista de camadas
         terraManager.updateLayerListUI();
