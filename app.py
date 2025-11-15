@@ -587,8 +587,7 @@ def import_upload():
             return jsonify({'error': f'Tipo de arquivo não suportado: {file_type}'}), 400
         
         # Converter coordenadas se necessário (DXF e Shapefile estão em UTM)
-        if file_type in ['dxf', 'shapefile']:
-            # Conversão de coordenadas será feita no frontend usando proj4
+        # Conversão de coordenadas será feita no frontend usando proj4
         
         return jsonify({
             'success': True,
