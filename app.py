@@ -613,21 +613,46 @@ def process_dxf(file, fuso):
         lines = content.split('\n')
         i = 0
         while i < len(lines):
-            if 'LWPOLYLINE' in lines[i]:
+            line = lines[i].strip()
+            if line == 'LWPOLYLINE':
                 # Encontrou uma LWPOLYLINE
                 coords = []
                 i += 1
                 
                 # Procurar por coordenadas (código 10 = X, código 20 = Y)
-                while i < len(lines) and lines[i].strip() != '0':
-                    if lines[i].strip() == '10':  # Código de X
-                        x = float(lines[i+1].strip())
-                        i += 2
-                        # Procurar Y
-                        if i < len(lines) and lines[i].strip() == '20':
-                            y = float(lines[i+1].strip())
-                            coords.append([x, y])
-                            i += 2
+                # Continuar até encontrar um código "0" que marca fim de entidade
+                while i < len(lines):
+                    # Ler código (sempre na linha atual)
+                    code = lines[i].strip()
+                    
+                    # Se encontrou código "0", é fim da entidade
+                    if code == '0':
+                        # Verificar se a próxima linha é uma entidade válida
+                        if i + 1 < len(lines):
+                            next_entity = lines[i + 1].strip()
+                            if next_entity in ['LWPOLYLINE', 'POLYLINE', 'LINE', 'ENDSEC', 'ENDBLK']:
+                                break
+                    
+                    # Procurar por X (código 10)
+                    if code == '10':
+                        try:
+                            i += 1
+                            x_val = lines[i].strip()
+                            x = float(x_val)
+                            i += 1
+                            
+                            # Procurar Y (código 20)
+                            if i < len(lines) and lines[i].strip() == '20':
+                                i += 1
+                                y_val = lines[i].strip()
+                                y = float(y_val)
+                                coords.append([x, y])
+                                i += 1
+                            else:
+                                # Sem Y, pular
+                                i += 1
+                        except (ValueError, IndexError):
+                            i += 1
                     else:
                         i += 1
                 
@@ -655,7 +680,6 @@ def process_dxf(file, fuso):
     except Exception as e:
         print(f"[v4.0.0] Erro ao processar DXF: {e}")
         raise
-
 def process_kml(file, fuso):
     """Processar arquivo KML"""
     print("[v4.0.0] Processando KML...")
