@@ -4461,13 +4461,13 @@ function aplicarMoverVerticesRumo() {
 
 
 
-// ===== INTERCÂMBIO (v4.0.0) =====
+// ===== INTERCÂMBIO (v4.1.0) =====
 
 /**
  * Abrir diálogo de importação
  */
 function abrirImportar() {
-    console.log('[v4.0.0] Ferramenta Importar acionada');
+    console.log('[v4.1.0] Ferramenta Importar acionada');
     // TODO: Implementar funcionalidade de importação
     alert('Ferramenta Importar - em desenvolvimento');
 }
@@ -4476,18 +4476,18 @@ function abrirImportar() {
  * Abrir diálogo de exportação
  */
 function abrirExportar() {
-    console.log('[v4.0.0] Ferramenta Exportar acionada');
+    console.log('[v4.1.0] Ferramenta Exportar acionada');
     // TODO: Implementar funcionalidade de exportação
     alert('Ferramenta Exportar - em desenvolvimento');
 }
 
-// ===== TUTORIAL (v4.0.0) =====
+// ===== TUTORIAL (v4.1.0) =====
 
 /**
  * Abrir página de tutorial
  */
 function abrirTutorial() {
-    console.log('[v4.0.0] Tutorial acionado');
+    console.log('[v4.1.0] Tutorial acionado');
     // TODO: Implementar página de tutorial
     alert('Tutorial - em desenvolvimento');
 }
@@ -4495,7 +4495,7 @@ function abrirTutorial() {
 
 
 
-// ===== IMPORTAR (v4.0.0) =====
+// ===== IMPORTAR (v4.1.0) =====
 
 let importFileData = null;
 let importFileType = null;
@@ -4504,7 +4504,7 @@ let importFileType = null;
  * Abrir diálogo de importação
  */
 function abrirImportar() {
-    console.log('[v4.0.0] Diálogo Importar aberto');
+    console.log('[v4.1.0] Diálogo Importar aberto');
     openModal('modal-importar');
     // Limpar campos
     document.getElementById('importar-nome-camada').value = 'Camada Importada';
@@ -4521,7 +4521,7 @@ function handleImportFileSelect(event) {
     const file = event.target.files[0];
     if (!file) return;
     
-    console.log('[v4.0.0] Arquivo selecionado:', file.name, file.size, 'bytes');
+    console.log('[v4.1.0] Arquivo selecionado:', file.name, file.size, 'bytes');
     
     // Determinar tipo de arquivo
     const fileName = file.name.toLowerCase();
@@ -4570,7 +4570,7 @@ function handleImportFileSelect(event) {
  * Processar arquivo e contar geometrias
  */
 function processarArquivoImportacao(fileType, fileData) {
-    console.log('[v4.0.0] Processando arquivo tipo:', fileType);
+    console.log('[v4.1.0] Processando arquivo tipo:', fileType);
     
     try {
         if (fileType === 'dxf') {
@@ -4583,7 +4583,7 @@ function processarArquivoImportacao(fileType, fileData) {
             processarShapefile(fileData);
         }
     } catch (error) {
-        console.error('[v4.0.0] Erro ao processar arquivo:', error);
+        console.error('[v4.1.0] Erro ao processar arquivo:', error);
         alert('Erro ao processar arquivo: ' + error.message);
     }
 }
@@ -4592,14 +4592,14 @@ function processarArquivoImportacao(fileType, fileData) {
  * Processar arquivo DXF
  */
 function processarDXF(fileText) {
-    console.log('[v4.0.0] Processando DXF...');
+    console.log('[v4.1.0] Processando DXF...');
     
     // Contar LWPOLYLINE e POLYLINE
     const lwpolylineMatches = fileText.match(/LWPOLYLINE/g) || [];
     const polylineMatches = fileText.match(/^POLYLINE$/gm) || [];
     
     const count = lwpolylineMatches.length + polylineMatches.length;
-    console.log('[v4.0.0] DXF - Geometrias encontradas:', count);
+    console.log('[v4.1.0] DXF - Geometrias encontradas:', count);
     document.getElementById('importar-geometrias-count').textContent = count;
 }
 
@@ -4607,14 +4607,14 @@ function processarDXF(fileText) {
  * Processar arquivo KML
  */
 function processarKML(fileText) {
-    console.log('[v4.0.0] Processando KML...');
+    console.log('[v4.1.0] Processando KML...');
     
     // Contar Polygon e LineString
     const polygonMatches = fileText.match(/<Polygon>/g) || [];
     const lineStringMatches = fileText.match(/<LineString>/g) || [];
     
     const count = polygonMatches.length + lineStringMatches.length;
-    console.log('[v4.0.0] KML - Geometrias encontradas:', count);
+    console.log('[v4.1.0] KML - Geometrias encontradas:', count);
     document.getElementById('importar-geometrias-count').textContent = count;
 }
 
@@ -4622,7 +4622,7 @@ function processarKML(fileText) {
  * Processar arquivo KMZ (ZIP contendo KML)
  */
 function processarKMZ(fileArrayBuffer) {
-    console.log('[v4.0.0] Processando KMZ...');
+    console.log('[v4.1.0] Processando KMZ...');
     
     // Para agora, apenas mostrar que foi detectado
     // A implementação completa de descompactação será feita no backend
@@ -4633,7 +4633,7 @@ function processarKMZ(fileArrayBuffer) {
  * Processar arquivo Shapefile (ZIP)
  */
 function processarShapefile(fileArrayBuffer) {
-    console.log('[v4.0.0] Processando Shapefile...');
+    console.log('[v4.1.0] Processando Shapefile...');
     
     // Para agora, apenas mostrar que foi detectado
     // A implementação completa de leitura será feita no backend
@@ -4644,7 +4644,7 @@ function processarShapefile(fileArrayBuffer) {
  * Executar importação
  */
 function executarImportacao() {
-    console.log('[v4.0.0] Executando importação...');
+    console.log('[v4.1.0] Executando importação...');
     
     if (!currentProject || !currentProject.fuso) {
         alert('Para importar é necessário ter um projeto ativo');
@@ -4662,7 +4662,7 @@ function executarImportacao() {
         return;
     }
     
-    console.log('[v4.0.0] Importando:', {
+    console.log('[v4.1.0] Importando:', {
         layerName: layerName,
         fileType: importFileType,
         fuso: currentProject.fuso
@@ -4690,7 +4690,7 @@ function executarImportacao() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            console.log('[v4.0.0] Importação bem-sucedida:', data);
+            console.log('[v4.1.0] Importação bem-sucedida:', data);
             
             // Desenhar geometrias no mapa
             desenharGeometriasImportadas(layerName, data.geojson, currentProject.fuso, data.coordinateSystem);
@@ -4704,7 +4704,7 @@ function executarImportacao() {
         }
     })
     .catch(error => {
-        console.error('[v4.0.0] Erro:', error);
+        console.error('[v4.1.0] Erro:', error);
         alert('Erro ao importar: ' + error.message);
     })
     .finally(() => {
@@ -4717,7 +4717,7 @@ function executarImportacao() {
  * Desenhar geometrias importadas no mapa
  */
 function desenharGeometriasImportadas(layerName, geojson, fuso, coordinateSystem = 'UTM') {
-    console.log('[v4.0.0] Desenhando geometrias importadas:', layerName);
+    console.log('[v4.1.0] Desenhando geometrias importadas:', layerName);
     
     try {
         // Criar nova camada
@@ -4838,15 +4838,15 @@ function desenharGeometriasImportadas(layerName, geojson, fuso, coordinateSystem
         // Fazer zoom automático para as geometrias importadas
         if (bounds) {
             map.fitBounds(bounds, { padding: [50, 50] });
-            console.log('[v4.0.0] Zoom automático aplicado');
+            console.log('[v4.1.0] Zoom automático aplicado');
         }
         
         // Adicionar à lista de camadas
         terraManager.updateLayerListUI();
         
-        console.log('[v4.0.0] Geometrias desenhadas com sucesso');
+        console.log('[v4.1.0] Geometrias desenhadas com sucesso');
     } catch (error) {
-        console.error('[v4.0.0] Erro ao desenhar geometrias:', error);
+        console.error('[v4.1.0] Erro ao desenhar geometrias:', error);
         throw error;
     }
 }
