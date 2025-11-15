@@ -284,7 +284,7 @@ class TerraLayer {
                 text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
             ">${text}</div>`,
             iconSize: [40, 16],
-            iconAnchor: [20, -8]
+            iconAnchor: [20, -4]
         });
     }
     
