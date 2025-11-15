@@ -280,7 +280,7 @@ class TerraLayer {
             html: `<div style="
                 font-size: 12px;
                 font-weight: bold;
-                color: #333;
+                color: #000;
                 text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
             ">${text}</div>`,
             iconSize: [40, 16],
