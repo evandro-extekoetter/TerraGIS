@@ -882,13 +882,17 @@ def process_shapefile(file, fuso):
             with zipfile.ZipFile(zip_path, 'r') as zip_ref:
                 zip_ref.extractall(temp_dir)
             
-            # Procurar arquivo .shp no diretório raiz (não em subpastas)
-            shp_files = [f for f in os.listdir(temp_dir) if f.lower().endswith('.shp')]
+            # Procurar arquivo .shp (pode estar em subpasta)
+            shp_files = []
+            for root, dirs, files in os.walk(temp_dir):
+                for f in files:
+                    if f.lower().endswith('.shp'):
+                        shp_files.append(os.path.join(root, f))
             
             if not shp_files:
                 raise ValueError("Nenhum arquivo .shp encontrado no ZIP")
             
-            base_path = os.path.join(temp_dir, shp_files[0][:-4])  # Remove .shp
+            base_path = shp_files[0][:-4]  # Remove .shp
         
         # Ler shapefile
         sf = shapefile.Reader(base_path)
