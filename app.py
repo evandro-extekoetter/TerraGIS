@@ -883,12 +883,8 @@ def process_shapefile(file, fuso):
                 # Extrair todos os arquivos para pasta temporária
                 temp_dir = tempfile.mkdtemp()
                 
-                # Extrair com tratamento de erro para pastas existentes
-                for member in zf.namelist():
-                    try:
-                        zf.extract(member, temp_dir)
-                    except (FileExistsError, IsADirectoryError):
-                        pass  # Ignorar erros de pasta já existente
+                # Extrair todos os arquivos
+                zf.extractall(temp_dir)
                 
                 # Obter caminho base do shapefile (sem extensão)
                 shp_file = shp_files[0]

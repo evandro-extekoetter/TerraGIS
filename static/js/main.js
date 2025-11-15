@@ -4529,6 +4529,8 @@ function handleImportFileSelect(event) {
     
     if (fileName.endsWith('.zip')) {
         fileType = 'shapefile';
+    } else if (fileName.endsWith('.shp')) {
+        fileType = 'shapefile';
     } else if (fileName.endsWith('.dxf')) {
         fileType = 'dxf';
     } else if (fileName.endsWith('.kml')) {
