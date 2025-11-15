@@ -91,9 +91,20 @@
 
 
 
-## Mudar Cursor de Mãozinha para Seta (v3.6.2)
+## Mudar Cursor de Mãozinha para Seta (v3.6.2 e v3.6.3)
 
 - [x] Procurar onde o cursor é definido como mãozinha
 - [x] Remover ou alterar para cursor padrão (seta) - mudado de '' para 'auto'
 - [x] Testar que o cursor fica como seta em todas as ferramentas ativas (grab/grabbing/move -> default)
+- [x] Corrigir cursor em ferramentas com mapa (freehand, adicionar/mover vértices, mover/copiar/rotacionar geometria)
+
+
+
+
+## Corrigir Ferramenta Rotacionar por Ângulo (v3.6.4)
+
+- [ ] Remover primeira janela (Rotacionar Geometria) - ir direto para "Rotacionar por Ângulo"
+- [ ] Redimensionar modal "Rotacionar por Ângulo" para ficar menor
+- [ ] Reformatar cores e textos para combinar com layout do TerraGIS
+- [ ] Testar que a ferramenta funciona corretamente
 

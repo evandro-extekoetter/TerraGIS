@@ -7,9 +7,9 @@ var verticeEixo = null;
 var anguloAtual = 0;
 var previewLayerRotacao = null;
 
-// Abrir diálogo de rotação
+// Abrir diálogo de rotação - ir direto para ângulo específico
 function openRotacionarGeometriaDialog() {
-    console.log('📋 Abrindo diálogo de rotação');
+    console.log('📋 Abrindo diálogo de rotação por ângulo');
     
     // Verificar se há camada ativa
     if (!terraManager.hasActiveLayer()) {
@@ -26,43 +26,8 @@ function openRotacionarGeometriaDialog() {
     
     rotacionarAtivo = true;
     
-    // Criar modal simplificado (sem dropdown de seleção)
-    var modal = document.createElement('div');
-    modal.id = 'modalRotacionar';
-    modal.innerHTML = '<div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; display: flex; align-items: center; justify-content: center;">' +
-        '<div style="background: white; padding: 30px; border-radius: 8px; max-width: 500px; width: 90%;">' +
-        '<h3 style="margin: 0 0 20px 0; color: #333;">🔄 Rotacionar Geometria</h3>' +
-        '<div style="background: #ffd700; padding: 10px; border-radius: 4px; margin-bottom: 20px; border: 2px solid #ff8c00;">' +
-        '<strong>⭐ Camada Ativa:</strong> ' + layerName +
-        '</div>' +
-        '<label style="display: block; margin-bottom: 10px; font-weight: bold;">Modo de rotação:</label>' +
-        '<div style="display: flex; gap: 10px; margin-bottom: 20px;">' +
-        '<button id="btnRotacionarMapa" style="flex: 1; padding: 12px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">🗺️ Mapa (Livre)</button>' +
-        '<button id="btnRotacionarAngulo" style="flex: 1; padding: 12px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">📐 Ângulo Específico</button>' +
-        '</div>' +
-        '<div style="text-align: right;">' +
-        '<button id="btnCancelarRotacionar" style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">Cancelar</button>' +
-        '</div>' +
-        '</div>' +
-        '</div>';
-    
-    document.body.appendChild(modal);
-    
-    // Event listeners - usar camada ativa diretamente
-    document.getElementById('btnRotacionarMapa').onclick = function() {
-        document.getElementById('modalRotacionar').remove();
-        iniciarRotacaoMapa(layerName);
-    };
-    
-    document.getElementById('btnRotacionarAngulo').onclick = function() {
-        document.getElementById('modalRotacionar').remove();
-        abrirDialogoAnguloEspecifico(layerName);
-    };
-    
-    document.getElementById('btnCancelarRotacionar').onclick = function() {
-        document.getElementById('modalRotacionar').remove();
-        rotacionarAtivo = false;
-    };
+    // Ir direto para o diálogo de ângulo específico
+    abrirDialogoAnguloEspecifico(layerName);
 }
 
 function encontrarVerticeMaisAoNorte(vertices) {
@@ -284,18 +249,18 @@ function abrirDialogoAnguloEspecifico(nomeGeometria) {
     var modal = document.createElement('div');
     modal.id = 'modalAnguloEspecifico';
     modal.innerHTML = '<div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; display: flex; align-items: center; justify-content: center;">' +
-        '<div style="background: white; padding: 30px; border-radius: 8px; max-width: 400px; width: 90%;">' +
-        '<h3 style="margin: 0 0 20px 0; color: #333;">📐 Rotacionar por Ângulo</h3>' +
-        '<label style="display: block; margin-bottom: 10px; font-weight: bold;">Ângulo (GG,MMSS):</label>' +
-        '<input type="text" id="inputAngulo" placeholder="Ex: 45,3015" style="width: 100%; padding: 10px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 4px;">' +
-        '<label style="display: block; margin-bottom: 10px; font-weight: bold;">Sentido:</label>' +
-        '<select id="selectSentido" style="width: 100%; padding: 10px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 4px;">' +
+        '<div style="background: #2c3e50; padding: 20px; border-radius: 6px; max-width: 350px; width: 90%; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">' +
+        '<h3 style="margin: 0 0 15px 0; color: #ecf0f1; font-size: 16px; font-weight: bold;">Rotacionar por Ângulo</h3>' +
+        '<label style="display: block; margin-bottom: 6px; color: #bdc3c7; font-size: 13px; font-weight: 500;">Ângulo (GG,MMSS):</label>' +
+        '<input type="text" id="inputAngulo" placeholder="Ex: 45,3015" style="width: 100%; padding: 8px; margin-bottom: 12px; border: 1px solid #34495e; border-radius: 4px; background: #34495e; color: #ecf0f1; font-size: 13px; box-sizing: border-box;">' +
+        '<label style="display: block; margin-bottom: 6px; color: #bdc3c7; font-size: 13px; font-weight: 500;">Sentido:</label>' +
+        '<select id="selectSentido" style="width: 100%; padding: 8px; margin-bottom: 15px; border: 1px solid #34495e; border-radius: 4px; background: #34495e; color: #ecf0f1; font-size: 13px; box-sizing: border-box;">' +
         '<option value="horario">Horário</option>' +
         '<option value="antihorario">Anti-horário</option>' +
         '</select>' +
-        '<div style="display: flex; gap: 10px;">' +
-        '<button id="btnAplicarAngulo" style="flex: 1; padding: 12px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer;">Aplicar</button>' +
-        '<button id="btnCancelarAngulo" style="flex: 1; padding: 12px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">Cancelar</button>' +
+        '<div style="display: flex; gap: 8px;">' +
+        '<button id="btnAplicarAngulo" style="flex: 1; padding: 10px; background: #27ae60; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 500;">Aplicar</button>' +
+        '<button id="btnCancelarAngulo" style="flex: 1; padding: 10px; background: #34495e; color: #ecf0f1; border: 1px solid #7f8c8d; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 500;">Cancelar</button>' +
         '</div>' +
         '</div>' +
         '</div>';
