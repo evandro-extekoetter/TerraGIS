@@ -924,15 +924,15 @@ def process_shapefile(file, fuso):
 def utm_to_latlong(utm_x, utm_y, zone, is_south=True):
     """
     Converter coordenadas UTM para Lat/Lng (WGS84)
-    Implementação simplificada baseada em fórmulas matemáticas
+    Baseado em algoritmo padrão de conversão UTM
     """
     import math
     
     # Constantes WGS84
-    a = 6378137.0  # Semi-eixo maior
-    e2 = 0.00669438  # Excentricidade²
-    e_prime2 = e2 / (1 - e2)
-    k0 = 0.9996  # Fator de escala
+    k0 = 0.9996
+    a = 6378137.0
+    e = 0.081819191
+    e_prime_sq = 0.06739497
     
     # Calcular o meridiano central
     lon_origin = (zone - 1) * 6 - 180 + 3
@@ -943,29 +943,27 @@ def utm_to_latlong(utm_x, utm_y, zone, is_south=True):
     if is_south:
         y = y - 10000000
     
-    # Calcular latitude e longitude
+    # Calcular M
     m = y / k0
-    mu = m / (a * (1 - e2/4 - 3*e2*e2/64 - 5*e2*e2*e2/256))
+    mu = m / (a * (1 - e**2/4 - 3*e**4/64 - 5*e**6/256))
     
-    p1 = mu + (3*math.sqrt(e_prime2)/2) * math.sin(2*mu)
-    p1 = p1 + (21*e_prime2*math.sqrt(e_prime2)/16) * math.sin(4*mu)
-    p1 = p1 - (151*e_prime2*e_prime2*math.sqrt(e_prime2)/32) * math.sin(6*mu)
+    # Calcular latitude footpoint
+    footpoint_lat = mu + (3*e**2/8 + 3*e**4/32 - 45*e**6/1024) * math.sin(2*mu) + (15*e**4/256 + 45*e**6/1024) * math.sin(4*mu) - (35*e**6/3072) * math.sin(6*mu)
     
-    p2 = (math.cos(p1)**2)
-    p3 = math.tan(p1)**2
-    p4 = (1 - e2 * (math.sin(p1)**2))
+    # Calcular parâmetros
+    c1 = e_prime_sq * math.cos(footpoint_lat)**2
+    t1 = math.tan(footpoint_lat)**2
+    n1 = a / math.sqrt(1 - e**2 * math.sin(footpoint_lat)**2)
+    r1 = a * (1 - e**2) / math.sqrt((1 - e**2 * math.sin(footpoint_lat)**2)**3)
     
-    n = a / math.sqrt(p4)
-    r = (1 - e2) * a / math.sqrt(p4**3)
+    d = x / (n1 * k0)
     
-    c1 = e_prime2 * p2
-    c2 = p3
+    # Calcular latitude
+    lat = footpoint_lat - (n1 * math.tan(footpoint_lat) / r1) * (d**2/2 - (d**4/24) * (5 + 3*t1 + 10*c1 - 4*c1**2 - 9*e_prime_sq) + (d**6/720) * (61 + 90*t1 + 28*t1**2 + 45*c1 - 252*e_prime_sq - 3*c1**2))
     
-    d = x / (n * k0)
+    # Calcular longitude
+    lon = (d - (d**3/6) * (1 + 2*t1 + c1) + (d**5/120) * (5 - 2*c1 + 28*t1 - 3*c1**2 + 8*e_prime_sq + 24*t1**2)) / math.cos(footpoint_lat)
     
-    lat = p1 - (math.tan(p1)/r) * (d*d/2 - (d**4/24) * (5 + 3*c2 + 10*c1 - 4*c1*c1 - 9*e_prime2) + (d**6/720) * (61 + 90*c2 + 28*c2*c2 + 45*p3 - 252*e_prime2 - 3*c1*c1))
-    
-    lon = (d - (d**3/6) * (1 + 2*c2 + c1) + (d**5/120) * (5 - 2*c1 + 28*c2 - 3*c1*c1 + 8*e_prime2 + 24*c2*c2)) / math.cos(p1)
     lon = lon_origin + math.degrees(lon)
     lat = math.degrees(lat)
     
