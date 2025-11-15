@@ -589,10 +589,14 @@ def import_upload():
         # Converter coordenadas se necessário (DXF e Shapefile estão em UTM)
         # Conversão de coordenadas será feita no frontend usando proj4
         
+        # Extrair coordinateSystem do geojson
+        coordinateSystem = geojson.pop('coordinateSystem', 'UTM')
+        
         return jsonify({
             'success': True,
             'layerName': layer_name,
             'geojson': geojson,
+            'coordinateSystem': coordinateSystem,
             'geometryCount': len(geojson.get('features', []))
         })
     
