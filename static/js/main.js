@@ -4741,7 +4741,37 @@ function desenharGeometriasImportadas(layerName, geojson, fuso) {
                 color: '#F4A460',
                 vertexColor: '#F4A460',
                 fuso: fuso,
-                vertices: []
+                vertices: [],
+                
+                // Metodo para controlar visibilidade
+                setVisible: function(visible) {
+                    this.visible = visible;
+                    if (visible) {
+                        if (this.geometryLayer && map) map.addLayer(this.geometryLayer);
+                        if (this.verticesLayer && map) map.addLayer(this.verticesLayer);
+                    } else {
+                        if (this.geometryLayer && map) map.removeLayer(this.geometryLayer);
+                        if (this.verticesLayer && map) map.removeLayer(this.verticesLayer);
+                    }
+                },
+                
+                // Metodo para zoom na camada
+                zoomToLayer: function() {
+                    if (!this.geometryLayer || !map) return;
+                    try {
+                        const bounds = this.geometryLayer.getBounds();
+                        map.fitBounds(bounds, { padding: [50, 50] });
+                        console.log('[ZOOM] Aproximou da camada:', this.name);
+                    } catch (error) {
+                        console.error('[ZOOM] Erro ao aproximar da camada:', error);
+                    }
+                },
+                
+                // Metodo para remover a camada
+                remove: function() {
+                    if (this.geometryLayer && map) map.removeLayer(this.geometryLayer);
+                    if (this.verticesLayer && map) map.removeLayer(this.verticesLayer);
+                }
             };
             terraManager.layers[layerName] = mockLayer;
         }
