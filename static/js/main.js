@@ -4758,7 +4758,7 @@ function desenharGeometriasImportadas(layerName, geojson) {
         });
         
         // Adicionar à lista de camadas
-        updateLayersList();
+        terraManager.updateLayerListUI();
         
         console.log('[v4.0.0] Geometrias desenhadas com sucesso');
     } catch (error) {
