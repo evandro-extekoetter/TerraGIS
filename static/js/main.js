@@ -78,13 +78,13 @@ function ativarCursorFerramenta() {
     console.log('[CURSOR] Ferramenta ativada - cursor: default (seta)');
 }
 
-// Desativar cursor de ferramenta (volta para mãozinha)
+// Desativar cursor de ferramenta (volta para seta)
 function desativarCursorFerramenta() {
     ferramentaAtiva = false;
     if (map) {
-        map.getContainer().style.cursor = '';
+        map.getContainer().style.cursor = 'auto';
     }
-    console.log('[CURSOR] Ferramenta desativada - cursor: grab (mãozinha)');
+    console.log('[CURSOR] Ferramenta desativada - cursor: auto (seta)');
 }
 
 // ===== FUNÇÕES DE UTILIDADE =====

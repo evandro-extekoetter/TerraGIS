@@ -88,3 +88,12 @@
 - [x] Verificar URL/API do Google Maps (estava desatualizada)
 - [x] Testar se as imagens carregam corretamente (mudado para Esri World Imagery)
 
+
+
+
+## Mudar Cursor de Mãozinha para Seta (v3.6.2)
+
+- [ ] Procurar onde o cursor é definido como mãozinha
+- [ ] Remover ou alterar para cursor padrão (seta)
+- [ ] Testar que o cursor fica como seta em todas as ferramentas ativas
+
