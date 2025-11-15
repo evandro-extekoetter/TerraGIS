@@ -94,7 +94,7 @@ function onMouseDownCopiar(e) {
     
     arrastandoCopiar = true;
     pontoInicialCopiar = e.latlng;
-    mapContainerCopiar.style.cursor = 'grabbing';
+    mapContainerCopiar.style.cursor = 'default';
     
     // Trazer preview para frente
     if (previewLayerCopiar) {

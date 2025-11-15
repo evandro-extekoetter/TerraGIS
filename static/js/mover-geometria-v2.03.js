@@ -62,7 +62,7 @@ window.openMoverGeometriaMapaDialog = function() {
         map.dragging.disable();
         
         mapContainer = map.getContainer();
-        mapContainer.style.cursor = 'grab';
+        mapContainer.style.cursor = 'default';
         
         // MUDANÇA: Capturar eventos DO POLÍGONO, não do mapa
         if (geometriaSelecionada.geometryLayer) {
@@ -94,7 +94,7 @@ function onMouseDown(e) {
     
     arrastando = true;
     pontoInicial = e.latlng;
-    mapContainer.style.cursor = 'grabbing';
+    mapContainer.style.cursor = 'default';
     
     // Esconder polígono original
     if (geometriaSelecionada.geometryLayer) {

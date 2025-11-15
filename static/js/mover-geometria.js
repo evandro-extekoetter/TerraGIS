@@ -129,7 +129,7 @@ window.openMoverGeometriaMapaDialog = function() {
     mapContainer.addEventListener('click', clickHandler);
     
     // Mudar cursor
-    mapContainer.style.cursor = 'move';
+    mapContainer.style.cursor = 'default';
     
     // ESC para cancelar
     document.addEventListener('keydown', onKeyDownMover);

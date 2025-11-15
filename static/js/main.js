@@ -1592,7 +1592,7 @@ function habilitarArrasteVertices(layerName, layer) {
             // Mudar cursor
             const element = marker.getElement();
             if (element) {
-                element.style.cursor = 'move';
+                element.style.cursor = 'default';
             }
             
             // Armazenar referência da camada no marcador

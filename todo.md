@@ -93,7 +93,7 @@
 
 ## Mudar Cursor de Mãozinha para Seta (v3.6.2)
 
-- [ ] Procurar onde o cursor é definido como mãozinha
-- [ ] Remover ou alterar para cursor padrão (seta)
+- [x] Procurar onde o cursor é definido como mãozinha
+- [x] Remover ou alterar para cursor padrão (seta) - mudado de '' para 'auto'
 - [ ] Testar que o cursor fica como seta em todas as ferramentas ativas
 
