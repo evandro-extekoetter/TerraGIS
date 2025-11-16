@@ -1139,7 +1139,7 @@ function openProject() {
                 
                 // Carregar novo projeto
                 currentProject = { name: projectData.name, fuso: projectData.fuso };
-                document.getElementById('project-name').textContent = projectData.name;
+                document.getElementById('project-name-sidebar').textContent = projectData.name;
                 
                 let firstLayerBounds = null;
                 
