@@ -714,8 +714,12 @@ def process_kml(file, fuso):
         
         # Procurar por Placemarks
         for placemark in root.findall('.//kml:Placemark', ns):
-            # Procurar por Polygon
+            # Procurar por Polygon (direto ou dentro de MultiGeometry)
             polygon = placemark.find('kml:Polygon', ns)
+            if not polygon:
+                # Procurar dentro de MultiGeometry
+                polygon = placemark.find('kml:MultiGeometry/kml:Polygon', ns)
+            
             if polygon:
                 coords = extract_kml_polygon_coords(polygon, ns)
                 if coords:
@@ -729,8 +733,12 @@ def process_kml(file, fuso):
                     }
                     features.append(feature)
             
-            # Procurar por LineString
+            # Procurar por LineString (direto ou dentro de MultiGeometry)
             linestring = placemark.find('kml:LineString', ns)
+            if not linestring:
+                # Procurar dentro de MultiGeometry
+                linestring = placemark.find('kml:MultiGeometry/kml:LineString', ns)
+            
             if linestring:
                 coords = extract_kml_linestring_coords(linestring, ns)
                 if coords:
@@ -931,10 +939,24 @@ def process_shapefile(file, fuso):
         
         print(f"[v4.1.0] Shapefile: {len(features)} geometrias encontradas")
         
+        # Detectar sistema de coordenadas automaticamente
+        coordinateSystem = 'UTM'  # Padrão
+        if features and len(features) > 0:
+            # Verificar as coordenadas do primeiro feature
+            first_coords = features[0]['geometry']['coordinates'][0]
+            if first_coords and len(first_coords) > 0:
+                first_point = first_coords[0]
+                # Se as coordenadas estão entre -180 a 180 e -90 a 90, é Lat/Lng
+                if -180 <= first_point[0] <= 180 and -90 <= first_point[1] <= 90:
+                    coordinateSystem = 'LatLng'
+                    print(f"[v4.1.0] Sistema de coordenadas detectado: Lat/Lng")
+                else:
+                    print(f"[v4.1.0] Sistema de coordenadas detectado: UTM")
+        
         return {
             'type': 'FeatureCollection',
             'features': features,
-            'coordinateSystem': 'UTM'  # Shapefile está em UTM
+            'coordinateSystem': coordinateSystem
         }
     
     except Exception as e:
