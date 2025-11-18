@@ -1292,10 +1292,10 @@ function changeBaseLayer() {
             
             // 2. Intermediaria: SNCI (Terras Publicas)
             const snciLayer = L.tileLayer.wms("https://acervofundiario.incra.gov.br/i3geo/ogc.php", {
-                layers: `imoveis_snci_publica_${uf}`,
+                layers: `imoveiscertificados_publico_${uf}`,
                 format: "image/png",
                 transparent: true,
-                opacity: 0.35,
+                opacity: 0.5,
                 attribution: 'SNCI/INCRA'
             });
             currentBaseLayer.addLayer(snciLayer);
