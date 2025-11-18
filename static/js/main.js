@@ -1012,14 +1012,15 @@ function newProject() {
 
 function createProject() {
     const name = document.getElementById('project-name-input').value.trim();
+    const state = document.getElementById('project-state-select').value;
     const fuso = document.getElementById('fuso-utm-select').value;
     
-    if (!name || !fuso) {
-        showMessage('Preencha todos os campos', 'error');
+    if (!name || !state || !fuso) {
+        showMessage('Preencha todos os campos (Nome, Estado e Fuso)', 'error');
         return;
     }
     
-    currentProject = { name, fuso };
+    currentProject = { name, state, fuso };
     document.getElementById('project-name-sidebar').textContent = name;
     
     closeModal('modal-new-project');
@@ -1033,7 +1034,7 @@ async function saveProject() {
     }
     
     try {
-        const projectData = { name: currentProject.name, fuso: currentProject.fuso, timestamp: new Date().toISOString(), layers: {} };
+        const projectData = { name: currentProject.name, state: currentProject.state, fuso: currentProject.fuso, timestamp: new Date().toISOString(), layers: {} };
         
         // Salvar TODAS as informações de cada camada
         for (const layerName in layers) {
@@ -1125,7 +1126,7 @@ function openProject() {
         reader.onload = function(event) {
             try {
                 const projectData = JSON.parse(event.target.result);
-                if (!projectData.name || !projectData.fuso || !projectData.layers) {
+                if (!projectData.name || !projectData.fuso || !projectData.layers || !projectData.state) {
                     showMessage('Arquivo de projeto invalido', 'error');
                     return;
                 }
@@ -1138,7 +1139,7 @@ function openProject() {
                 layers = {};
                 
                 // Carregar novo projeto
-                currentProject = { name: projectData.name, fuso: projectData.fuso };
+                currentProject = { name: projectData.name, state: projectData.state, fuso: projectData.fuso };
                 document.getElementById('project-name-sidebar').textContent = projectData.name;
                 
                 let firstLayerBounds = null;
@@ -1262,13 +1263,31 @@ function changeBaseLayer() {
         if (ufLabel) ufLabel.style.display = 'none';
         if (legendBtn) legendBtn.style.display = 'none';
     } else if (selectedLayer === 'sigef' || selectedLayer === 'snci') {
-        // Mostrar seletor de UF e botão de legenda
-        if (ufSelect) ufSelect.style.display = 'inline-block';
-        if (ufLabel) ufLabel.style.display = 'inline-block';
+        // Usar estado do projeto se disponível, senão mostrar seletor de UF
+        let uf = null;
+        
+        if (currentProject && currentProject.state) {
+            // Usar estado do projeto
+            uf = currentProject.state;
+            if (ufSelect) {
+                ufSelect.value = uf;
+                ufSelect.style.display = 'none';
+            }
+            if (ufLabel) ufLabel.style.display = 'none';
+        } else {
+            // Mostrar seletor de UF se não houver projeto
+            if (ufSelect) ufSelect.style.display = 'inline-block';
+            if (ufLabel) ufLabel.style.display = 'inline-block';
+            uf = ufSelect.value;
+        }
+        
         if (legendBtn) legendBtn.style.display = 'inline-block';
         
         // Criar camada WMS INCRA
-        const uf = ufSelect.value;
+        if (!uf) {
+            showMessage('Selecione um estado para carregar a base INCRA', 'error');
+            return;
+        }
         const layerName = selectedLayer === 'sigef' 
             ? `certificada_sigef_particular_${uf}` 
             : `imoveis_snci_${uf}`;

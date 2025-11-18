@@ -462,6 +462,22 @@
         </div>
     </div>
 
+    <!-- Modal Inicial de Boas-vindas -->
+    <div id="modal-welcome" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 600px; background: white; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+            <div class="modal-body" style="padding: 40px; text-align: center;">
+                <h2 style="font-size: 24px; color: #333; margin-bottom: 20px; font-weight: 600;">Bem-vindo ao TerraGIS</h2>
+                <p style="font-size: 16px; color: #666; line-height: 1.6; margin-bottom: 30px;">
+                    Para começar a usar o TerraGIS, você deve criar um novo projeto ou abrir um projeto existente.
+                </p>
+                <p style="font-size: 14px; color: #999; margin-bottom: 30px;">
+                    Clique em <strong>PROJETO</strong> no menu superior para criar ou abrir um projeto.
+                </p>
+                <button class="btn-primary" onclick="closeModal('modal-welcome')" style="padding: 10px 30px; font-size: 14px;">Entendi</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Novo Projeto -->
     <div id="modal-new-project" class="modal">
         <div class="modal-content">
@@ -473,6 +489,39 @@
                 <div class="form-group">
                     <label for="project-name-input">Nome do Projeto:</label>
                     <input type="text" id="project-name-input" placeholder="Ex: Análise Fazenda Santa Maria">
+                </div>
+                <div class="form-group">
+                    <label for="project-state-select">Estado:</label>
+                    <select id="project-state-select">
+                        <option value="">Selecione o estado</option>
+                        <option value="AC">Acre (AC)</option>
+                        <option value="AL">Alagoas (AL)</option>
+                        <option value="AP">Amapá (AP)</option>
+                        <option value="AM">Amazonas (AM)</option>
+                        <option value="BA">Bahia (BA)</option>
+                        <option value="CE">Ceará (CE)</option>
+                        <option value="DF">Distrito Federal (DF)</option>
+                        <option value="ES">Espírito Santo (ES)</option>
+                        <option value="GO">Goiás (GO)</option>
+                        <option value="MA">Maranhão (MA)</option>
+                        <option value="MT">Mato Grosso (MT)</option>
+                        <option value="MS">Mato Grosso do Sul (MS)</option>
+                        <option value="MG">Minas Gerais (MG)</option>
+                        <option value="PA">Pará (PA)</option>
+                        <option value="PB">Paraíba (PB)</option>
+                        <option value="PR">Paraná (PR)</option>
+                        <option value="PE">Pernambuco (PE)</option>
+                        <option value="PI">Piauí (PI)</option>
+                        <option value="RJ">Rio de Janeiro (RJ)</option>
+                        <option value="RN">Rio Grande do Norte (RN)</option>
+                        <option value="RS">Rio Grande do Sul (RS)</option>
+                        <option value="RO">Rondônia (RO)</option>
+                        <option value="RR">Roraima (RR)</option>
+                        <option value="SC">Santa Catarina (SC)</option>
+                        <option value="SP">São Paulo (SP)</option>
+                        <option value="SE">Sergipe (SE)</option>
+                        <option value="TO">Tocantins (TO)</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label for="fuso-utm-select">Fuso UTM:</label>
@@ -487,6 +536,12 @@
                         <option value="24S">24S</option>
                         <option value="25S">25S</option>
                     </select>
+                    <div style="font-size: 12px; color: #666; margin-top: 8px; line-height: 1.5;">
+                        <strong>Abrangencia de Longitudes:</strong><br>
+                        18S: -72 a -66 | 19S: -66 a -60 | 20S: -60 a -54<br>
+                        21S: -54 a -48 | 22S: -48 a -42 | 23S: -42 a -36<br>
+                        24S: -36 a -30 | 25S: -30 a -24
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
