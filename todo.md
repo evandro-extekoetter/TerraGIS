@@ -108,3 +108,20 @@
 - [ ] Reformatar cores e textos para combinar com layout do TerraGIS
 - [ ] Testar que a ferramenta funciona corretamente
 
+
+
+
+## Integração INCRA com Seleção de Estado (v4.3.0)
+
+- [x] Adicionar modal inicial de boas-vindas
+- [x] Adicionar campo Estado no diálogo de criar projeto
+- [x] Adicionar texto informativo dos fusos UTM (18S a 25S)
+- [x] Implementar validação obrigatória (Nome, Estado, Fuso)
+- [x] Guardar estado do projeto no localStorage e arquivo
+- [x] Integrar carregamento da base INCRA com estado do projeto
+- [x] Usar estado automaticamente ao selecionar SIGEF/SNCI
+- [ ] Testar modal de boas-vindas no PythonAnywhere
+- [ ] Testar criação de projeto com Estado obrigatório
+- [ ] Testar salvamento e carregamento de projeto com Estado
+- [ ] Testar carregamento automático da base INCRA
+
