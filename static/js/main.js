@@ -1294,7 +1294,7 @@ function changeBaseLayer() {
                     layers: `imoveiscertificados_privado_${uf}`,
                     format: "image/png",
                     transparent: true,
-                    opacity: 0.8,
+                    opacity: 0.6,
                     attribution: 'SNCI/INCRA'
                 });
                 currentBaseLayer.addLayer(snciLayer);
@@ -1303,7 +1303,7 @@ function changeBaseLayer() {
                     layers: `certificada_sigef_particular_${uf}`,
                     format: "image/png",
                     transparent: true,
-                    opacity: 0.8,
+                    opacity: 0.6,
                     attribution: 'SIGEF/INCRA'
                 });
                 currentBaseLayer.addLayer(sigefLayer);
@@ -1313,7 +1313,7 @@ function changeBaseLayer() {
                     layers: `certificada_sigef_particular_${uf}`,
                     format: "image/png",
                     transparent: true,
-                    opacity: 0.8,
+                    opacity: 0.6,
                     attribution: 'SIGEF/INCRA'
                 });
                 currentBaseLayer.addLayer(sigefPartLayer);
@@ -1322,7 +1322,7 @@ function changeBaseLayer() {
                     layers: `certificada_sigef_publico_${uf}`,
                     format: "image/png",
                     transparent: true,
-                    opacity: 0.8,
+                    opacity: 0.6,
                     attribution: 'SIGEF/INCRA'
                 });
                 currentBaseLayer.addLayer(sigefPubLayer);
@@ -1332,7 +1332,7 @@ function changeBaseLayer() {
                     layers: `imoveiscertificados_privado_${uf}`,
                     format: "image/png",
                     transparent: true,
-                    opacity: 0.8,
+                    opacity: 0.6,
                     attribution: 'SNCI/INCRA'
                 });
                 currentBaseLayer.addLayer(snciPrivLayer);
@@ -1341,7 +1341,7 @@ function changeBaseLayer() {
                     layers: `imoveiscertificados_publico_${uf}`,
                     format: "image/png",
                     transparent: true,
-                    opacity: 0.8,
+                    opacity: 0.6,
                     attribution: 'SNCI/INCRA'
                 });
                 currentBaseLayer.addLayer(snciPubLayer);
@@ -1351,7 +1351,7 @@ function changeBaseLayer() {
                     layers: `certificada_sigef_particular_${uf}`,
                     format: "image/png",
                     transparent: true,
-                    opacity: 0.8,
+                    opacity: 0.6,
                     attribution: 'SIGEF/INCRA'
                 });
                 currentBaseLayer.addLayer(sigefPartLayer);
@@ -1361,7 +1361,7 @@ function changeBaseLayer() {
                     layers: `certificada_sigef_publico_${uf}`,
                     format: "image/png",
                     transparent: true,
-                    opacity: 0.8,
+                    opacity: 0.6,
                     attribution: 'SIGEF/INCRA'
                 });
                 currentBaseLayer.addLayer(sigefPubLayer);
