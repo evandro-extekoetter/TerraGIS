@@ -1262,7 +1262,7 @@ function changeBaseLayer() {
         if (ufSelect) ufSelect.style.display = 'none';
         if (ufLabel) ufLabel.style.display = 'none';
         if (legendBtn) legendBtn.style.display = 'none';
-    } else if (selectedLayer === 'sigef' || selectedLayer === 'snci') {
+    } else if (selectedLayer === 'incra') {
         // Usar estado do projeto se disponível, senão mostrar seletor de UF
         let uf = null;
         
@@ -1288,16 +1288,15 @@ function changeBaseLayer() {
             showMessage('Selecione um estado para carregar a base INCRA', 'error');
             return;
         }
-        const layerName = selectedLayer === 'sigef' 
-            ? `certificada_sigef_particular_${uf}` 
-            : `imoveis_snci_${uf}`;
+        // Usar SIGEF como padrão
+        const layerName = `certificada_sigef_particular_${uf}`;
         
         currentBaseLayer = L.tileLayer.wms("https://acervofundiario.incra.gov.br/i3geo/ogc.php", {
             layers: layerName,
             format: "image/png",
             transparent: true,
             opacity: 0.4,
-            attribution: selectedLayer === 'sigef' ? 'SIGEF/INCRA' : 'SNCI/INCRA'
+            attribution: 'INCRA - SIGEF/SNCI'
         });
     }
     
@@ -1316,7 +1315,7 @@ function updateIncraLayer() {
     const select = document.getElementById('baseLayerSelect');
     const selectedLayer = select.value;
     
-    if (selectedLayer === 'sigef' || selectedLayer === 'snci') {
+    if (selectedLayer === 'incra') {
         changeBaseLayer();
     }
 }
@@ -1327,19 +1326,17 @@ function openLegendModal() {
     const ufSelect = document.getElementById('ufSelect');
     const uf = ufSelect.value;
     
-    if (selectedLayer !== 'sigef' && selectedLayer !== 'snci') {
+    if (selectedLayer !== 'incra') {
         return;
     }
     
-    const layerName = selectedLayer === 'sigef' 
-        ? `certificada_sigef_particular_${uf}` 
-        : `imoveis_snci_${uf}`;
+    const layerName = `certificada_sigef_particular_${uf}`;
     
     const legendUrl = `https://acervofundiario.incra.gov.br/i3geo/ogc.php?REQUEST=GetLegendGraphic&FORMAT=image/png&LAYER=${layerName}`;
     
     const legendContent = document.getElementById('legend-content');
     legendContent.innerHTML = `
-        <h3>${selectedLayer === 'sigef' ? 'SIGEF - Imóveis Certificados' : 'SNCI - Terras Públicas'}</h3>
+        <h3>INCRA - Imóveis e Terras Públicas</h3>
         <p><strong>Estado:</strong> ${uf}</p>
         <img src="${legendUrl}" alt="Legenda" style="max-width: 100%; margin-top: 15px;" onerror="this.parentElement.innerHTML='<p>Erro ao carregar legenda. Verifique a conexão com o servidor INCRA.</p>'">
     `;
@@ -1523,6 +1520,15 @@ document.addEventListener('DOMContentLoaded', function() {
         terraManager.updateLayerListUI();
     }
     console.log('TerraGIS inicializado com sucesso');
+    
+    // Mostrar modal de boas-vindas se for a primeira vez
+    const welcomeShown = localStorage.getItem('terraGIS_welcomeShown');
+    if (!welcomeShown) {
+        setTimeout(function() {
+            openModal('modal-welcome');
+            localStorage.setItem('terraGIS_welcomeShown', 'true');
+        }, 500);
+    }
 });;
 // Adicionar animações CSS
 const style = document.createElement('style');
