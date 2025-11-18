@@ -1262,7 +1262,7 @@ function changeBaseLayer() {
         if (ufSelect) ufSelect.style.display = 'none';
         if (ufLabel) ufLabel.style.display = 'none';
         if (legendBtn) legendBtn.style.display = 'none';
-    } else if (selectedLayer === 'incra' || selectedLayer.includes('google')) {
+    } else if (selectedLayer.includes('google')) {
         // Usar estado do projeto se disponível, senão mostrar seletor de UF
         let uf = null;
         
@@ -1374,17 +1374,6 @@ function changeBaseLayer() {
                 });
                 currentBaseLayer.addLayer(sigefPubLayer);
             }
-        } else {
-            // INCRA simples (sem Google)
-            const layerName = `certificada_sigef_particular_${uf}`;
-            
-            currentBaseLayer = L.tileLayer.wms("https://acervofundiario.incra.gov.br/i3geo/ogc.php", {
-                layers: layerName,
-                format: "image/png",
-                transparent: true,
-                opacity: 0.4,
-                attribution: 'INCRA - SIGEF/SNCI'
-            });
         }
     }
     
