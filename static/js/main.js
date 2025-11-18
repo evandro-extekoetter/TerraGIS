@@ -1262,7 +1262,7 @@ function changeBaseLayer() {
         if (ufSelect) ufSelect.style.display = 'none';
         if (ufLabel) ufLabel.style.display = 'none';
         if (legendBtn) legendBtn.style.display = 'none';
-    } else if (selectedLayer === 'incra') {
+    } else if (selectedLayer === 'incra' || selectedLayer === 'incra-google') {
         // Usar estado do projeto se disponível, senão mostrar seletor de UF
         let uf = null;
         
@@ -1283,16 +1283,44 @@ function changeBaseLayer() {
         if (legendBtn) legendBtn.style.display = 'inline-block';
         
         // Criar camada WMS INCRA
-        // Usar SIGEF como padrão
-        const layerName = `certificada_sigef_particular_${uf}`;
-        
-        currentBaseLayer = L.tileLayer.wms("https://acervofundiario.incra.gov.br/i3geo/ogc.php", {
-            layers: layerName,
-            format: "image/png",
-            transparent: true,
-            opacity: 0.4,
-            attribution: 'INCRA - SIGEF/SNCI'
-        });
+        if (selectedLayer === 'incra-google') {
+            // Camada composta: Google + SNCI + SIGEF
+            currentBaseLayer = L.layerGroup();
+            
+            // 1. Base: Google Earth
+            currentBaseLayer.addLayer(baseLayers.satellite);
+            
+            // 2. Intermediaria: SNCI (Terras Publicas)
+            const snciLayer = L.tileLayer.wms("https://acervofundiario.incra.gov.br/i3geo/ogc.php", {
+                layers: `imoveis_snci_${uf}`,
+                format: "image/png",
+                transparent: true,
+                opacity: 0.3,
+                attribution: 'SNCI/INCRA'
+            });
+            currentBaseLayer.addLayer(snciLayer);
+            
+            // 3. Topo: SIGEF (Imoveis Certificados)
+            const sigefLayer = L.tileLayer.wms("https://acervofundiario.incra.gov.br/i3geo/ogc.php", {
+                layers: `certificada_sigef_particular_${uf}`,
+                format: "image/png",
+                transparent: true,
+                opacity: 0.5,
+                attribution: 'SIGEF/INCRA'
+            });
+            currentBaseLayer.addLayer(sigefLayer);
+        } else {
+            // INCRA simples (apenas SIGEF)
+            const layerName = `certificada_sigef_particular_${uf}`;
+            
+            currentBaseLayer = L.tileLayer.wms("https://acervofundiario.incra.gov.br/i3geo/ogc.php", {
+                layers: layerName,
+                format: "image/png",
+                transparent: true,
+                opacity: 0.4,
+                attribution: 'INCRA - SIGEF/SNCI'
+            });
+        }
     }
     
     if (currentBaseLayer) {
