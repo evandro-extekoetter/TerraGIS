@@ -1295,7 +1295,6 @@ function changeBaseLayer() {
                     format: "image/png",
                     transparent: true,
                     opacity: 0.7,
-                    styles: 'default:stroke_width=2',
                     attribution: 'SNCI/INCRA'
                 });
                 currentBaseLayer.addLayer(snciLayer);
@@ -1305,7 +1304,6 @@ function changeBaseLayer() {
                     format: "image/png",
                     transparent: true,
                     opacity: 0.7,
-                    styles: 'default:stroke_width=2',
                     attribution: 'SIGEF/INCRA'
                 });
                 currentBaseLayer.addLayer(sigefLayer);
@@ -1316,7 +1314,6 @@ function changeBaseLayer() {
                     format: "image/png",
                     transparent: true,
                     opacity: 0.7,
-                    styles: 'default:stroke_width=2',
                     attribution: 'SIGEF/INCRA'
                 });
                 currentBaseLayer.addLayer(sigefPartLayer);
@@ -1326,7 +1323,6 @@ function changeBaseLayer() {
                     format: "image/png",
                     transparent: true,
                     opacity: 0.7,
-                    styles: 'default:stroke_width=2',
                     attribution: 'SIGEF/INCRA'
                 });
                 currentBaseLayer.addLayer(sigefPubLayer);
@@ -1337,7 +1333,6 @@ function changeBaseLayer() {
                     format: "image/png",
                     transparent: true,
                     opacity: 0.7,
-                    styles: 'default:stroke_width=2',
                     attribution: 'SNCI/INCRA'
                 });
                 currentBaseLayer.addLayer(snciPrivLayer);
@@ -1347,7 +1342,6 @@ function changeBaseLayer() {
                     format: "image/png",
                     transparent: true,
                     opacity: 0.7,
-                    styles: 'default:stroke_width=2',
                     attribution: 'SNCI/INCRA'
                 });
                 currentBaseLayer.addLayer(snciPubLayer);
@@ -1358,7 +1352,6 @@ function changeBaseLayer() {
                     format: "image/png",
                     transparent: true,
                     opacity: 0.7,
-                    styles: 'default:stroke_width=2',
                     attribution: 'SIGEF/INCRA'
                 });
                 currentBaseLayer.addLayer(sigefPartLayer);
@@ -1369,7 +1362,6 @@ function changeBaseLayer() {
                     format: "image/png",
                     transparent: true,
                     opacity: 0.7,
-                    styles: 'default:stroke_width=2',
                     attribution: 'SIGEF/INCRA'
                 });
                 currentBaseLayer.addLayer(sigefPubLayer);
@@ -3684,7 +3676,7 @@ function selectGeometryForRotate(latlng) {
                     color: '#ff00ff',
                     weight: 3,
                     opacity: 0.7,
-                    styles: 'default:stroke_width=2',
+
                     fillOpacity: 0.2,
                     dashArray: '5, 5'
                 };
