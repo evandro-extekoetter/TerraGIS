@@ -1294,7 +1294,8 @@ function changeBaseLayer() {
                     layers: `imoveiscertificados_privado_${uf}`,
                     format: "image/png",
                     transparent: true,
-                    opacity: 0.5,
+                    opacity: 0.4,
+                    styles: 'default:fill_color=f2aae3;stroke_color=f2aae3;stroke_width=1',
                     attribution: 'SNCI/INCRA'
                 });
                 currentBaseLayer.addLayer(snciLayer);
@@ -1303,7 +1304,8 @@ function changeBaseLayer() {
                     layers: `certificada_sigef_particular_${uf}`,
                     format: "image/png",
                     transparent: true,
-                    opacity: 0.5,
+                    opacity: 0.4,
+                    styles: 'default:fill_color=a9f3e5;stroke_color=a9f3e5;stroke_width=1',
                     attribution: 'SIGEF/INCRA'
                 });
                 currentBaseLayer.addLayer(sigefLayer);
@@ -1313,7 +1315,8 @@ function changeBaseLayer() {
                     layers: `certificada_sigef_particular_${uf}`,
                     format: "image/png",
                     transparent: true,
-                    opacity: 0.5,
+                    opacity: 0.4,
+                    styles: 'default:fill_color=a9f3e5;stroke_color=a9f3e5;stroke_width=1',
                     attribution: 'SIGEF/INCRA'
                 });
                 currentBaseLayer.addLayer(sigefPartLayer);
@@ -1322,7 +1325,8 @@ function changeBaseLayer() {
                     layers: `certificada_sigef_publico_${uf}`,
                     format: "image/png",
                     transparent: true,
-                    opacity: 0.5,
+                    opacity: 0.4,
+                    styles: 'default:fill_color=729b6f;stroke_color=729b6f;stroke_width=1',
                     attribution: 'SIGEF/INCRA'
                 });
                 currentBaseLayer.addLayer(sigefPubLayer);
@@ -1332,7 +1336,8 @@ function changeBaseLayer() {
                     layers: `imoveiscertificados_privado_${uf}`,
                     format: "image/png",
                     transparent: true,
-                    opacity: 0.5,
+                    opacity: 0.4,
+                    styles: 'default:fill_color=f2aae3;stroke_color=f2aae3;stroke_width=1',
                     attribution: 'SNCI/INCRA'
                 });
                 currentBaseLayer.addLayer(snciPrivLayer);
@@ -1341,7 +1346,8 @@ function changeBaseLayer() {
                     layers: `imoveiscertificados_publico_${uf}`,
                     format: "image/png",
                     transparent: true,
-                    opacity: 0.5,
+                    opacity: 0.4,
+                    styles: 'default:fill_color=8d5a99;stroke_color=8d5a99;stroke_width=1',
                     attribution: 'SNCI/INCRA'
                 });
                 currentBaseLayer.addLayer(snciPubLayer);
@@ -1351,7 +1357,8 @@ function changeBaseLayer() {
                     layers: `certificada_sigef_particular_${uf}`,
                     format: "image/png",
                     transparent: true,
-                    opacity: 0.5,
+                    opacity: 0.4,
+                    styles: 'default:fill_color=a9f3e5;stroke_color=a9f3e5;stroke_width=1',
                     attribution: 'SIGEF/INCRA'
                 });
                 currentBaseLayer.addLayer(sigefPartLayer);
@@ -1361,7 +1368,8 @@ function changeBaseLayer() {
                     layers: `certificada_sigef_publico_${uf}`,
                     format: "image/png",
                     transparent: true,
-                    opacity: 0.5,
+                    opacity: 0.4,
+                    styles: 'default:fill_color=729b6f;stroke_color=729b6f;stroke_width=1',
                     attribution: 'SIGEF/INCRA'
                 });
                 currentBaseLayer.addLayer(sigefPubLayer);
