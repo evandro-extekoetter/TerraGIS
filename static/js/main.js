@@ -1270,10 +1270,10 @@ function changeBaseLayer() {
             // Usar estado do projeto
             uf = currentProject.state;
         } else {
-            // Sem projeto, não pode usar INCRA
-            showMessage('Abra ou crie um projeto para carregar a base INCRA', 'error');
+            // Sem projeto, mostrar modal de boas-vindas
             document.getElementById('baseLayerSelect').value = 'osm';
             changeBaseLayer();
+            openModal('modal-welcome');
             return;
         }
         
