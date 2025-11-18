@@ -1269,25 +1269,20 @@ function changeBaseLayer() {
         if (currentProject && currentProject.state) {
             // Usar estado do projeto
             uf = currentProject.state;
-            if (ufSelect) {
-                ufSelect.value = uf;
-                ufSelect.style.display = 'none';
-            }
-            if (ufLabel) ufLabel.style.display = 'none';
         } else {
-            // Mostrar seletor de UF se não houver projeto
-            if (ufSelect) ufSelect.style.display = 'inline-block';
-            if (ufLabel) ufLabel.style.display = 'inline-block';
-            uf = ufSelect.value;
+            // Sem projeto, não pode usar INCRA
+            showMessage('Abra ou crie um projeto para carregar a base INCRA', 'error');
+            document.getElementById('baseLayerSelect').value = 'osm';
+            changeBaseLayer();
+            return;
         }
         
+        // Sempre ocultar o seletor de UF (estado vem do projeto)
+        if (ufSelect) ufSelect.style.display = 'none';
+        if (ufLabel) ufLabel.style.display = 'none';
         if (legendBtn) legendBtn.style.display = 'inline-block';
         
         // Criar camada WMS INCRA
-        if (!uf) {
-            showMessage('Selecione um estado para carregar a base INCRA', 'error');
-            return;
-        }
         // Usar SIGEF como padrão
         const layerName = `certificada_sigef_particular_${uf}`;
         
