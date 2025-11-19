@@ -12,6 +12,9 @@ let currentBaseLayer = null;
 let layers = {}; // {layerName: {polygon: L.Layer, vertices: L.Layer, visible: true}}
 let layerCounter = 0;
 
+// Cache para WMS do INCRA
+let incraCache = {}; // {url: {tiles: {}, timestamp}}
+
 // Fusos UTM SIRGAS 2000
 const UTM_ZONES = {
     "18S": "+proj=utm +zone=18 +south +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs",
@@ -39,12 +42,16 @@ function initMap() {
     
     baseLayers.satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
         attribution: '© Esri, DigitalGlobe, Earthstar Geographics',
-        maxZoom: 18
+        maxZoom: 18,
+        crossOrigin: true
     });
     
     // Adicionar camada padrão (OSM)
     currentBaseLayer = baseLayers.osm;
     currentBaseLayer.addTo(map);
+    
+    // Ativar cache para WMS
+    enableWmsCache();
     drawnItems = new L.FeatureGroup();
     map.addLayer(drawnItems);
     
@@ -4972,5 +4979,46 @@ function desenharGeometriasImportadas(layerName, geojson, fuso, coordinateSystem
         console.error('[v4.1.0] Erro ao desenhar geometrias:', error);
         throw error;
     }
+}
+
+
+
+
+// Funcao para ativar cache de WMS
+function enableWmsCache() {
+    // Interceptar requisicoes de WMS para cache
+    const originalFetch = window.fetch;
+    
+    window.fetch = function(...args) {
+        const url = args[0];
+        
+        // Se for WMS do INCRA, usar cache
+        if (url && typeof url === 'string' && url.includes('acervofundiario.incra.gov.br')) {
+            const cacheKey = url;
+            
+            // Verificar se existe no cache
+            if (incraCache[cacheKey]) {
+                return Promise.resolve(incraCache[cacheKey]);
+            }
+            
+            // Se nao existe, fazer requisicao e cachear
+            return originalFetch.apply(this, args).then(response => {
+                // Clonar resposta para cache
+                const clonedResponse = response.clone();
+                incraCache[cacheKey] = clonedResponse;
+                return response;
+            });
+        }
+        
+        // Para outras requisicoes, usar fetch normal
+        return originalFetch.apply(this, args);
+    };
+}
+
+// Funcao alternativa: Cache via Service Worker (mais eficiente)
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {
+        // Service Worker nao disponivel, usar cache em memoria
+    });
 }
 
