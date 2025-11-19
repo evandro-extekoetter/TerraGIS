@@ -1302,7 +1302,10 @@ function changeBaseLayer() {
                     format: "image/png",
                     transparent: true,
                     opacity: 0.7,
-                    attribution: 'SNCI/INCRA'
+                    attribution: 'SNCI/INCRA',
+                    tileSize: 256,
+                    crossOrigin: true,
+                    maxZoom: 20
                 });
                 currentBaseLayer.addLayer(snciLayer);
                 
@@ -1311,7 +1314,10 @@ function changeBaseLayer() {
                     format: "image/png",
                     transparent: true,
                     opacity: 0.7,
-                    attribution: 'SIGEF/INCRA'
+                    attribution: 'SIGEF/INCRA',
+                    tileSize: 256,
+                    crossOrigin: true,
+                    maxZoom: 20
                 });
                 currentBaseLayer.addLayer(sigefLayer);
             } else if (selectedLayer === 'sigef-google') {
@@ -1321,7 +1327,10 @@ function changeBaseLayer() {
                     format: "image/png",
                     transparent: true,
                     opacity: 0.7,
-                    attribution: 'SIGEF/INCRA'
+                    attribution: 'SIGEF/INCRA',
+                    tileSize: 256,
+                    crossOrigin: true,
+                    maxZoom: 20
                 });
                 currentBaseLayer.addLayer(sigefPartLayer);
                 
@@ -1330,7 +1339,10 @@ function changeBaseLayer() {
                     format: "image/png",
                     transparent: true,
                     opacity: 0.7,
-                    attribution: 'SIGEF/INCRA'
+                    attribution: 'SIGEF/INCRA',
+                    tileSize: 256,
+                    crossOrigin: true,
+                    maxZoom: 20
                 });
                 currentBaseLayer.addLayer(sigefPubLayer);
             } else if (selectedLayer === 'snci-google') {
@@ -1340,7 +1352,10 @@ function changeBaseLayer() {
                     format: "image/png",
                     transparent: true,
                     opacity: 0.7,
-                    attribution: 'SNCI/INCRA'
+                    attribution: 'SNCI/INCRA',
+                    tileSize: 256,
+                    crossOrigin: true,
+                    maxZoom: 20
                 });
                 currentBaseLayer.addLayer(snciPrivLayer);
                 
@@ -1349,7 +1364,10 @@ function changeBaseLayer() {
                     format: "image/png",
                     transparent: true,
                     opacity: 0.7,
-                    attribution: 'SNCI/INCRA'
+                    attribution: 'SNCI/INCRA',
+                    tileSize: 256,
+                    crossOrigin: true,
+                    maxZoom: 20
                 });
                 currentBaseLayer.addLayer(snciPubLayer);
             } else if (selectedLayer === 'sigef-particular-google') {
@@ -1359,7 +1377,10 @@ function changeBaseLayer() {
                     format: "image/png",
                     transparent: true,
                     opacity: 0.7,
-                    attribution: 'SIGEF/INCRA'
+                    attribution: 'SIGEF/INCRA',
+                    tileSize: 256,
+                    crossOrigin: true,
+                    maxZoom: 20
                 });
                 currentBaseLayer.addLayer(sigefPartLayer);
             } else if (selectedLayer === 'sigef-publico-google') {
@@ -1369,7 +1390,10 @@ function changeBaseLayer() {
                     format: "image/png",
                     transparent: true,
                     opacity: 0.7,
-                    attribution: 'SIGEF/INCRA'
+                    attribution: 'SIGEF/INCRA',
+                    tileSize: 256,
+                    crossOrigin: true,
+                    maxZoom: 20
                 });
                 currentBaseLayer.addLayer(sigefPubLayer);
             }
