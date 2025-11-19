@@ -1304,7 +1304,8 @@ function changeBaseLayer() {
                     opacity: 0.7,
                     attribution: 'SNCI/INCRA',
                     tileSize: 256,
-                    maxZoom: 20
+                    maxZoom: 18,
+                    minZoom: 12
                 });
                 currentBaseLayer.addLayer(snciLayer);
                 
@@ -1315,7 +1316,8 @@ function changeBaseLayer() {
                     opacity: 0.7,
                     attribution: 'SIGEF/INCRA',
                     tileSize: 256,
-                    maxZoom: 20
+                    maxZoom: 18,
+                    minZoom: 12
                 });
                 currentBaseLayer.addLayer(sigefLayer);
             } else if (selectedLayer === 'sigef-google') {
@@ -1327,7 +1329,8 @@ function changeBaseLayer() {
                     opacity: 0.7,
                     attribution: 'SIGEF/INCRA',
                     tileSize: 256,
-                    maxZoom: 20
+                    maxZoom: 18,
+                    minZoom: 12
                 });
                 currentBaseLayer.addLayer(sigefPartLayer);
                 
@@ -1338,7 +1341,8 @@ function changeBaseLayer() {
                     opacity: 0.7,
                     attribution: 'SIGEF/INCRA',
                     tileSize: 256,
-                    maxZoom: 20
+                    maxZoom: 18,
+                    minZoom: 12
                 });
                 currentBaseLayer.addLayer(sigefPubLayer);
             } else if (selectedLayer === 'snci-google') {
@@ -1350,7 +1354,8 @@ function changeBaseLayer() {
                     opacity: 0.7,
                     attribution: 'SNCI/INCRA',
                     tileSize: 256,
-                    maxZoom: 20
+                    maxZoom: 18,
+                    minZoom: 12
                 });
                 currentBaseLayer.addLayer(snciPrivLayer);
                 
@@ -1361,7 +1366,8 @@ function changeBaseLayer() {
                     opacity: 0.7,
                     attribution: 'SNCI/INCRA',
                     tileSize: 256,
-                    maxZoom: 20
+                    maxZoom: 18,
+                    minZoom: 12
                 });
                 currentBaseLayer.addLayer(snciPubLayer);
             } else if (selectedLayer === 'sigef-particular-google') {
@@ -1373,7 +1379,8 @@ function changeBaseLayer() {
                     opacity: 0.7,
                     attribution: 'SIGEF/INCRA',
                     tileSize: 256,
-                    maxZoom: 20
+                    maxZoom: 18,
+                    minZoom: 12
                 });
                 currentBaseLayer.addLayer(sigefPartLayer);
             } else if (selectedLayer === 'sigef-publico-google') {
@@ -1385,7 +1392,8 @@ function changeBaseLayer() {
                     opacity: 0.7,
                     attribution: 'SIGEF/INCRA',
                     tileSize: 256,
-                    maxZoom: 20
+                    maxZoom: 18,
+                    minZoom: 12
                 });
                 currentBaseLayer.addLayer(sigefPubLayer);
             }
