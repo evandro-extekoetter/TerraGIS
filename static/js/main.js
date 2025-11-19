@@ -1304,7 +1304,6 @@ function changeBaseLayer() {
                     opacity: 0.7,
                     attribution: 'SNCI/INCRA',
                     tileSize: 256,
-                    crossOrigin: true,
                     maxZoom: 20
                 });
                 currentBaseLayer.addLayer(snciLayer);
@@ -1316,7 +1315,6 @@ function changeBaseLayer() {
                     opacity: 0.7,
                     attribution: 'SIGEF/INCRA',
                     tileSize: 256,
-                    crossOrigin: true,
                     maxZoom: 20
                 });
                 currentBaseLayer.addLayer(sigefLayer);
@@ -1329,7 +1327,6 @@ function changeBaseLayer() {
                     opacity: 0.7,
                     attribution: 'SIGEF/INCRA',
                     tileSize: 256,
-                    crossOrigin: true,
                     maxZoom: 20
                 });
                 currentBaseLayer.addLayer(sigefPartLayer);
@@ -1341,7 +1338,6 @@ function changeBaseLayer() {
                     opacity: 0.7,
                     attribution: 'SIGEF/INCRA',
                     tileSize: 256,
-                    crossOrigin: true,
                     maxZoom: 20
                 });
                 currentBaseLayer.addLayer(sigefPubLayer);
@@ -1354,7 +1350,6 @@ function changeBaseLayer() {
                     opacity: 0.7,
                     attribution: 'SNCI/INCRA',
                     tileSize: 256,
-                    crossOrigin: true,
                     maxZoom: 20
                 });
                 currentBaseLayer.addLayer(snciPrivLayer);
@@ -1366,7 +1361,6 @@ function changeBaseLayer() {
                     opacity: 0.7,
                     attribution: 'SNCI/INCRA',
                     tileSize: 256,
-                    crossOrigin: true,
                     maxZoom: 20
                 });
                 currentBaseLayer.addLayer(snciPubLayer);
@@ -1379,7 +1373,6 @@ function changeBaseLayer() {
                     opacity: 0.7,
                     attribution: 'SIGEF/INCRA',
                     tileSize: 256,
-                    crossOrigin: true,
                     maxZoom: 20
                 });
                 currentBaseLayer.addLayer(sigefPartLayer);
@@ -1392,7 +1385,6 @@ function changeBaseLayer() {
                     opacity: 0.7,
                     attribution: 'SIGEF/INCRA',
                     tileSize: 256,
-                    crossOrigin: true,
                     maxZoom: 20
                 });
                 currentBaseLayer.addLayer(sigefPubLayer);
